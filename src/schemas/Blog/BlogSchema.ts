@@ -10,7 +10,7 @@ interface Blog extends Document {
   coverImage: string;
   content: string;
   createdBy: mongoose.Types.ObjectId;
-  organisation: mongoose.Types.ObjectId;
+  company: mongoose.Types.ObjectId;
   tags: string[]; // Array of tags
   reactions: Reaction[];
   status:string;
@@ -60,7 +60,7 @@ const blogSchema = new Schema<Blog>(
       ref: "User",
       required: true,
     },
-    organisation: {
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
       required: true,

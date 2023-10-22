@@ -6,7 +6,7 @@ const studentSchema = new mongoose.Schema({
     ref : 'User',
     required:true
   },
-  organisation : {
+  company : {
     type : mongoose.Schema.Types.ObjectId,
     ref : 'Company',
     required:true

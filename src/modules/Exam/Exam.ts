@@ -24,13 +24,13 @@ const createExamination = async (
       throw generateError(`This Section does not exists`, 400)
     }
 
-    req.body.organisation = req.bodyData.organisation;
+    req.body.company = req.bodyData.company;
 
     const savedExaminations = [];
 
     for (const examinationData of req.body.examinationsData) {
       examinationData.createdBy = req.userId;
-      examinationData.organisation = req.bodyData.organisation;
+      examinationData.company = req.bodyData.company;
 
       const examination = new Examination(examinationData);
       const savedExamination = await examination.save();

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const QuizCategorySchema = new mongoose.Schema(
   {
-    organisation: {
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
       required: true,

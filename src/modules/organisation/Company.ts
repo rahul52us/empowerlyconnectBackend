@@ -2,11 +2,11 @@ import { Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import User from "../../schemas/User";
 import Company from "../../schemas/Company";
-import VerifyEmail from "../../schemas/VerifyEmail";
 import ProfileDetails from "../../schemas/ProfileDetails";
 import { createValidation } from "./utils/validation";
 import { generateError } from "../config/function";
 import generateToken from "../config/generateToken";
+import Token from "../../schemas/Token/Token";
 
 dotenv.config();
 
@@ -17,7 +17,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       throw generateError(result.error.details, 422);
     }
 
-    const token = await VerifyEmail.findOne({ token: req.params.token });
+    const token = await Token.findOne({ token: req.params.token });
     if (!token) {
       throw generateError("Invalid token or token has expired", 400);
     }
@@ -28,17 +28,17 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
     }
 
     const existsComp = await Company.findOne({
-      organisation_name: req.body.company_name,
+      company_name: req.body.company_name,
     });
     if (existsComp) {
       throw generateError(
-        `${existsComp.organisation_name} organisation already exists`,
+        `${existsComp.company_name} company already exists`,
         400
       );
     }
 
     const comp = new Company({
-      organisation_name: req.body.company_name,
+      company_name: req.body.company_name,
     });
 
     const createdComp = await comp.save();
@@ -54,14 +54,14 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
         $set: {
           name: req.body.name,
           profile_details: createdProfileDetails._id,
-          organisation: createdComp._id,
+          company: createdComp._id,
           password: req.body.password,
         },
       },
       { new: true }
     )
       .populate("profile_details")
-      .populate("organisation");
+      .populate("company");
 
     if (!updatedUser) {
       throw generateError("Something went wrong, contact administration", 400);
@@ -71,7 +71,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const { password, ...rest } = updatedUser.toObject();
     return res.status(201).send({
-      message: `${comp.organisation_name} organisation has been created successfully`,
+      message: `${comp.company_name} company has been created successfully`,
       data: {
         ...rest,
         authorization_token: generateToken({ userId: updatedUser._id }),
@@ -91,13 +91,13 @@ const filterCompany = async (req: any, res: Response, next: NextFunction) => {
     });
     if (result) {
       throw generateError(
-        `${req.query.company} organisation is not allowed`,
+        `${req.query.company} company is not allowed`,
         400
       );
     }
     res.status(200).send({
-      message: `${req.query.company} organisation is allowed`,
-      data: `${req.query.company} organisation is allowed`,
+      message: `${req.query.company} company is allowed`,
+      data: `${req.query.company} company is allowed`,
       statusCode: 200,
       success: true,
     });

@@ -21,7 +21,7 @@ export const createQuiz = async (
       throw generateError(result.error.details[0], 422);
     }
 
-    req.body.organisation = req.bodyData.organisation;
+    req.body.company = req.bodyData.company;
     req.body.createdBy = req.userId;
 
     let insertedCategories : any = []
@@ -29,7 +29,7 @@ export const createQuiz = async (
     const quiz = new Quiz({
       title: req.body.title,
       description: req.body.description,
-      organisation: req.body.organisation,
+      company: req.body.company,
       createdBy: req.body.createdBy,
       class: req.body.class,
       section: req.body.section,
@@ -40,7 +40,7 @@ export const createQuiz = async (
 
     if (req.body.categories && req.body.categories.length) {
       req.body.categories.forEach((item: any) => {
-        item.organisation = req.bodyData.organisation;
+        item.company = req.bodyData.company;
         item.createdBy = req.userId;
       });
 
@@ -87,7 +87,7 @@ export const createQuizCategory = async (
     const categoriesData = req.body.categories;
 
     req.body.categories.forEach((item: any) => {
-      item.organisation = req.bodyData.organisation;
+      item.company = req.bodyData.company;
       item.createdBy = req.userId;
     });
 
@@ -156,7 +156,7 @@ export const createQuestion = async (
       const answersData = questionData.answers;
 
       const question = new Question({
-        organisation: req.bodyData.organisation,
+        company: req.bodyData.company,
         category: category._id,
         questionType: questionData.questionType,
         question: questionData.question,

@@ -6,11 +6,14 @@ export interface UserInterface extends Document {
   pic: string;
   bio?: string;
   position?: string[];
-  organisation: Schema.Types.ObjectId;
+  company: Schema.Types.ObjectId;
   profile_details: Schema.Types.ObjectId;
   is_active: boolean;
   role: string;
   password: string;
+  deletedAt?:Date,
+  createdAt?:Date,
+  updatedAt?:Date
 }
 
 const UserSchema: Schema<UserInterface> = new Schema<UserInterface>(
@@ -18,11 +21,8 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>(
     name: { type: String, trim: true },
     username: { type: String, required: true, index: true, trim: true },
     pic: { type: String, trim: true },
-    position: {
-      type: Array,
-      default: ["student"],
-    },
-    organisation: { type: Schema.Types.ObjectId, ref: "Company" },
+    position: {type: Array},
+    company: { type: Schema.Types.ObjectId, ref: "Company" },
     bio: { type: String, trim: true },
     profile_details: { type: Schema.Types.ObjectId, ref: "ProfileDetails" },
     is_active: { type: Boolean, default: false },
@@ -32,8 +32,17 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>(
       default: "user",
     },
     password: { type: String, trim: true },
-  },
-  { timestamps: true }
+    deletedAt:{
+      type : Date
+    },
+    createdAt:{
+      type : Date,
+      default : new Date()
+    },
+    updatedAt:{
+      type : Date
+    }
+  }
 );
 
 const UserModel = mongoose.model<UserInterface>("User", UserSchema);

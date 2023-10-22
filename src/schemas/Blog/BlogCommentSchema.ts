@@ -5,7 +5,7 @@ interface BlogComment extends Document {
   content: string;
   blog?: mongoose.Types.ObjectId;
   parentComment?: mongoose.Types.ObjectId;
-  organisation?: mongoose.Types.ObjectId;
+  company?: mongoose.Types.ObjectId;
   replies: mongoose.Types.ObjectId[];
 }
 
@@ -21,7 +21,7 @@ const blogCommentSchema = new Schema<BlogComment>(
       ref: 'Blog',
       required: true,
     },
-    organisation:{
+    company:{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
       required: true,

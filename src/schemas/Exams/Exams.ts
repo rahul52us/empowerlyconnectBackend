@@ -15,7 +15,7 @@ const ExaminationSchema = new mongoose.Schema(
       required: true,
     },
 
-    organisation: {
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
     },

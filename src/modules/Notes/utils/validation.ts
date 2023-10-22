@@ -10,7 +10,7 @@ const customMessages = {
 };
 
 export const notesCategoryValidation = Joi.object({
-  organisation: Joi.any().required().allow(null).messages(customMessages),
+  company: Joi.any().required().allow(null).messages(customMessages),
 
   thumbnail: Joi.string().trim(),
 
@@ -44,7 +44,7 @@ export const notesCategoryValidation = Joi.object({
 }).options({ abortEarly: false });
 
 export const notesCreateValidation = Joi.object({
-  organisation: Joi.any().required().allow(null).messages(customMessages),
+  company: Joi.any().required().allow(null).messages(customMessages),
 
   category: Joi.any().required().allow(null).messages(customMessages),
 

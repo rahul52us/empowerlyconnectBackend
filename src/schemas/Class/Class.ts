@@ -23,7 +23,7 @@ const ClassSchema = new mongoose.Schema(
       default:'english'
     },
 
-    organisation: {
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
     },

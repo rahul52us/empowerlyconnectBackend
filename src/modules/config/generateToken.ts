@@ -13,7 +13,7 @@ export default generateToken;
 
 export const generateResetPasswordToken = (userId : string) => {
   const secretKey = process.env.SECRET_KEY ?? '@#$4515Rahulkushwa_675@#';
-  const token = jwt.sign({userId : userId}, secretKey, { expiresIn: '1h' });
+  const token = jwt.sign({userId : userId}, secretKey, { expiresIn: '24h' });
   return token;
 }
 

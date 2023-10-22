@@ -5,12 +5,9 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Create a transporter using SMTP
-
-
-const SendResetPasswordMail = (names: string, username: string, link: string) => {
+const SendMail = (names: string, username: string, link: string, subject : string, fileName :string) => {
   const transporter = nodemailer.createTransport({
-  host: "smtp.hostinger.com", // SMTP server hostname
+  host: "smtp.hostinger.com", // SMTP server hostnam
   port: 587, // SMTP server port
   secure: false, // Use SSL/TLS
   auth: {
@@ -19,20 +16,19 @@ const SendResetPasswordMail = (names: string, username: string, link: string) =>
   },
 });
 
-const templatePath = path.join(__dirname, 'reset_email_templates.html');
+const templatePath = path.join(__dirname,'templates',fileName);
 
 const template = fs.readFileSync(templatePath, 'utf8');
 
-// Replace placeholders in the template with actual data
 const personalizedTemplate = template
   .replace('{{name}}', names)
-  .replace('{{resetLink}}', link);
+  .replace('{{link}}', link);
 
 // Create an email message
 const message = {
     from: process.env.WELCOME_REGISTER_EMAIL_USERNAME,
     to: username,
-    subject: "Password Changed Successfully!",
+    subject:subject,
     html: personalizedTemplate,
   };
 
@@ -48,4 +44,4 @@ const message = {
   })
 }
 
-export default SendResetPasswordMail;
+export default SendMail;

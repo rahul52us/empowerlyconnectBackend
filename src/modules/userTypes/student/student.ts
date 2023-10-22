@@ -26,7 +26,7 @@ const createStudent = async (req: any, res: Response, next: NextFunction) => {
     const createdUser = new User({
       username: value.username,
       name: value.name,
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       pic: value.pic,
       password: value.password,
       bio:value.bio,
@@ -58,14 +58,14 @@ const createStudent = async (req: any, res: Response, next: NextFunction) => {
 
     const createStudent = new Student({
       user: savedUser._id,
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       class: value.class,
       section: value.section,
     });
 
     const savedStudent = await createStudent.save();
     const markSheet = new MarkSheet({
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       student: savedStudent._id,
     });
 
@@ -103,14 +103,14 @@ const getStudents = async (req: any, res: Response, next: NextFunction) => {
     const perPage = 10;
 
     const totalCount = await Student.countDocuments({
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       section: value.section,
     });
 
     const totalPages = Math.ceil(totalCount / perPage);
 
     const students = await Student.find({
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       section: value.section,
     })
       .sort({ createdAt: -1 })

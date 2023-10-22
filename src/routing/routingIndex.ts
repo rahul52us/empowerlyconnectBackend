@@ -12,7 +12,7 @@ import StudentRouting from "./userTypes/student";
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
-  app.use("/api/organisation", companyOrganisation);
+  app.use("/api/company", companyOrganisation);
   app.use("/api/project", projectRouting);
   app.use("/api/testimonial", testimonialRouting);
   app.use("/api/videos", videosRouting);

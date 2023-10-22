@@ -20,7 +20,7 @@ const createBlog = async (req: any, res: Response, next: NextFunction) => {
       tags: value.tags,
       status: value.status,
       createdBy: req.userId,
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
     });
 
     const savedBlog = await createdBlog.save();
@@ -42,7 +42,7 @@ const getBlogs = async (req: any, res: Response, next: NextFunction) => {
     const perPage = 10;
 
     const query = {
-      organisation: req.bodyData.organisation
+      company: req.bodyData.company
     };
 
     const blogs = await Blog.find(query)
@@ -158,7 +158,7 @@ const createNewComment = async (
   try {
     const instance = new CommentBlog({
       user: req.userId,
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       blog: req.params.blogId,
       content: req.body.content,
       parentComment: req.body.parentComment,

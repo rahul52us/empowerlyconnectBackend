@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import User from "../../schemas/User";
 import { generateError } from "../config/function";
 import dotenv from "dotenv";
@@ -12,15 +13,11 @@ import {
 import generateToken, {
   generateResetPasswordToken,
 } from "../config/generateToken";
-import ResetPasswordToken from "../../schemas/ResetPasswordToken";
-import SendForgotPasswordMail from "../../services/email/ForgotEmail/Templates/SendMail";
-import ResetToken from "../../schemas/ResetPasswordToken";
-import SendResetPasswordMail from "../../services/email/ResetEmail/Templates/SendMail";
 import Company from "../../schemas/Company";
-import RegisterVerifyMail from "../../services/email/RegisterEmail/Templates/SendMail";
-import VerifyEmail from "../../schemas/VerifyEmail";
+import Token from "../../schemas/Token/Token";
 import ProfileDetails from "../../schemas/ProfileDetails";
-import mongoose from "mongoose";
+import SendMail from "../config/sendMail/sendMail";
+import { FORGOT_PASSWORD_EMAIL_TOKEN_TYPE, REGISTER_NEW_USER_TOKEN_TYPE } from "../config/sendMail/utils";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
@@ -64,7 +61,7 @@ const createUser = async (
         username: req.body.username,
         name: req.body.name,
         password: req.body.password,
-        organisation: selectedCompany._id,
+        company: selectedCompany._id,
         role: req.body.role,
         is_active: selectedCompany.verified_email_allowed ? false : true,
       });
@@ -73,22 +70,25 @@ const createUser = async (
         throw generateError(`Cannot create the user`, 400);
       }
 
-      const profileDetail = new ProfileDetails({ user: savedUser._id }); // Provide the user reference
+      const profileDetail = new ProfileDetails({ user: savedUser._id });
       const createdProfileDetail = await profileDetail.save();
 
-      savedUser.profile_details = createdProfileDetail._id; // Set profileDetails ID in the User schema
+      savedUser.profile_details = createdProfileDetail._id;
       await savedUser.save();
 
       if (selectedCompany.verified_email_allowed) {
         const token = generateResetPasswordToken(savedUser._id);
-        const storeToken = new VerifyEmail({
+        const storeToken = new Token({
           userId: savedUser._id,
           token: token,
+          type : REGISTER_NEW_USER_TOKEN_TYPE
         });
-        const sendMail: any = await RegisterVerifyMail(
+        const sendMail: any = await SendMail(
           savedUser.name,
           savedUser.username,
-          `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`
+          `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
+          'Register New User',
+          'Register_email_templates.html'
         );
 
         if (!sendMail.success) {
@@ -117,7 +117,7 @@ const createUser = async (
           data: responseUser,
           statusCode: 200,
           success: true,
-          message: `${user.username} account has been created for the ${selectedCompany.organisation_name} organisation`,
+          message: `${user.username} account has been created for the ${selectedCompany.company_name} company`,
         });
       }
     } else {
@@ -132,16 +132,19 @@ const createUser = async (
       }
 
       const token = generateResetPasswordToken(createdUser._id);
-      const storeToken = new VerifyEmail({
+      const storeToken = new Token({
         userId: createdUser._id,
         token: token,
+        type:REGISTER_NEW_USER_TOKEN_TYPE
       });
 
       const savedToken = await storeToken.save();
-      const sendMail: any = await RegisterVerifyMail(
+      const sendMail: any = await SendMail(
         createdUser.username,
         createdUser.username,
-        `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`
+        `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
+        "Verify Your Account",
+        "Register_email_templates.html"
       );
 
       if (!sendMail.success) {
@@ -171,16 +174,19 @@ const VerifyEmailToken = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const token = await VerifyEmail.findOne({
+    const token = await Token.findOne({
       token: req.params.token,
     });
-    if (token) {
+    if (token && token?.type === REGISTER_NEW_USER_TOKEN_TYPE) {
       const updatedData = await User.findByIdAndUpdate(
         token.userId,
         { $set: { is_active: true } },
         { new: true }
       );
       if (updatedData) {
+        if(updatedData.role !== "admin"){
+          await token.deleteOne()
+        }
         res.status(200).send({
           message: `Account has been verified succesfully`,
           success: true,
@@ -251,19 +257,22 @@ const forgotPassword = async (
       throw generateError(`${req.body.username} email does not exist`, 400);
     }
 
-    const resetData = new ResetPasswordToken({
+    const resetData = new Token({
       userId: user.id,
       token: generateResetPasswordToken(user.id),
+      type:FORGOT_PASSWORD_EMAIL_TOKEN_TYPE
     });
     const savedData = await resetData.save();
     if (!savedData) {
       throw generateError(`Cannot send the mail. Please try again later`, 400);
     }
 
-    const sendMail: any = await SendForgotPasswordMail(
+    const sendMail: any = await SendMail(
       user.name,
       user.username,
-      `${process.env.RESET_PASSWORD_LINK}/${resetData.token}`
+      `${process.env.RESET_PASSWORD_LINK}/${resetData.token}`,
+      'Reset Your Password',
+      'forgot_email_templates.html'
     );
     if (!sendMail.success) {
       await resetData.deleteOne();
@@ -292,8 +301,8 @@ const resetPassword = async (
       throw generateError(result.error.details, 422);
     }
 
-    const token = await ResetToken.findOne({ token: req.body.token });
-    if (!token) {
+    const token : any = await Token.findOne({ token: req.body.token });
+    if (!token && token?.type !== FORGOT_PASSWORD_EMAIL_TOKEN_TYPE) {
       throw generateError(`Invalid token or token has expired`, 400);
     }
 
@@ -306,10 +315,13 @@ const resetPassword = async (
     }
 
     await token.deleteOne();
-    await SendResetPasswordMail(
+    await SendMail(
       user.name,
       user.username,
-      `${process.env.FRONTEND_BASE_URL}`
+      `${process.env.FRONTEND_BASE_URL}`,
+      "Password Changed Successfully!",
+      "reset_email_templates.html"
+
     );
 
     res.status(200).send({
@@ -323,7 +335,7 @@ const resetPassword = async (
   }
 };
 
-// get Organisation of the organisations
+// get company of the companys
 
 const getUsersByCompany = async (
   req: any,

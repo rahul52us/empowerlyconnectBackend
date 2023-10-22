@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export interface NotesI extends Document {
   title: string;
-  organisation: mongoose.Schema.Types.ObjectId;
+  company: mongoose.Schema.Types.ObjectId;
   category: mongoose.Schema.Types.ObjectId;
   description: string;
   pdf: string;
@@ -23,7 +23,7 @@ export const NotesSchema = new mongoose.Schema<NotesI>(
       trim: true,
     },
 
-    organisation: {
+    company: {
       type: String,
       ref: "Organisation",
       required: true,

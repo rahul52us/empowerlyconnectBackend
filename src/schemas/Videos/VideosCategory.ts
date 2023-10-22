@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { VideoI, VideoSchema } from "./Videos";
 
 interface VideoCategoryI {
-  organisation: mongoose.Schema.Types.ObjectId;
+  company: mongoose.Schema.Types.ObjectId;
   createdBy: mongoose.Schema.Types.ObjectId;
   title: string;
   thumbnail: string;
@@ -18,7 +18,7 @@ interface VideoCategoryI {
 
 const VideoCategorySchema = new mongoose.Schema<VideoCategoryI>(
   {
-    organisation: {
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
       required: true,

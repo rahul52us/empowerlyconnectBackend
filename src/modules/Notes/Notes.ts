@@ -16,7 +16,7 @@ export const createCategory = async (
 ) => {
   try {
     req.body.createdBy = req.userId;
-    req.body.organisation = req.bodyData.organisation;
+    req.body.company = req.bodyData.company;
     const result = notesCategoryValidation.validate(req.body);
     if (result.error) {
       throw generateError(result.error.details, 422);
@@ -45,7 +45,7 @@ export const getCategories = async (
   try {
     const pipeline: any = [
       {
-        $match: { organisation: req.bodyData.organisation },
+        $match: { company: req.bodyData.company },
       },
       {
         $lookup: {
@@ -124,7 +124,7 @@ export const createNote = async (
   next: NextFunction
 ) => {
   try {
-    req.body.organisation = req.bodyData.organisation;
+    req.body.company = req.bodyData.company;
     req.body.createdBy = req.userId;
     const result = notesCreateValidation.validate(req.body);
     if (result.error) {

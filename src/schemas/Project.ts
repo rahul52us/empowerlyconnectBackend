@@ -19,6 +19,9 @@ interface ProjectI extends Document {
   team_members?: mongoose.Schema.Types.ObjectId[];
   approval?: string;
   attach_files?: any;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date;
 }
 
 const AttachFiles = new mongoose.Schema(
@@ -43,91 +46,99 @@ const AttachFiles = new mongoose.Schema(
   { timestamps: true }
 );
 
-const ProjectSchema = new mongoose.Schema<ProjectI>(
-  {
-    project_name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    subtitle: {
-      type: String,
-      trim: true,
-    },
-    description: {
-      type: String,
-      trim: true,
-    },
-    logo: {
-      type: String,
-      trim: true,
-    },
-    priority: {
-      type: String,
-      enum: ["Low", "Medium", "High"],
-      default: "Medium",
-    },
-    is_active: {
-      type: Boolean,
-      default: true,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
-    company: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "Company",
-    },
-    project_manager: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-      ],
-      default: [],
-    },
-    status: {
-      type: String,
-      enum: ["BackLog", "Todo", "In Progress", "Done", "Completed"],
-      default: "BackLog",
-    },
-    start_date: {
-      type: Date,
-    },
-    end_date: {
-      type: Date,
-    },
-    due_date: {
-      type: Date,
-    },
-    customers: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-      ],
-      default: [],
-    },
-    team_members: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-      default: [],
-    },
-    followers: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-      default: [],
-    },
-    approval: {
-      type: String,
-      enum: ["Satisfactory", "Unsatisfactory"],
-    },
-    attach_files: [AttachFiles],
+const ProjectSchema = new mongoose.Schema<ProjectI>({
+  project_name: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  { timestamps: true }
-);
+  subtitle: {
+    type: String,
+    trim: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+  },
+  logo: {
+    type: String,
+    trim: true,
+  },
+  priority: {
+    type: String,
+    enum: ["Low", "Medium", "High"],
+    default: "Medium",
+  },
+  is_active: {
+    type: Boolean,
+    default: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "Company",
+  },
+  project_manager: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    default: [],
+  },
+  status: {
+    type: String,
+    enum: ["BackLog", "Todo", "In Progress", "Done", "Completed"],
+    default: "BackLog",
+  },
+  start_date: {
+    type: Date,
+  },
+  end_date: {
+    type: Date,
+  },
+  due_date: {
+    type: Date,
+  },
+  customers: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    default: [],
+  },
+  team_members: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    default: [],
+  },
+  followers: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    default: [],
+  },
+  approval: {
+    type: String,
+    enum: ["Satisfactory", "Unsatisfactory"],
+  },
+  attach_files: [AttachFiles],
+
+  deletedAt: {
+    type: Date,
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  updatedAt: {
+    type: Date,
+  },
+});
 
 export default mongoose.model<ProjectI>("Project", ProjectSchema);

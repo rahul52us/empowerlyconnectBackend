@@ -12,10 +12,10 @@ const createValidation = Joi.object({
     "any.required": "Username is required",
   }),
   company_name: Joi.string().min(3).max(30).required().messages({
-    "string.min": "organisation name must have a minimum length of {#limit}",
+    "string.min": "company name must have a minimum length of {#limit}",
     "string.max":
-      "organisation name should not exceed a maximum length of {#limit}",
-    "any.required": "organisation is required",
+      "company name should not exceed a maximum length of {#limit}",
+    "any.required": "company is required",
   }),
   password: Joi.string()
     .pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/)

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface CompanyI extends Document {
-  organisation_name: string;
+  company_name: string;
   verified_email_allowed: boolean;
   is_active?: boolean;
   logo?: string;
@@ -20,11 +20,14 @@ interface CompanyI extends Document {
   country?: string;
   state?: string;
   city?: string;
+  deletedAt?:Date,
+  createdAt?:Date,
+  updatedAt?:Date
 }
 
 const companySchema = new mongoose.Schema<CompanyI>(
   {
-    organisation_name: {
+    company_name: {
       type: String,
       unique: true,
       index: true,
@@ -89,8 +92,17 @@ const companySchema = new mongoose.Schema<CompanyI>(
       type: String,
       trim: true,
     },
-  },
-  { timestamps: true }
+    deletedAt:{
+      type : Date
+    },
+    createdAt:{
+      type : Date,
+      default : new Date()
+    },
+    updatedAt:{
+      type : Date
+    }
+  }
 );
 
 export default mongoose.model<CompanyI>("Company", companySchema);

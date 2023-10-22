@@ -24,7 +24,7 @@ export const Answer = mongoose.model("Answer", AnswerSchema);
 
 export const QuestionSchema = new mongoose.Schema(
   {
-    organisation: {
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
       required: true,

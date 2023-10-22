@@ -6,14 +6,14 @@ import { getClassesValidation } from "./utils/validation";
 
 const Createclass = async (req: any, res: Response, next: NextFunction) => {
   try {
-    req.body.organisation = req.bodyData.organisation;
+    req.body.company = req.bodyData.company;
     req.body.createdBy = req.userId;
 
     const classInstance = new Class({
       name: req.body.name,
       startYear: req.body.startYear,
       endYear: req.body.endYear,
-      organisation: req.body.organisation,
+      company: req.body.company,
       createdBy: req.body.createdBy,
       medium: req.body.medium,
     });
@@ -109,7 +109,7 @@ const getClasses = async (req: any, res: Response, next: NextFunction) => {
     const skip = (page - 1) * pageSize;
 
     const classesQuery = Class.find({
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       startYear: { $gte: req.body.startYear },
       endYear: { $lte: req.body.endYear },
     })
@@ -123,7 +123,7 @@ const getClasses = async (req: any, res: Response, next: NextFunction) => {
     const classes = await classesQuery.exec();
 
     const totalClassesCount = await Class.countDocuments({
-      organisation: req.bodyData.organisation,
+      company: req.bodyData.company,
       startYear: { $gte: req.body.startYear },
       endYear: { $lte: req.body.endYear },
     });

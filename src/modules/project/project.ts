@@ -3,6 +3,9 @@ import Project from "../../schemas/Project";
 import { ProjectCreateValidation } from "./utils/validation";
 import { generateError } from "../config/function";
 
+// CREATE THE NEW PROJECT BASED ON THE COMPANY:-
+// Note Project Name should be unique based on the company if it is in the active state.
+
 const createProject = async (req: any, res: Response, next: NextFunction) => {
   try {
     const result = ProjectCreateValidation.validate(req.body);
@@ -15,6 +18,7 @@ const createProject = async (req: any, res: Response, next: NextFunction) => {
     const projects = await Project.findOne({
       project_name: req.body.project_name.trim(),
       company: req.bodyData.company,
+      is_active:true
     });
     if (projects) {
       throw generateError(
@@ -58,6 +62,7 @@ const createProject = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
+// Get the Single project details.
 const getProject = async (req: any, res: Response, next: NextFunction) => {
   try {
     const project = await Project.findOne({
