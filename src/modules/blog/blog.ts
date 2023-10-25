@@ -41,11 +41,11 @@ const getBlogs = async (req: any, res: Response, next: NextFunction) => {
     const page = req.query.page || 1;
     const perPage = 10;
 
-    const query = {
-      company: req.bodyData.company
-    };
+    // const query = {
+    //   company: req.bodyData.company
+    // };
 
-    const blogs = await Blog.find(query)
+    const blogs = await Blog.find()
       .populate({
         path: 'createdBy',
         select: 'name username _id pic position createdAt',
@@ -59,7 +59,7 @@ const getBlogs = async (req: any, res: Response, next: NextFunction) => {
       .skip((page - 1) * perPage)
       .limit(perPage);
 
-    const totalCount = await Blog.countDocuments(query);
+    const totalCount = await Blog.countDocuments();
     const totalPages = Math.ceil(totalCount / perPage);
 
     res.status(200).send({

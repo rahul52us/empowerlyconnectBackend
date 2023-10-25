@@ -5,10 +5,9 @@ import { createBlog, createNewComment, deleteBlogById, getBlogById, getBlogs, ge
 const router = express.Router()
 
 router.post('/',authenticate,createBlog)
-router.post('/get',authenticate,getBlogs)
+router.post('/get',getBlogs)
 router.get('/:blogId',getBlogById)
 router.delete('/:blogId',authenticate,deleteBlogById)
-
 
 router.post('/comment/:blogId',authenticate,createNewComment)
 router.get('/comments/:blogId',getComments)
