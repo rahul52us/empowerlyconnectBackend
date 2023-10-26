@@ -11,10 +11,12 @@ interface Blog extends Document {
   content: string;
   createdBy: mongoose.Types.ObjectId;
   company: mongoose.Types.ObjectId;
-  tags: string[]; // Array of tags
+  tags: string[];
   reactions: Reaction[];
   status:string;
   comments: mongoose.Types.ObjectId[];
+  createdAt:Date,
+  updatedAt:Date
 }
 
 const blogSchema = new Schema<Blog>(
@@ -65,6 +67,13 @@ const blogSchema = new Schema<Blog>(
       ref: "Company",
       required: true,
     },
+    createdAt:{
+      type : Date,
+      default : new Date()
+    },
+    updatedAt:{
+      type : Date
+    }
   },
   { timestamps: true }
 );

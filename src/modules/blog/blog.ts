@@ -42,7 +42,8 @@ const getBlogs = async (req: any, res: Response, next: NextFunction) => {
     const perPage = 10;
 
     // const query = {
-    //   company: req.bodyData.company
+    //   company:
+    //  req.bodyData.company
     // };
 
     const blogs = await Blog.find()
@@ -211,7 +212,6 @@ const getComments = async (req: any, res: Response, next: NextFunction) => {
   } catch (err) {
     next(err);
   }
-
 };
 
 export {

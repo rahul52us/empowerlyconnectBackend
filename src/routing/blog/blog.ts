@@ -1,12 +1,13 @@
 import express from 'express'
 import authenticate from "../../modules/config/authenticate";
-import { createBlog, createNewComment, deleteBlogById, getBlogById, getBlogs, getComments } from '../../modules/blog/blog';
+import { createNewComment, deleteBlogById, getBlogById, getBlogs, getComments } from '../../modules/blog/blog';
+import { createBlogService, getBlogByIdService, getBlogsService } from '../../services/blog/Blog.service';
 
 const router = express.Router()
 
-router.post('/',authenticate,createBlog)
-router.post('/get',getBlogs)
-router.get('/:blogId',getBlogById)
+router.post('/',authenticate,createBlogService)
+router.post('/get', getBlogsService)
+router.get('/:blogId',getBlogByIdService)
 router.delete('/:blogId',authenticate,deleteBlogById)
 
 router.post('/comment/:blogId',authenticate,createNewComment)
