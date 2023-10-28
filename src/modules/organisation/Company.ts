@@ -12,6 +12,7 @@ dotenv.config();
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
+    console.log(req.body)
     const result = createValidation.validate(req.body);
     if (result.error) {
       throw generateError(result.error.details, 422);
@@ -79,7 +80,8 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       statusCode: 201,
       success: true,
     });
-  } catch (err) {
+  } catch (err : any) {
+    console.log(err.message)
     next(err);
   }
 };

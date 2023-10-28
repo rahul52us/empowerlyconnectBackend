@@ -7,6 +7,8 @@ interface BlogComment extends Document {
   parentComment?: mongoose.Types.ObjectId;
   company?: mongoose.Types.ObjectId;
   replies: mongoose.Types.ObjectId[];
+  createdAt:Date,
+  updatedAt:Date
 }
 
 const blogCommentSchema = new Schema<BlogComment>(
@@ -42,8 +44,14 @@ const blogCommentSchema = new Schema<BlogComment>(
         ref: 'BlogComment',
       },
     ],
+    createdAt:{
+      type : Date,
+      default : new Date()
+    },
+    updatedAt:{
+      type : Date
+    }
   },
-  { timestamps: true }
 );
 
 const BlogCommentModel = mongoose.model<BlogComment>('BlogComment', blogCommentSchema);

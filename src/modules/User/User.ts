@@ -5,9 +5,7 @@ import { generateError } from "../config/function";
 import dotenv from "dotenv";
 import {
   UserValidation,
-  changePasswordValidation,
   forgotEmailValidation,
-  loginValidation,
   resetPasswordValidation,
 } from "./utils/validation";
 import generateToken, {
@@ -204,43 +202,6 @@ const VerifyEmailToken = async (
   }
 };
 
-const loginUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<any> => {
-  try {
-    const result = loginValidation.validate(req.body);
-    if (result.error) {
-      throw generateError(result.error.details, 422);
-    }
-
-    const existUser = await User.findOne({ username: req.body.username }).populate('profile_details');
-    if (!existUser) {
-      throw generateError(`${req.body.username} user does not exist`, 401);
-    }
-
-    const { password, ...userData } = existUser.toObject();
-    if (password !== req.body.password) {
-      throw generateError(`Invalid username and password`, 400);
-    }
-
-    const responseUser = {
-      ...userData,
-      authorization_token: generateToken({ userId: userData._id }),
-    };
-
-    res.status(200).send({
-      message: `${existUser.username} user has been logged in successfully`,
-      data: responseUser,
-      statusCode: 200,
-      success: true,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
 const forgotPassword = async (
   req: Request,
   res: Response,
@@ -374,37 +335,6 @@ const getUsersByCompany = async (
   }
 };
 
-const changePassword = async (req: any, res: Response, next: NextFunction) => {
-  try {
-    const result = changePasswordValidation.validate(req.body);
-
-    if (result.error) {
-      throw generateError(result.error.details, 422);
-    }
-
-    const user = await User.findById(req.userId);
-
-    if (user) {
-      if (!(user.password === req.body.oldPassword)) {
-        throw generateError(
-          `Current Password does not match to the Old Password`,
-          400
-        );
-      }
-
-      user.password = req.body.newPassword;
-      await user.save();
-      res.status(200).send({
-        message: "Password Change Successfully",
-        data: "Password Change Successfully",
-        statusCode: 200,
-        success: true,
-      });
-    }
-  } catch (err) {
-    next(err);
-  }
-};
 
 const updateUserProfile = async (req: any, res: Response, next: NextFunction) => {
   const session = await mongoose.startSession();
@@ -469,12 +399,10 @@ const updateUserProfile = async (req: any, res: Response, next: NextFunction) =>
 
 export {
   createUser,
-  loginUser,
   MeUser,
   forgotPassword,
   resetPassword,
   updateUserProfile,
-  changePassword,
   VerifyEmailToken,
   getUsersByCompany,
 };

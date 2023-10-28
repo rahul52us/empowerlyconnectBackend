@@ -7,6 +7,7 @@ import { generateError } from "../../config/Error/functions";
 import { createBlogValidation, getBlogByIdValidation } from "./utils/validation";
 import { NextFunction, Response } from "express";
 import mongoose from "mongoose";
+import { createBlogComment } from "../../repository/blogComment.repository";
 
 const createBlogService = async (
   req: any,
