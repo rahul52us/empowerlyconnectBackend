@@ -23,6 +23,7 @@ const createBlogValidation = Joi.object({
 
 const getBlogByIdValidation = Joi.object({
   blogId: Joi.string().trim().messages(customMessages),
+  title: Joi.string().trim().messages(customMessages),
 }).options({
   abortEarly: false,
 });

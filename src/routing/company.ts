@@ -5,6 +5,6 @@ import {
 } from "../modules/organisation/Company";
 const router = express.Router();
 
-router.post("/create/:token", createCompany);
+router.post("/create", createCompany);
 router.get("/search", filterCompany);
 export default router;

@@ -12,13 +12,12 @@ dotenv.config();
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
-    console.log(req.body)
     const result = createValidation.validate(req.body);
     if (result.error) {
       throw generateError(result.error.details, 422);
     }
 
-    const token = await Token.findOne({ token: req.params.token });
+    const token = await Token.findOne({ token: req.query.token });
     if (!token) {
       throw generateError("Invalid token or token has expired", 400);
     }

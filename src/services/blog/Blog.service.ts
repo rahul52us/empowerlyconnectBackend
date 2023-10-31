@@ -65,12 +65,12 @@ const getBlogByIdService = async (
   next: NextFunction
 ) => {
   try {
-    const { error } = getBlogByIdValidation.validate({blogId : req.params.blogId})
+    const { error } = getBlogByIdValidation.validate({blogId : req.query.blogId, title : req.query.title})
     if (error) {
       throw generateError(error.details, 422);
     }
 
-    const { status, data } = await getBlogById({blogId : new mongoose.Types.ObjectId(req.params.blogId)});
+    const { status, data } = await getBlogById({blogId : req.query.blogId, title : req.query.title});
     if (status === "success") {
       res.status(200).send({
         message: "GET BLOG SUCCESSFULLY",

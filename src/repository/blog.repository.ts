@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { generateError } from "../config/Error/functions";
 import Blog from "../schemas/Blog/BlogSchema";
 
@@ -22,7 +23,6 @@ const createBlog = async (data: any) => {
 
 const getBlogs = async (data: any) => {
   try {
-
     // const query = {
     //   company:
     //  req.bodyData.company
@@ -54,15 +54,28 @@ const getBlogs = async (data: any) => {
       },
     };
   } catch (err) {
-    return {status : 'error', data : err}
+    return { status: "error", data: err };
   }
 };
 
-const getBlogById = async (data : any) => {
+const getBlogById = async (data: any) => {
   try {
+    let match: any = {};
+
+    if (data.blogId) {
+      match["_id"] = new mongoose.Types.ObjectId(data.blogId);
+    }
+
+    if (data.title) {
+      match["title"] = {
+        $regex: data.title,  // Use the provided regex pattern
+        $options: "i"       // Optional case-insensitive matching
+      };
+    }
+
     const blog = await Blog.aggregate([
       {
-        $match: { _id: data.blogId },
+        $match: match,
       },
       {
         $lookup: {
@@ -93,18 +106,19 @@ const getBlogById = async (data : any) => {
             pic: 1,
             position: 1,
             createdAt: 1,
-            bio:1
+            bio: 1,
           },
           reactions: 1,
         },
       },
     ]);
+
     if (!blog || blog.length === 0) {
       throw generateError(`BLOG DOES NOT EXISTS`, 400);
     }
-    return { status : 'success', data : blog[0]}
+    return { status: "success", data: blog[0] };
   } catch (err) {
-    return { status : 'error', data : err}
+    return { status: "error", data: err };
   }
 };
 

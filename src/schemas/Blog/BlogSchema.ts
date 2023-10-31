@@ -24,6 +24,7 @@ const blogSchema = new Schema<Blog>(
     title: {
       type: String,
       required: true,
+      index:true
     },
     coverImage: {
       type: String,
