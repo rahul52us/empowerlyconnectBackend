@@ -4,7 +4,10 @@ import {
   getBlogs,
 } from "../../repository/blog.repository";
 import { generateError } from "../../config/Error/functions";
-import { createBlogValidation, getBlogByIdValidation } from "./utils/validation";
+import {
+  createBlogValidation,
+  getBlogByIdValidation,
+} from "./utils/validation";
 import { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import { createBlogComment } from "../../repository/blogComment.repository";
@@ -43,8 +46,8 @@ const createBlogService = async (
 const getBlogsService = async (req: any, res: Response, next: NextFunction) => {
   try {
     let page = req.query.page || 1;
-    let limit = req.query.limit || 10
-    const { status, data } = await getBlogs({ page,limit });
+    let limit = req.query.limit || 10;
+    const { status, data } = await getBlogs({ page, limit });
     if (status === "success") {
       res.status(200).send({
         success: true,
@@ -65,12 +68,18 @@ const getBlogByIdService = async (
   next: NextFunction
 ) => {
   try {
-    const { error } = getBlogByIdValidation.validate({blogId : req.query.blogId, title : req.query.title})
+    const { error } = getBlogByIdValidation.validate({
+      blogId: req.query.blogId,
+      title: req.query.title,
+    });
     if (error) {
       throw generateError(error.details, 422);
     }
 
-    const { status, data } = await getBlogById({blogId : req.query.blogId, title : req.query.title});
+    const { status, data } = await getBlogById({
+      blogId: req.query.blogId,
+      title: req.query.title,
+    });
     if (status === "success") {
       res.status(200).send({
         message: "GET BLOG SUCCESSFULLY",

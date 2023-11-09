@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import User from "../../schemas/User";
-import Company from "../../schemas/Company";
+import Company from "../../schemas/company/Company";
 import ProfileDetails from "../../schemas/ProfileDetails";
 import { createValidation } from "./utils/validation";
 import { generateError } from "../config/function";

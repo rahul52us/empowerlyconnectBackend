@@ -68,8 +68,8 @@ const getBlogById = async (data: any) => {
 
     if (data.title) {
       match["title"] = {
-        $regex: data.title,  // Use the provided regex pattern
-        $options: "i"       // Optional case-insensitive matching
+        $regex: data.title,
+        $options: "i"
       };
     }
 

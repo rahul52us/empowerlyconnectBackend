@@ -16,9 +16,7 @@ const findUserByUserName = async (data: any) => {
 
 const loginUser = async (data: any): Promise<any> => {
   try {
-    const existUser = await User.findOne({ username: data.username }).populate(
-      "profile_details"
-    );
+    const existUser = await User.findOne({ username: new RegExp(data.username, 'i') }).populate("profile_details");
     if (!existUser) {
       throw generateError(`${data.username} user does not exist`, 401);
     }

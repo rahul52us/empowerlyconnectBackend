@@ -7,7 +7,7 @@ import notesRouting from "./notes";
 import classRouting from "./class";
 import examRouting from "./exam";
 import quizRouting from "./quiz";
-import blogRouting from './blog/blog'
+import blogRouting from "./blog/blog";
 import StudentRouting from "./userTypes/student";
 
 const importRoutings = (app: any) => {
@@ -20,7 +20,7 @@ const importRoutings = (app: any) => {
   app.use("/api/class", classRouting);
   app.use("/api/exam", examRouting);
   app.use("/api/quiz", quizRouting);
-  app.use("/api/blog",blogRouting)
+  app.use("/api/blog", blogRouting);
   app.use("/api/student", StudentRouting);
 };
 

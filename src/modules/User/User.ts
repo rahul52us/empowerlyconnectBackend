@@ -11,11 +11,14 @@ import {
 import generateToken, {
   generateResetPasswordToken,
 } from "../config/generateToken";
-import Company from "../../schemas/Company";
+import Company from "../../schemas/company/Company";
 import Token from "../../schemas/Token/Token";
 import ProfileDetails from "../../schemas/ProfileDetails";
 import SendMail from "../config/sendMail/sendMail";
-import { FORGOT_PASSWORD_EMAIL_TOKEN_TYPE, REGISTER_NEW_USER_TOKEN_TYPE } from "../config/sendMail/utils";
+import {
+  FORGOT_PASSWORD_EMAIL_TOKEN_TYPE,
+  REGISTER_NEW_USER_TOKEN_TYPE,
+} from "../config/sendMail/utils";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
@@ -40,8 +43,9 @@ const createUser = async (
     if (result.error) {
       throw generateError(result.error.details, 422);
     }
-
-    const existUser = await User.findOne({ username: req.body.username });
+    const existUser = await User.findOne({
+      username: new RegExp(req.body.username, "i"),
+    });
     if (existUser) {
       throw generateError(`${existUser.username} user already exists`, 400);
     }
@@ -79,14 +83,14 @@ const createUser = async (
         const storeToken = new Token({
           userId: savedUser._id,
           token: token,
-          type : REGISTER_NEW_USER_TOKEN_TYPE
+          type: REGISTER_NEW_USER_TOKEN_TYPE,
         });
         const sendMail: any = await SendMail(
           savedUser.name,
           savedUser.username,
           `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
-          'Register New User',
-          'Register_email_templates.html'
+          "Register New User",
+          "Register_email_templates.html"
         );
 
         if (!sendMail.success) {
@@ -133,7 +137,7 @@ const createUser = async (
       const storeToken = new Token({
         userId: createdUser._id,
         token: token,
-        type:REGISTER_NEW_USER_TOKEN_TYPE
+        type: REGISTER_NEW_USER_TOKEN_TYPE,
       });
 
       const savedToken = await storeToken.save();
@@ -182,8 +186,8 @@ const VerifyEmailToken = async (
         { new: true }
       );
       if (updatedData) {
-        if(updatedData.role !== "admin"){
-          await token.deleteOne()
+        if (updatedData.role !== "admin") {
+          await token.deleteOne();
         }
         res.status(200).send({
           message: `Account has been verified succesfully`,
@@ -221,7 +225,7 @@ const forgotPassword = async (
     const resetData = new Token({
       userId: user.id,
       token: generateResetPasswordToken(user.id),
-      type:FORGOT_PASSWORD_EMAIL_TOKEN_TYPE
+      type: FORGOT_PASSWORD_EMAIL_TOKEN_TYPE,
     });
     const savedData = await resetData.save();
     if (!savedData) {
@@ -232,8 +236,8 @@ const forgotPassword = async (
       user.name,
       user.username,
       `${process.env.RESET_PASSWORD_LINK}/${resetData.token}`,
-      'Reset Your Password',
-      'forgot_email_templates.html'
+      "Reset Your Password",
+      "forgot_email_templates.html"
     );
     if (!sendMail.success) {
       await resetData.deleteOne();
@@ -262,7 +266,7 @@ const resetPassword = async (
       throw generateError(result.error.details, 422);
     }
 
-    const token : any = await Token.findOne({ token: req.body.token });
+    const token: any = await Token.findOne({ token: req.body.token });
     if (!token && token?.type !== FORGOT_PASSWORD_EMAIL_TOKEN_TYPE) {
       throw generateError(`Invalid token or token has expired`, 400);
     }
@@ -282,7 +286,6 @@ const resetPassword = async (
       `${process.env.FRONTEND_BASE_URL}`,
       "Password Changed Successfully!",
       "reset_email_templates.html"
-
     );
 
     res.status(200).send({
@@ -335,8 +338,11 @@ const getUsersByCompany = async (
   }
 };
 
-
-const updateUserProfile = async (req: any, res: Response, next: NextFunction) => {
+const updateUserProfile = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -352,22 +358,24 @@ const updateUserProfile = async (req: any, res: Response, next: NextFunction) =>
       req.userId,
       userDataToUpdate,
       { new: true }
-    ).populate("profile_details").session(session);
+    )
+      .populate("profile_details")
+      .session(session);
 
     if (!updatedUser) {
-      throw generateError('User does not exist', 400);
+      throw generateError("User does not exist", 400);
     }
 
     const profileDetailsId = updatedUser.profile_details;
     const profileDetailsDataToUpdate = {
       addressInfo: req.body.addressInfo,
-      motherName:req.body.motherName,
-      fatherName:req.body.fatherName,
-      sibling:req.body.sibling,
-      nickName:req.body.nickName,
-      phoneNo:req.body.phoneNo,
-      mobileNo:req.body.mobileNo,
-      emergencyNo:req.body.emergencyNo
+      motherName: req.body.motherName,
+      fatherName: req.body.fatherName,
+      sibling: req.body.sibling,
+      nickName: req.body.nickName,
+      phoneNo: req.body.phoneNo,
+      mobileNo: req.body.mobileNo,
+      emergencyNo: req.body.emergencyNo,
     };
 
     const updatedProfileDetails = await ProfileDetails.findByIdAndUpdate(
@@ -377,17 +385,20 @@ const updateUserProfile = async (req: any, res: Response, next: NextFunction) =>
     ).session(session);
 
     if (!updatedProfileDetails) {
-      throw generateError('Profile details not found', 400);
+      throw generateError("Profile details not found", 400);
     }
 
     await session.commitTransaction();
     session.endSession();
 
     res.status(200).send({
-      message: 'User and profile details updated successfully',
-      data: { ...updatedUser.toObject(), profile_details: updatedProfileDetails.toObject() },
+      message: "User and profile details updated successfully",
+      data: {
+        ...updatedUser.toObject(),
+        profile_details: updatedProfileDetails.toObject(),
+      },
       statusCode: 200,
-      status: 'success',
+      status: "success",
     });
   } catch (error: any) {
     await session.abortTransaction();
@@ -395,7 +406,6 @@ const updateUserProfile = async (req: any, res: Response, next: NextFunction) =>
     next(error);
   }
 };
-
 
 export {
   createUser,
