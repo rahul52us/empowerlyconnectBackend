@@ -1,9 +1,8 @@
 import { NextFunction, Response } from "express";
 import Videos from "../../schemas/Videos/Videos";
-import { generateError } from "../config/function";
+import { generateError, generateValidationError } from "../config/function";
 import {
   createVideosValidation,
-  getVideosValidations,
   videoCreateCategoryValidation,
 } from "./utils/videos.validation";
 import VideosCategory from "../../schemas/Videos/VideosCategory";
@@ -48,8 +47,9 @@ const createVideo = async (req: any, res: Response, next: NextFunction) => {
     req.body.createdBy = req.userId;
     req.body.company = req.bodyData.company;
     const result = createVideosValidation.validate(req.body);
+
     if (result.error) {
-      throw generateError(result.error.details, 422);
+      throw generateValidationError(result.error.details, 422);
     }
     const video = new Videos(req.body);
     const savedVideo = await video.save();

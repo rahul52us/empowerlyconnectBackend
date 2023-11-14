@@ -15,6 +15,9 @@ export interface VideoI extends Document {
   pricingType: string;
   amountType: string;
   rating: string;
+  createdAt : Date,
+  updatedAt : Date,
+  deletedAt : Date
 }
 
 export const VideoSchema = new Schema<VideoI>(
@@ -95,9 +98,17 @@ export const VideoSchema = new Schema<VideoI>(
       enum: ["paid", "free"],
       default: "free",
     },
-
+    createdAt : {
+      type : Date,
+      default : new Date()
+    },
+    updatedAt : {
+      type : Date
+    },
+    deletedAt : {
+      type : Date
+    }
   },
-  { timestamps: true }
 );
 
 export default mongoose.model<VideoI>("Video", VideoSchema);

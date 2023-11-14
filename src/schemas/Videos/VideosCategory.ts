@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { VideoI, VideoSchema } from "./Videos";
 
 interface VideoCategoryI {
   company: mongoose.Schema.Types.ObjectId;
@@ -13,7 +12,9 @@ interface VideoCategoryI {
   pricingType: string;
   amountType: string;
   rating: string;
-  videos: VideoI[];
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date;
 }
 
 const VideoCategorySchema = new mongoose.Schema<VideoCategoryI>(
@@ -23,69 +24,69 @@ const VideoCategorySchema = new mongoose.Schema<VideoCategoryI>(
       ref: "Company",
       required: true,
     },
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     title: {
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
-
     description: {
       type: String,
       required: true,
       trim: true,
     },
-
     thumbnail: {
       type: String,
       trim: true,
     },
-
     details: {
       type: String,
-      required: true
+      trim : true
     },
-
-    videos: {
-      type: [VideoSchema],
-    },
-
     discountPrice: {
       type: String,
       trim: true,
     },
-
     originalPrice: {
       type: String,
       trim: true,
     },
-
     rating: {
       type: String,
       trim: true,
-      default:'2'
+      default: "2",
     },
 
     amountType: {
       type: String,
       trim: true,
-      default:'Rs'
+      default: "Rs",
     },
-
     pricingType: {
       type: String,
       enum: ["paid", "free"],
       default: "free",
     },
-
+    deletedAt: {
+      type: Date,
+    },
+    createdAt: {
+      type: Date,
+      default: new Date(),
+    },
+    updatedAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.model<VideoCategoryI>("VideoCategory", VideoCategorySchema);
+export default mongoose.model<VideoCategoryI>(
+  "VideoCategory",
+  VideoCategorySchema
+);

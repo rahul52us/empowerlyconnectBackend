@@ -15,3 +15,11 @@ export const generateError = (message : any, status : number) => {
     validationError["statusCode"] = status
     return validationError;
 };
+
+export const generateValidationError = (messages: any[], status: number) => {
+  const errorMessage = messages.map(obj => obj.message).join(', ');
+  const validationError: any = new Error(errorMessage);
+  validationError["data"] = messages;
+  validationError["statusCode"] = status;
+  return validationError;
+};
