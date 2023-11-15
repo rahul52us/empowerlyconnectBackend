@@ -13,6 +13,9 @@ export interface NotesI extends Document {
   originalPrice: string;
   rating: string;
   amountType: string;
+  createdAt : Date,
+  updatedAt : Date,
+  deletedAt : Date
 }
 
 export const NotesSchema = new mongoose.Schema<NotesI>(
@@ -25,7 +28,7 @@ export const NotesSchema = new mongoose.Schema<NotesI>(
 
     company: {
       type: String,
-      ref: "Organisation",
+      ref: "Company",
       required: true,
     },
 
@@ -81,9 +84,16 @@ export const NotesSchema = new mongoose.Schema<NotesI>(
       enum: ["paid", "free"],
       default: "free",
     },
-
-  },
-  { timestamps: true }
-);
+    createdAt:{
+      type : Date,
+      default : new Date()
+    },
+    updatedAt: {
+      type : Date
+    },
+    deletedAt : {
+       type : Date
+    }
+  });
 
 export default mongoose.model<NotesI>("Notes", NotesSchema);

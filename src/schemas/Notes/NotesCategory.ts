@@ -14,7 +14,9 @@ interface NotesCategoryInterface extends Document {
   originalPrice: string;
   pricingType: string;
   amountType: string;
-  notes: NotesI[];
+  createdAt : Date,
+  updatedAt : Date,
+  deletedAt : Date
 }
 
 const NotesCategorySchema = new mongoose.Schema<NotesCategoryInterface>(
@@ -80,10 +82,16 @@ const NotesCategorySchema = new mongoose.Schema<NotesCategoryInterface>(
       enum: ["paid", "free"],
       default: "free",
     },
-
-    notes: [NotesSchema],
-  },
-  { timestamps: true }
-);
+    createdAt:{
+      type : Date,
+      default : new Date()
+    },
+    updatedAt: {
+      type : Date
+    },
+    deletedAt : {
+       type : Date
+    }
+  });
 
 export default mongoose.model("NotesCategory", NotesCategorySchema);

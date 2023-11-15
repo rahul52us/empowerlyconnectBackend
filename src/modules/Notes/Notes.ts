@@ -4,7 +4,7 @@ import {
   notesCategoryValidation,
   notesCreateValidation,
 } from "./utils/validation";
-import { generateError } from "../config/function";
+import { generateError, generateValidationError } from "../config/function";
 import Notes from "../../schemas/Notes/Notes";
 import { PaginationLimit } from "../config/constant";
 
@@ -19,7 +19,7 @@ export const createCategory = async (
     req.body.company = req.bodyData.company;
     const result = notesCategoryValidation.validate(req.body);
     if (result.error) {
-      throw generateError(result.error.details, 422);
+      throw generateValidationError(result.error.details, 422);
     }
     const category = new NotesCategory(req.body);
     const savedCategory = await category.save();

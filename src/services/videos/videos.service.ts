@@ -1,6 +1,6 @@
 import { NextFunction, Response } from "express";
 import { videoCreateCategoryValidation } from "./utils/videos.validation";
-import { generateValidationError } from "../../config/Error/functions";
+import { generateError, generateValidationError } from "../../config/Error/functions";
 import {
   createVideoCategory,
   getAllCategories,
@@ -105,7 +105,7 @@ export const getAllCategoryVideoCountService = async (
         status: "success",
       });
     } else {
-      next(data);
+      throw generateError(data,400);
     }
   } catch (err) {
     next(err);
