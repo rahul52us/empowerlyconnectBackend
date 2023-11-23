@@ -7,6 +7,7 @@ import {
 import { generateError, generateValidationError } from "../config/function";
 import Notes from "../../schemas/Notes/Notes";
 import { PaginationLimit } from "../config/constant";
+import { uploadFileWithCloudinary } from "../../repository/uploadDoc.repository";
 
 // create the notes category
 export const createCategory = async (
@@ -21,6 +22,8 @@ export const createCategory = async (
     if (result.error) {
       throw generateValidationError(result.error.details, 422);
     }
+
+    req.body.thumbnail = await uploadFileWithCloudinary(req.body.thumbnail)
     const category = new NotesCategory(req.body);
     const savedCategory = await category.save();
     if (savedCategory) {

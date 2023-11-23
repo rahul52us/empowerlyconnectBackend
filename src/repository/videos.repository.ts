@@ -1,18 +1,23 @@
 import { generateError } from "../config/Error/functions";
 import VideosCategory from "../schemas/Videos/VideosCategory";
 import Videos from "../schemas/Videos/Videos";
+import { uploadFileWithCloudinary } from "./uploadDoc.repository";
 
 export const createVideoCategory = async (data: any) => {
   try {
-    const videoCategory = new VideosCategory(data);
+    let {thumbnail,...rest} = data
+    const videoCategory = new VideosCategory(rest);
     const savedVideoCategory = await videoCategory.save();
-
+    if(thumbnail){
+      savedVideoCategory.thumbnail = await uploadFileWithCloudinary(thumbnail)
+      await savedVideoCategory.save()
+    }
     if (!savedVideoCategory) {
       throw generateError("Cannot create Cateogry", 400);
     }
-
     return { status: "success", data: savedVideoCategory };
-  } catch (err) {
+  } catch (err : any) {
+    console.log(err.message)
     return {
       status: "error",
       data: err,

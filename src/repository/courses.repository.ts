@@ -1,3 +1,4 @@
+import Notes from "../schemas/Notes/Notes";
 import CourseCategory from "../schemas/Notes/NotesCategory";
 
 export const getAllCategories = async (data: any) => {
@@ -88,4 +89,55 @@ export const getAllCourseCategoryCount = async (data: any) => {
         data: err,
       };
     }
+};
+
+export const getCourseByCategory = async (data: any) => {
+  try {
+    const pipeline: any = [
+      {
+        $match: {
+          company: data.company,
+          category: data.category,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ];
+
+    const countPipeline = [...pipeline];
+
+    countPipeline.push({
+      $count: "totalDocuments",
+    });
+
+    const [totalCountResult] = await Notes.aggregate(countPipeline);
+    const totalDocuments = totalCountResult
+      ? totalCountResult.totalDocuments
+      : 0;
+
+    const totalPages = Math.ceil(totalDocuments / data.limit);
+
+    pipeline.push({
+      $skip: (data.page - 1) * data.limit,
+    });
+
+    pipeline.push({
+      $limit: data.limit,
+    });
+
+    const courses = await Notes.aggregate(pipeline);
+
+    return {
+      data: { courses, totalPages },
+      status: "success",
+    };
+  } catch (err) {
+    return {
+      data: err,
+      status: "error",
+    };
+  }
 };

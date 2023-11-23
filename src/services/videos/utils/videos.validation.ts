@@ -6,7 +6,7 @@ const videoCreateCategoryValidation = Joi.object({
     "string.empty": "Company is required",
   }),
 
-  thumbnail: Joi.string().trim(),
+  thumbnail: Joi.any().allow(),
 
   title: Joi.string().trim().required().min(2).max(180).messages({
     "string.min": "Title should be at least 2 characters",

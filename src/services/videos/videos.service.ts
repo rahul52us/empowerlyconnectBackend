@@ -77,7 +77,7 @@ export const getVideosService = async (
       : PaginationLimit;
     const { data, status } = await getVideos(req.body);
     if (status === "success") {
-      res.status(201).send({
+      res.status(200).send({
         data: data,
         message: "GET VIDEOS SUCCESSFULLY",
         status: "success",
