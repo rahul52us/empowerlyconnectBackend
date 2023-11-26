@@ -34,6 +34,24 @@ export const getAllCategories = async (data: any) => {
         },
       },
       {
+        $lookup: {
+          from: "videos",
+          localField: "_id",
+          foreignField: "category",
+          as: "videos",
+        },
+      },
+      {
+        $addFields: {
+          totalChildData: { $size: "$videos" },
+        },
+      },
+      {
+        $project: {
+          videos: 0,
+        },
+      },
+      {
         $sort: {
           createdAt: -1,
         },

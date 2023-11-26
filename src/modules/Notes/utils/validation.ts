@@ -12,7 +12,7 @@ const customMessages = {
 export const notesCategoryValidation = Joi.object({
   company: Joi.any().required().allow(null).messages(customMessages),
 
-  thumbnail: Joi.string().trim(),
+  thumbnail: Joi.any().allow(),
 
   title: Joi.string().trim().required().min(2).max(180).messages(customMessages),
 

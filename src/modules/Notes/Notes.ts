@@ -18,23 +18,28 @@ export const createCategory = async (
   try {
     req.body.createdBy = req.userId;
     req.body.company = req.bodyData.company;
+    let {thumbnail,...rest} = req.body
     const result = notesCategoryValidation.validate(req.body);
     if (result.error) {
       throw generateValidationError(result.error.details, 422);
     }
 
-    req.body.thumbnail = await uploadFileWithCloudinary(req.body.thumbnail)
-    const category = new NotesCategory(req.body);
+    const category = new NotesCategory(rest);
     const savedCategory = await category.save();
+    if(req.body.thumbnail){
+      savedCategory.thumbnail = await uploadFileWithCloudinary(thumbnail)
+      await savedCategory.save()
+    }
     if (savedCategory) {
       res.status(201).send({
         message: `${category.title} category has been created`,
-        data: category,
+        data: savedCategory,
         statusCode: 201,
         success: true,
       });
     }
-  } catch (err) {
+  } catch (err : any) {
+    console.log(err.message)
     next(err);
   }
 };
