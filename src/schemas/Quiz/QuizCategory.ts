@@ -7,6 +7,10 @@ const QuizCategorySchema = new mongoose.Schema(
       ref: "Company",
       required: true,
     },
+    quiz : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : 'Quiz'
+    },
     title: {
       type: String,
       trim: true,
@@ -25,8 +29,14 @@ const QuizCategorySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    createdAt:{
+      type : Date,
+      default: new Date()
+    },
+    updatedAt:{
+      type : Date
+    }
   },
-  { timestamps: true }
 );
 
 export default mongoose.model("QuizCategory", QuizCategorySchema);

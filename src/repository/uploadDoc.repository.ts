@@ -6,7 +6,7 @@ cloudinary.config({
   api_secret: 'ANFnW5o7KEt4YGbjiefwKKf-XK8'
 });
 
-async function uploadFileWithCloudinary(file: any) {
+async function uploadFile(file: any) {
   try {
     const result = await cloudinary.uploader.upload(file.buffer, {
       folder: 'taskManager',
@@ -19,4 +19,4 @@ async function uploadFileWithCloudinary(file: any) {
   }
 }
 
-export { uploadFileWithCloudinary };
+export { uploadFile };

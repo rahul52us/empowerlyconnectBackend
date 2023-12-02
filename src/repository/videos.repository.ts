@@ -1,7 +1,7 @@
 import { generateError } from "../config/Error/functions";
 import VideosCategory from "../schemas/Videos/VideosCategory";
 import Videos from "../schemas/Videos/Videos";
-import { uploadFileWithCloudinary } from "./uploadDoc.repository";
+import { uploadFile } from "./uploadDoc.repository";
 
 export const createVideoCategory = async (data: any) => {
   try {
@@ -9,7 +9,7 @@ export const createVideoCategory = async (data: any) => {
     const videoCategory = new VideosCategory(rest);
     const savedVideoCategory = await videoCategory.save();
     if(thumbnail){
-      savedVideoCategory.thumbnail = await uploadFileWithCloudinary(thumbnail)
+      savedVideoCategory.thumbnail = await uploadFile(thumbnail)
       await savedVideoCategory.save()
     }
     if (!savedVideoCategory) {

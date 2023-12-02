@@ -9,6 +9,7 @@ import {
 } from "./utils/validation";
 import Question from "../../schemas/Quiz/Question";
 import { Answer } from "../../schemas/Quiz/Question";
+import { uploadFile } from "../../repository/uploadDoc.repository";
 
 export const createQuiz = async (
   req: any,
@@ -24,41 +25,34 @@ export const createQuiz = async (
     req.body.company = req.bodyData.company;
     req.body.createdBy = req.userId;
 
-    let insertedCategories : any = []
-
-    const quiz = new Quiz({
-      title: req.body.title,
-      description: req.body.description,
-      company: req.body.company,
-      createdBy: req.body.createdBy,
-      class: req.body.class,
-      section: req.body.section,
-      thumbnail:req.body.thumbnail
-    });
+    let insertedCategories: any = [];
+    let { thumbnail, categories, ...rest } = req.body;
+    const quiz = new Quiz({ ...rest });
 
     const savedQuiz: any = await quiz.save();
+    if (thumbnail) {
+      let url = await uploadFile(thumbnail);
+      savedQuiz.thumbnail = {
+        name: thumbnail.filename,
+        url: url,
+        type: thumbnail.type,
+      };
+      await savedQuiz.save()
+    }
 
-    if (req.body.categories && req.body.categories.length) {
-      req.body.categories.forEach((item: any) => {
+    if (Array.isArray(categories)) {
+      categories.forEach((item: any) => {
         item.company = req.bodyData.company;
         item.createdBy = req.userId;
+        item.quiz = savedQuiz._id;
       });
-
-       insertedCategories = await QuizCategory.insertMany(
-        req.body.categories
-      );
-
-      const categoriesIds = insertedCategories.map((item: any) => item._id);
-
-      quiz.category.push(...categoriesIds);
-
-      await quiz.save();
+      insertedCategories = await QuizCategory.insertMany(categories);
       savedQuiz.categories = insertedCategories;
     }
 
     res.status(201).send({
       message: "CREATE QUIZ SUCCESSFULLY",
-      data: {...savedQuiz.toObject(), category :insertedCategories },
+      data: { ...savedQuiz.toObject(), category: insertedCategories },
       statusCode: 201,
       success: true,
     });
@@ -93,12 +87,6 @@ export const createQuizCategory = async (
 
     const insertedCategories = await QuizCategory.insertMany(categoriesData);
 
-    const categoriesIds = insertedCategories.map((item: any) => item._id);
-
-    quiz.category.push(...categoriesIds);
-
-    await quiz.save();
-
     res.status(200).json({
       message: "Categories added to quiz successfully",
       data: insertedCategories,
@@ -113,7 +101,6 @@ export const createQuizCategory = async (
 export const getQuiz = async (req: any, res: Response, next: NextFunction) => {
   try {
     const query = Quiz.find()
-      .populate("category")
       .populate("class")
       .populate("section")
       .populate("createdBy")

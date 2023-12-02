@@ -8,7 +8,7 @@ const categoryItemSchema = Joi.object({
     "string.max": "Category title cannot be more than 100 characters long.",
     "any.required": "Category title is required.",
   }),
-  thumbnail: Joi.string().trim(),
+  thumbnail: Joi.any().allow(),
   description: Joi.string().trim(),
 });
 
@@ -27,18 +27,14 @@ export const quizCreateValidation = Joi.object({
     "any.required": "Description is required.",
   }),
 
-  thumbnail: Joi.string().trim().messages({
-    "string.base": "Thumbnail must be a string.",
-    "string.empty": "Thumbnail is required.",
-    "any.required": "Thumbnail is required.",
-  }),
+  thumbnail: Joi.any().allow(),
 
-  class: Joi.string().required().messages({
+  class: Joi.string().messages({
     "string.base": "Class must be a string.",
     "string.empty": "Class is required.",
   }),
 
-  section: Joi.string().required().messages({
+  section: Joi.string().messages({
     "string.base": "Section must be a string.",
     "string.empty": "section is required.",
   }),
