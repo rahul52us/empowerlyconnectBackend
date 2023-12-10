@@ -17,8 +17,15 @@ const QuizCategorySchema = new mongoose.Schema(
       required: true,
     },
     thumbnail: {
-      type: String,
-      trim: true,
+      name : {
+        type : String
+      },
+      url : {
+        type : String
+      },
+      type : {
+        type : String
+      }
     },
     description: {
       type: String,

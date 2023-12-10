@@ -7,10 +7,11 @@ import {
 } from "../modules/Notes/Notes";
 import authenticate from "../modules/config/authenticate";
 import { upload } from "../modules/config/fileuploadService";
-import { getCategoryCoursesCountService, getCourseByCategoryService } from "../services/courses/courses";
+import { createMainNotes, getCategoryCoursesCountService, getCourseByCategoryService } from "../services/courses/courses";
 
 const router = express.Router();
 
+router.post("/", authenticate, createMainNotes);
 router.post("/category", authenticate, createCategory);
 router.post("/categories", authenticate, getCategories);
 router.post("/create", authenticate, createNote);

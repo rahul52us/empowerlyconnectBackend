@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import Notes, { NotesI, NotesSchema } from "./Notes";
-
 interface NotesCategoryInterface extends Document {
   user: mongoose.Schema.Types.ObjectId;
   company: mongoose.Schema.Types.ObjectId;
@@ -16,7 +14,8 @@ interface NotesCategoryInterface extends Document {
   amountType: string;
   createdAt : Date,
   updatedAt : Date,
-  deletedAt : Date
+  deletedAt : Date,
+  parentNotes: mongoose.Schema.Types.ObjectId
 }
 
 const NotesCategorySchema = new mongoose.Schema<NotesCategoryInterface>(
@@ -25,6 +24,11 @@ const NotesCategorySchema = new mongoose.Schema<NotesCategoryInterface>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
       required: true,
+    },
+
+    parentNotes : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : 'ParentNotes'
     },
 
     thumbnail: {
@@ -82,13 +86,16 @@ const NotesCategorySchema = new mongoose.Schema<NotesCategoryInterface>(
       enum: ["paid", "free"],
       default: "free",
     },
+
     createdAt:{
       type : Date,
       default : new Date()
     },
+
     updatedAt: {
       type : Date
     },
+
     deletedAt : {
        type : Date
     }

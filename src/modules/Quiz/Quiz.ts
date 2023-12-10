@@ -10,6 +10,7 @@ import {
 import Question from "../../schemas/Quiz/Question";
 import { Answer } from "../../schemas/Quiz/Question";
 import { uploadFile } from "../../repository/uploadDoc.repository";
+import { processCategories } from "../../config/helper/logics";
 
 export const createQuiz = async (
   req: any,
@@ -37,18 +38,16 @@ export const createQuiz = async (
         url: url,
         type: thumbnail.type,
       };
-      await savedQuiz.save()
+      await savedQuiz.save();
     }
 
-    if (Array.isArray(categories)) {
-      categories.forEach((item: any) => {
-        item.company = req.bodyData.company;
-        item.createdBy = req.userId;
-        item.quiz = savedQuiz._id;
-      });
-      insertedCategories = await QuizCategory.insertMany(categories);
-      savedQuiz.categories = insertedCategories;
-    }
+    const processedCategories = await processCategories(
+      req,
+      categories,
+      savedQuiz
+    );
+    insertedCategories = await QuizCategory.insertMany(processedCategories);
+    savedQuiz.categories = insertedCategories;
 
     res.status(201).send({
       message: "CREATE QUIZ SUCCESSFULLY",

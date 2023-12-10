@@ -9,7 +9,6 @@ const customMessages = {
   "number.max": "{#label} should be at most {#limit}",
 };
 
-
 export const notesCategoryValidation = Joi.object({
   company: Joi.any().required().allow(null).messages(customMessages),
   thumbnail: Joi.any().allow(),
