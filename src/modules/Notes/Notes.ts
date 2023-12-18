@@ -39,7 +39,6 @@ export const createCategory = async (
       });
     }
   } catch (err : any) {
-    console.log(err.message)
     next(err);
   }
 };

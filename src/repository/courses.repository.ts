@@ -1,6 +1,10 @@
 import Notes from "../schemas/Notes/Notes";
 import CourseCategory from "../schemas/Notes/NotesCategory";
 
+
+export const createCourse = async (data : any) => {
+
+}
 export const getAllCategories = async (data: any) => {
     try {
       const pipeline: any = [
