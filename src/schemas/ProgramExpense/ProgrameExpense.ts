@@ -10,6 +10,7 @@ interface Approval {
   status: ApprovalStatus;
   createdAt: Date;
   updatedAt?: Date;
+  approvedBy: mongoose.Schema.Types.ObjectId | string;
 }
 
 interface EventExpenseValues {
@@ -19,6 +20,7 @@ interface EventExpenseValues {
 interface EventExpenseDocument extends Document {
   eventType: string;
   thumbnail?: string;
+  company : mongoose.Schema.Types.ObjectId | string;
   description?: string;
   documents?: string[];
   approvals: Approval[];
@@ -34,6 +36,11 @@ const approvalSchema = new Schema<Approval>({
     enum: Object.values(ApprovalStatus),
     required: true,
   },
+  approvedBy : {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: new Date(),
@@ -47,6 +54,10 @@ const eventExpenseSchema = new Schema<EventExpenseDocument>({
   eventType: {
     type: String,
     required: true,
+  },
+  company : {
+    type: mongoose.Schema.Types.ObjectId,
+    ref : 'Company'
   },
   thumbnail: String,
   description: String,
