@@ -9,8 +9,8 @@ import examRouting from "./exam";
 import quizRouting from "./quiz";
 import blogRouting from "./blog/blog";
 import StudentRouting from "./userTypes/student";
-import expenseRouting from "./expense.routing"
-import TripRouting from './trip.routing'
+import expenseRouting from "./expense.routing";
+import TripRouting from "./trip.routing";
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
@@ -24,8 +24,8 @@ const importRoutings = (app: any) => {
   app.use("/api/quiz", quizRouting);
   app.use("/api/blog", blogRouting);
   app.use("/api/student", StudentRouting);
-  app.use('/api/expense',expenseRouting)
-  app.use('/api/trip',TripRouting)
+  app.use("/api/expense", expenseRouting);
+  app.use("/api/trip", TripRouting);
 };
 
 export default importRoutings;

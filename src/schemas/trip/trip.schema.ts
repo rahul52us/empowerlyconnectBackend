@@ -67,9 +67,21 @@ const AdditionalExpenseSchema = new Schema<AdditionalExpense>({
 const TripSchema = new Schema<Trip>({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  thumbnail: { type: String },
+  country : {
+    type : String
+  },
+  thumbnail: {
+    name : {
+      type : String
+    },
+    url : {
+      type : String
+    },
+    type : {
+      type : String
+    }
+  },
   currency:{type : String, default : 'RS'},
-  country:{type : String},
   type: {
     type: String,
     enum: ["individual", "group"],
@@ -88,7 +100,7 @@ const TripSchema = new Schema<Trip>({
   },
   createdAt: { type: Date, default: new Date() },
   updatedAt: { type: Date },
-  deletedAt: { type: Date, default: null },
+  deletedAt: { type: Date },
   participants: { type: [mongoose.Schema.Types.ObjectId] },
   travelDetails: { type: [TravelDetailsSchema] },
   additionalExpenses: { type: [AdditionalExpenseSchema] },
