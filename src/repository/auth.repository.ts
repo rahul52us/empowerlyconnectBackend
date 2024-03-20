@@ -1,6 +1,6 @@
 import generateToken from "../config/helper/generateToken";
 import { generateError } from "../config/Error/functions";
-import User from "../schemas/User";
+import User from "../schemas/User/User";
 
 const findUserByUserName = async (data: any) => {
   try {

@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User from "../../schemas/User";
+import User from "../../schemas/User/User";
 import { generateError, handleErrorMessage } from "./function";
 
 dotenv.config();

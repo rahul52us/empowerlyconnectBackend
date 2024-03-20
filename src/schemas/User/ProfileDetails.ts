@@ -9,28 +9,24 @@ interface addressInfo  {
   pinCode?:string
 }
 
-interface linkInfo {
-
-}
-
 interface ProfileDetailsI extends Document {
   user: mongoose.Schema.Types.ObjectId;
   nickName?: string;
-  fatherName?: string;
-  motherName?: string;
-  sibling?: number;
   mobileNo?: string;
   language?: String[];
   emergencyNo?: String;
-  address1?: string;
-  address2?: string;
-  country?: string;
-  state?: string;
-  city?: string;
-  pinCode?: string;
-  linkedInLink?: string;
-  githubLink?: string;
-  websiteLink?: string;
+  dob?:String;
+  personalEmail?:String;
+  bloodGroup?:String;
+  panNo?:String;
+  aadharNo?:String;
+  pfUanNo?:String;
+  maritalStatus?:String;
+  weddingDate?:String;
+  insuranceCardNo?:string;
+  healthCardNo?:String;
+  medicalCertificationDetails?:String;
+  refferedBy?:String;
   addressInfo?:addressInfo[]
 }
 
@@ -45,16 +41,11 @@ const ProfileDetailsSchema = new mongoose.Schema<ProfileDetailsI>({
     type: String,
     trim: true,
   },
-  fatherName: {
-    type: String,
-    trim: true,
+  personalEmail:{
+    type : String
   },
-  motherName: {
-    type: String,
-    trim: true,
-  },
-  sibling: {
-    type: Number,
+  dob:{
+    type : Date
   },
   language: {
     type: Array,
@@ -68,6 +59,36 @@ const ProfileDetailsSchema = new mongoose.Schema<ProfileDetailsI>({
     type: String,
     trim: true,
   },
+  bloodGroup:{
+    type : String
+  },
+  panNo:{
+    type : String
+  },
+  aadharNo:{
+    type : String
+  },
+  pfUanNo:{
+    type : String
+  },
+  maritalStatus :  {
+    type : String
+  },
+  insuranceCardNo:{
+    type : String
+  },
+  healthCardNo:{
+    type : String
+  },
+  weddingDate:{
+    type : String
+  },
+  medicalCertificationDetails : {
+    type : String
+  },
+  refferedBy:{
+    type : String
+  },
   addressInfo: {
     type: [{
       address : String,
@@ -76,18 +97,6 @@ const ProfileDetailsSchema = new mongoose.Schema<ProfileDetailsI>({
       city: String,
       pinCode: String
     }],
-    default: [],
-  },
-  linkedInLink: {
-    type: String,
-    trim: true,
-  },
-  githubLink: {
-    type: String,
-    trim: true,
-  },
-  websiteLink: {
-    type: Array,
     default: [],
   },
 });

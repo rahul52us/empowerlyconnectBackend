@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
-import User from "../../schemas/User";
+import User from "../../schemas/User/User";
 import { generateError } from "../config/function";
 import dotenv from "dotenv";
 import {
@@ -13,7 +13,7 @@ import generateToken, {
 } from "../config/generateToken";
 import Company from "../../schemas/company/Company";
 import Token from "../../schemas/Token/Token";
-import ProfileDetails from "../../schemas/ProfileDetails";
+import ProfileDetails from "../../schemas/User/ProfileDetails";
 import SendMail from "../config/sendMail/sendMail";
 import {
   FORGOT_PASSWORD_EMAIL_TOKEN_TYPE,

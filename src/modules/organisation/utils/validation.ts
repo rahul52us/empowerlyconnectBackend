@@ -6,11 +6,6 @@ const createValidation = Joi.object({
     "string.max": "Name should not exceed a maximum length of {#limit}",
     "any.required": "Name is required",
   }),
-  username: Joi.string().min(5).max(30).required().messages({
-    "string.min": "username must have a minimum length of {#limit}",
-    "string.max": "username should not exceed a maximum length of {#limit}",
-    "any.required": "Username is required",
-  }),
   company_name: Joi.string().min(3).max(30).required().messages({
     "string.min": "company name must have a minimum length of {#limit}",
     "string.max":
