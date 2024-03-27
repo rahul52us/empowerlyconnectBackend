@@ -41,7 +41,10 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       company_name: req.body.company_name,
     });
 
-    const createdComp = await comp.save();
+    const createdComp : any = await comp.save();
+
+    createdComp.companyOrg = createdComp._id
+    await createdComp.save()
 
     const profileDetail = new ProfileDetails({
       user: user._id,

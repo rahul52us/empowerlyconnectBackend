@@ -1,0 +1,178 @@
+import { NextFunction, Response } from "express";
+import { createEmployeValidation } from "./utils/validation";
+import { generateError } from "../../config/Error/functions";
+import {
+  createEmploye,
+  getCountPositionStatus,
+  getEmployeById,
+  getEmployes,
+  getTotalEmployes,
+  updateEmployeProfileDetails,
+} from "../../repository/employe/employe.repository";
+import mongoose from "mongoose";
+
+const createEmployeService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { error, value } = createEmployeValidation.validate(req.body);
+    if (error) {
+      throw generateError(error.details, 422);
+    }
+    const { status, data } = await createEmploye({
+      ...value,
+      company: req.bodyData.company,
+      companyOrg: req.bodyData.companyOrg
+    });
+
+    if (status === "success") {
+      res.status(200).send({
+        message: "CREATE Employe SUCCESSFULLY",
+        statusCode: 201,
+        data: data,
+        success: true,
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateEmployeProfileService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { data, status } = await updateEmployeProfileDetails({
+      userId: new mongoose.Types.ObjectId(req.params.id),
+      ...req.body,
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getAllEmploysService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const search = req.query.search || undefined;
+    const { data, status, totalPages } = await getEmployes({
+      search: search,
+      company: req.bodyData.company,
+      companyOrg:req.bodyData.companyOrg,
+      page: Number(page),
+      limit: Number(limit),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: status,
+        data: {
+          data,
+          totalPages,
+        },
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getEmployeByIdService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, data } = await getEmployeById({
+      company: req.bodyData.company,
+      employeId: new mongoose.Types.ObjectId(req.params._id),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getCountPositionStatusService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, data } = await getCountPositionStatus({
+      company: new mongoose.Types.ObjectId(req.bodyData.company),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getTotalEmployesService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, data } = await getTotalEmployes({
+      company: new mongoose.Types.ObjectId(req.bodyData.company),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    console.log("rahjk")
+    next(err);
+  }
+};
+
+export {
+  createEmployeService,
+  updateEmployeProfileService,
+  getAllEmploysService,
+  getEmployeByIdService,
+  getCountPositionStatusService,
+  getTotalEmployesService
+};

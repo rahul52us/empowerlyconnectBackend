@@ -77,3 +77,45 @@ export const getTrips = async (data: any) => {
     throw new Error(err);
   }
 };
+
+
+export const getAllDayTripCount = async (data: any) => {
+  try {
+
+    const pipeline = [
+      {
+        $match: {
+          company: data.company,
+          deletedAt: { $exists: false },
+          createdAt: { $gte: data.startDate, $lte: data.endDate }
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          title: "$_id",
+          count: 1
+        }
+      }
+    ];
+
+    const result = await Trip.aggregate(pipeline);
+
+    return {
+      status: "success",
+      data: result,
+    };
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+    };
+  }
+};
+

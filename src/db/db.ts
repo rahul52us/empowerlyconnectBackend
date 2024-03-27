@@ -11,6 +11,8 @@ const connectToDatabase = async (): Promise<mongoose.Connection> => {
     };
     await mongoose.connect(uri, options);
     console.log('Connected to MongoDB Atlas');
+
+
     return mongoose.connection;
   } catch (error : any) {
     console.error('Error connecting to MongoDB Atlas:', error?.message);

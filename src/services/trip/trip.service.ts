@@ -1,9 +1,11 @@
 import { NextFunction, Response } from "express";
 import {
   createTrip,
+  getAllDayTripCount,
   getTrips,
   updateTrip,
 } from "../../repository/trip.repository";
+import { generateError } from "../../config/Error/functions";
 
 export const createTripService = async (
   req: any,
@@ -61,6 +63,37 @@ export const updateTripService = async (
         status: status,
         data: data,
       });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllDayTripCountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = req.bodyData.company;
+    const endDate = new Date();
+    const startDate = new Date(endDate);
+    startDate.setDate(startDate.getDate() - 9);
+
+    if(!req.body.startDate && !req.body.endDate){
+      req.body.startDate = startDate
+      req.body.endDate = endDate
+    }
+
+    const { status, data } = await getAllDayTripCount(req.body);
+    if (status === "success") {
+      res.status(200).send({
+        data: data,
+        message: "GET Counts SUCCESSFULLY",
+        status: "success",
+      });
+    } else {
+      throw generateError(data,400);
     }
   } catch (err) {
     next(err);

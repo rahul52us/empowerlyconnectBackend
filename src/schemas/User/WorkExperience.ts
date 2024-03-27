@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface BankInterface extends Document {
+export interface WorkExperienceI extends Document {
   user:mongoose.Schema.Types.ObjectId;
   pastEmployer?:String;
   startDate?:String;
@@ -16,7 +16,7 @@ export interface BankInterface extends Document {
   updatedAt?:Date
 }
 
-const BankDetailsSchema: Schema<BankInterface> = new Schema<BankInterface>(
+const WorkExperienceSchema: Schema<WorkExperienceI> = new Schema<WorkExperienceI>(
   {
     user: {
         type: Schema.Types.ObjectId,
@@ -55,6 +55,6 @@ const BankDetailsSchema: Schema<BankInterface> = new Schema<BankInterface>(
   }
 );
 
-const BankDetailModel = mongoose.model<BankInterface>("BankDetails", BankDetailsSchema);
+const WorkExperience = mongoose.model<WorkExperienceI>("WorkExperience", WorkExperienceSchema);
 
-export default BankDetailModel;
+export default WorkExperience;

@@ -11,10 +11,12 @@ import blogRouting from "./blog/blog";
 import StudentRouting from "./userTypes/student";
 import expenseRouting from "./expense.routing";
 import TripRouting from "./trip.routing";
+import employeRouting from './employe.routing'
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
   app.use("/api/company", companyOrganisation);
+  app.use("/api/employe",employeRouting)
   app.use("/api/project", projectRouting);
   app.use("/api/testimonial", testimonialRouting);
   app.use("/api/videos", videosRouting);

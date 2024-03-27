@@ -48,7 +48,7 @@ const BankDetailsSchema: Schema<BankInterface> = new Schema<BankInterface>({
 });
 
 const BankDetailModel = mongoose.model<BankInterface>(
-  "BankDetails",
+  "BankDetail",
   BankDetailsSchema
 );
 

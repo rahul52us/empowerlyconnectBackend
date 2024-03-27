@@ -3,10 +3,12 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface UserInterface extends Document {
   name: string;
   username: string;
+  code: string;
   pic: any;
   bio?: string;
   position?: string[];
   company: Schema.Types.ObjectId;
+  companyOrg: Schema.Types.ObjectId;
   profile_details: Schema.Types.ObjectId;
   is_active: boolean;
   role: string;
@@ -19,6 +21,8 @@ export interface UserInterface extends Document {
 const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
   name: { type: String, trim: true },
   username: { type: String, required: true, index: true, trim: true },
+  code : {type : String, index : true},
+  companyOrg : {type : Schema.Types.ObjectId, ref:'Company'},
   pic: {
     name: {
       type: String,
@@ -54,5 +58,4 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
 });
 
 const UserModel = mongoose.model<UserInterface>("User", UserSchema);
-
 export default UserModel;
