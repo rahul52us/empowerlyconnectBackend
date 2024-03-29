@@ -2,10 +2,12 @@ import { NextFunction, Response } from "express";
 import {
   createTrip,
   getAllDayTripCount,
+  getTripCounts,
   getTrips,
   updateTrip,
 } from "../../repository/trip.repository";
 import { generateError } from "../../config/Error/functions";
+import mongoose from "mongoose";
 
 export const createTripService = async (
   req: any,
@@ -14,10 +16,11 @@ export const createTripService = async (
 ) => {
   try {
     const { userId, bodyData } = req;
-    const { company } = bodyData;
+    const { company, companyOrg } = bodyData;
 
     req.body.company = company;
     req.body.createdBy = userId;
+    req.body.companyOrg = companyOrg
 
     const { status, data } = await createTrip(req.body);
     res.status(201).send({
@@ -35,7 +38,9 @@ export const getTripsService = async (
   next: NextFunction
 ) => {
   try {
-    const { status, data } = await getTrips(req.body);
+    req.body.company = req.bodyData.company
+    req.body.companyOrg = req.bodyData.companyOrg
+    const { status, data } = await getTrips({...req.body});
     res.status(200).send({
       status: status,
       data: data,
@@ -76,14 +81,17 @@ export const getAllDayTripCountService = async (
 ) => {
   try {
     req.body.company = req.bodyData.company;
+    req.body.companyOrg = req.bodyData.companyOrg
     const endDate = new Date();
     const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - 9);
+    startDate.setMonth(startDate.getMonth() - 6);
 
     if(!req.body.startDate && !req.body.endDate){
       req.body.startDate = startDate
       req.body.endDate = endDate
     }
+
+    req.body.createdAt = { $gte: req.body.startDate, $lte: req.body.endDate }
 
     const { status, data } = await getAllDayTripCount(req.body);
     if (status === "success") {
@@ -99,3 +107,29 @@ export const getAllDayTripCountService = async (
     next(err);
   }
 };
+
+export const getTripCountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = req.bodyData.company;
+    req.body.companyOrg = new mongoose.Types.ObjectId(req.bodyData.companyOrg)
+
+    const { status, data } = await getTripCounts(req.body);
+    if (status === "success") {
+      res.status(200).send({
+        data: data,
+        message: "GET Counts SUCCESSFULLY",
+        status: "success",
+      });
+    } else {
+      throw generateError(data,400);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+

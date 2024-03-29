@@ -284,10 +284,10 @@ const getCountPositionStatus = async (data: any) => {
 
 const getTotalEmployes = async (data: any) => {
   try {
-    const employeeCount = await User.aggregate([
+    const result = await User.aggregate([
       {
         $match: {
-          company: data.company,
+          ...data,
           deletedAt: { $exists: false },
         },
       },
@@ -301,7 +301,7 @@ const getTotalEmployes = async (data: any) => {
 
     return {
       status: "success",
-      data: employeeCount.length > 0 ? employeeCount[0].count : 0,
+      data: result.length > 0 ? result[0].count : 0,
     };
   } catch (err) {
     return {

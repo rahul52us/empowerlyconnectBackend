@@ -21,7 +21,8 @@ async function uploadFile(file: any): Promise<string> {
       resource_type: 'auto'
     });
     return result.secure_url;
-  } catch (error) {
+  } catch (error : any) {
+    console.log(error.message)
     throw new Error('Failed to upload file to Cloudinary');
   }
 }

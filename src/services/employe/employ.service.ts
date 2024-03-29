@@ -153,6 +153,7 @@ const getTotalEmployesService = async (
   try {
     const { status, data } = await getTotalEmployes({
       company: new mongoose.Types.ObjectId(req.bodyData.company),
+      companyOrg : new mongoose.Types.ObjectId(req.bodyData.companyOrg)
     });
     if (status === "success") {
       res.status(200).send({

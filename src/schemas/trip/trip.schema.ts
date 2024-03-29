@@ -34,6 +34,7 @@ interface Trip extends Document {
   status: string;
   createdBy: mongoose.Schema.Types.ObjectId;
   company: mongoose.Schema.Types.ObjectId;
+  companyOrg:mongoose.Schema.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date | null;
@@ -97,6 +98,11 @@ const TripSchema = new Schema<Trip>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Company",
     required: true,
+  },
+  companyOrg:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required: true
   },
   createdAt: { type: Date, default: new Date() },
   updatedAt: { type: Date },

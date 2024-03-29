@@ -86,8 +86,10 @@ export const getAllDayTripCount = async (data: any) => {
       {
         $match: {
           company: data.company,
+          companyOrg: data.companyOrg,
+          createdAt: { $gte: data.startDate, $lte: data.endDate },
           deletedAt: { $exists: false },
-          createdAt: { $gte: data.startDate, $lte: data.endDate }
+
         },
       },
       {
@@ -119,3 +121,33 @@ export const getAllDayTripCount = async (data: any) => {
   }
 };
 
+export const getTripCounts = async (data: any) => {
+  try {
+    const pipeline = [
+      {
+        $match: {
+          ...data,
+          deletedAt: { $exists: false },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 }
+        }
+      }
+    ];
+
+    const result = await Trip.aggregate(pipeline);
+
+    return {
+      status: "success",
+      data: result.length > 0 ? result[0].count : 0,
+    };
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+    };
+  }
+};
