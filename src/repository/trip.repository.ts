@@ -68,13 +68,57 @@ export const updateTrip = async (data: any) => {
 
 export const getTrips = async (data: any) => {
   try {
-    const trips = await Trip.find();
-    return {
-      data: trips,
-      status: "success",
+    const pipeline: any = [];
+
+    let matchConditions: any = {
+      company: data.company,
+      companyOrg:data.companyOrg,
+      category:data.category,
+      deletedAt: { $exists: false },
     };
-  } catch (err: any) {
-    throw new Error(err);
+
+    if (data.search) {
+      matchConditions = { ...matchConditions, code: data.search?.trim() };
+    }
+
+    pipeline.push(
+      {
+        $match: matchConditions,
+      },
+    );
+    let documentPipeline: any = [
+      ...pipeline,
+      { $sort: { createdAt: -1 } },
+      { $skip: (data.page - 1) * data.limit },
+      { $limit: Number(data.limit) },
+    ];
+
+    const [resultData, countDocuments]: any = await Promise.all([
+      Trip.aggregate(documentPipeline),
+      Trip.aggregate([
+        ...pipeline,
+        {
+          $group: {
+            _id: null,
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    const totalCounts = countDocuments.length > 0 ? countDocuments[0].count : 0;
+
+    return {
+      status: "success",
+      data: resultData,
+      totalPages: Math.ceil(totalCounts / data.limit),
+    };
+
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+    };
   }
 };
 

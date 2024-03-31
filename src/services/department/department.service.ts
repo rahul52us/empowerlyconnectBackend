@@ -1,5 +1,14 @@
 import { NextFunction, Response } from "express";
-import { createDepartmentCategory, createDepartment, getCategoryDepartmentCount, getCategoryDepartment } from "../../repository/department/department.repository";
+import {
+  createDepartmentCategory,
+  createDepartment,
+  getCategoryDepartmentCount,
+  getCategoryDepartment,
+  getAllDepartment,
+  deleteDepartment,
+  deleteDepartmentCategory,
+} from "../../repository/department/department.repository";
+import mongoose from "mongoose";
 
 export const createDepartmentCategoryService = async (
   req: any,
@@ -24,7 +33,6 @@ export const createDepartmentCategoryService = async (
   }
 };
 
-
 export const createDepartmentService = async (
   req: any,
   res: Response,
@@ -46,8 +54,7 @@ export const createDepartmentService = async (
   } catch (err) {
     next(err);
   }
-}
-
+};
 
 export const getCategoryDepartmentCountService = async (
   req: any,
@@ -55,7 +62,6 @@ export const getCategoryDepartmentCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.user = req.userId;
     req.body.company = req.bodyData.company;
     req.body.companyOrg = req.bodyData.companyOrg;
     const { status, data } = await getCategoryDepartmentCount(req.body);
@@ -70,7 +76,7 @@ export const getCategoryDepartmentCountService = async (
   } catch (err) {
     next(err);
   }
-}
+};
 
 export const getCategoryDepartmentService = async (
   req: any,
@@ -84,7 +90,7 @@ export const getCategoryDepartmentService = async (
     const { data, status, totalPages } = await getCategoryDepartment({
       search: search,
       company: req.bodyData.company,
-      companyOrg:req.bodyData.companyOrg,
+      companyOrg: req.bodyData.companyOrg,
       page: Number(page),
       limit: Number(limit),
     });
@@ -102,4 +108,85 @@ export const getCategoryDepartmentService = async (
   } catch (err) {
     next(err);
   }
-}
+};
+
+export const getDepartmentService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const search = req.query.search || undefined;
+    const { data, status, totalPages } = await getAllDepartment({
+      category: new mongoose.Types.ObjectId(req.params.category),
+      search: search,
+      company: req.bodyData.company,
+      companyOrg: req.bodyData.companyOrg,
+      page: Number(page),
+      limit: Number(limit),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: status,
+        data: {
+          data,
+          totalPages,
+        },
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteDepartmentService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, data } = await deleteDepartment(id);
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteDepartmentCategoryService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, data } = await deleteDepartmentCategory(id);
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};

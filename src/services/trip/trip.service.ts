@@ -38,14 +38,28 @@ export const getTripsService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = req.bodyData.company
-    req.body.companyOrg = req.bodyData.companyOrg
-    const { status, data } = await getTrips({...req.body});
-    res.status(200).send({
-      status: status,
-      data: data,
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const search = req.query.search || undefined;
+    const { data, status, totalPages } = await getTrips({
+      search: search,
+      company: req.bodyData.company,
+      companyOrg: req.bodyData.companyOrg,
+      page: Number(page),
+      limit: Number(limit),
     });
-  } catch (err: any) {
+    if (status === "success") {
+      res.status(200).send({
+        status: status,
+        data: {
+          data,
+          totalPages,
+        },
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
     next(err);
   }
 };
