@@ -3,7 +3,7 @@ import authenticate from "../modules/config/authenticate";
 import {
   createEmployeService,
   getAllEmploysService,
-  getCountPositionStatusService,
+  getCountDesignationStatusService,
   getEmployeByIdService,
   getTotalEmployesService,
   updateEmployeProfileService,
@@ -16,6 +16,6 @@ router.put("/profile/:id", authenticate, updateEmployeProfileService);
 router.get("/:_id", authenticate, getEmployeByIdService);
 router.get("/", authenticate, getAllEmploysService);
 router.get("/total/count", authenticate, getTotalEmployesService);
-router.get("/position/count", authenticate, getCountPositionStatusService);
+router.get("/designation/count", authenticate, getCountDesignationStatusService);
 
 export default router;

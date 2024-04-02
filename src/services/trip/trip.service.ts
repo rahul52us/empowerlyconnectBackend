@@ -22,6 +22,7 @@ export const createTripService = async (
     req.body.createdBy = userId;
     req.body.companyOrg = companyOrg
 
+    console.log(req.body.companyOrg)
     const { status, data } = await createTrip(req.body);
     res.status(201).send({
       status: status,

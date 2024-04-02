@@ -14,11 +14,12 @@ const customMessages = {
 };
 
 export const createEmployeValidation = Joi.object({
+    title: Joi.string().required().messages(customMessages),
     name : Joi.string().min(5).max(80).trim().required().messages(customMessages),
     username: Joi.string().min(4).trim().required().messages(customMessages),
     personalEmail: Joi.string().min(5).trim().required().messages(customMessages),
     code:Joi.string().min(4).required().messages(customMessages),
-    position:Joi.array().required(),
+    designation:Joi.array().required(),
     pic: Joi.string().allow("").optional(),
     pfUanNo:Joi.string().allow("").optional(),
     aadharNo:Joi.string().allow("").optional(),

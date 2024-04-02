@@ -7,6 +7,9 @@ import { createValidation } from "./utils/validation";
 import { generateError } from "../config/function";
 import generateToken from "../config/generateToken";
 import Token from "../../schemas/Token/Token";
+import WorkExperience from "../../schemas/User/WorkExperience";
+import BankDetails from '../../schemas/User/BankDetails'
+import DocumentDetails from '../../schemas/User/Document'
 
 dotenv.config();
 
@@ -51,12 +54,31 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
     });
     const createdProfileDetails = await profileDetail.save();
 
+    const BankDetail = new BankDetails({
+      user: user._id,
+    });
+    const savedBank = await BankDetail.save();
+
+    const WorkExperienceDetail = new WorkExperience({
+      user: user._id,
+    });
+
+    const savedWorkExperience = await WorkExperienceDetail.save();
+
+    const documentDetails = new DocumentDetails({
+      user: user._id,
+    });
+
+    const savedDocument = await documentDetails.save();
+
+
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       {
         $set: {
           name: req.body.name,
           profile_details: createdProfileDetails._id,
+          companyOrg:createdComp._id,
           company: createdComp._id,
           password: req.body.password,
         },
@@ -77,6 +99,9 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       message: `${comp.company_name} company has been created successfully`,
       data: {
         ...rest,
+        bankDetails:savedBank._id,
+        documentDetails:savedDocument._id,
+        workExperience:savedWorkExperience._id,
         authorization_token: generateToken({ userId: updatedUser._id }),
       },
       statusCode: 201,

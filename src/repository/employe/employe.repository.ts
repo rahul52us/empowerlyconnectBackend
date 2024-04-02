@@ -20,10 +20,11 @@ const createEmploye = async (data: any) => {
       code: data.code,
       company: data.company,
       pic: data.pic,
-      position:data.position,
+      designation:data.designation,
       password: data.password,
       bio: data.bio,
       is_active: true,
+      title:data.title
     });
 
     const savedUser = await createdUser.save();
@@ -245,26 +246,27 @@ const getEmployeById = async (data: any) => {
   }
 };
 
-const getCountPositionStatus = async (data: any) => {
+const getCountDesignationStatus = async (data: any) => {
   try {
-    const positionsCount = await User.aggregate([
+    const designationCount = await User.aggregate([
       {
         $match: {
           company: data.company,
+          companyOrg:data.companyOrg,
           deletedAt: { $exists: false },
         },
       },
-      { $unwind: "$position" },
+      { $unwind: "$designation" },
       {
         $group: {
-          _id: "$position",
+          _id: "$designation",
           count: { $sum: 1 },
         },
       },
       {
         $project: {
           _id: 0,
-          role: "$_id",
+          designation: "$_id",
           count: 1
         }
       },
@@ -272,7 +274,7 @@ const getCountPositionStatus = async (data: any) => {
 
     return {
       status: "success",
-      data: positionsCount,
+      data: designationCount,
     };
   } catch (err) {
     return {
@@ -317,6 +319,6 @@ export {
   updateEmployeProfileDetails,
   getEmployes,
   getEmployeById,
-  getCountPositionStatus,
+  getCountDesignationStatus,
   getTotalEmployes
 };

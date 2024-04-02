@@ -3,7 +3,7 @@ import { createEmployeValidation } from "./utils/validation";
 import { generateError } from "../../config/Error/functions";
 import {
   createEmploye,
-  getCountPositionStatus,
+  getCountDesignationStatus,
   getEmployeById,
   getEmployes,
   getTotalEmployes,
@@ -78,6 +78,7 @@ const getAllEmploysService = async (
     const limit = req.query.limit || 10;
     const search = req.query.search || undefined;
     const { data, status, totalPages } = await getEmployes({
+      id:req.userId,
       search: search,
       company: req.bodyData.company,
       companyOrg:req.bodyData.companyOrg,
@@ -123,14 +124,15 @@ const getEmployeByIdService = async (
   }
 };
 
-const getCountPositionStatusService = async (
+const getCountDesignationStatusService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { status, data } = await getCountPositionStatus({
+    const { status, data } = await getCountDesignationStatus({
       company: new mongoose.Types.ObjectId(req.bodyData.company),
+      companyOrg : req.bodyData.companyOrg
     });
     if (status === "success") {
       res.status(200).send({
@@ -174,6 +176,6 @@ export {
   updateEmployeProfileService,
   getAllEmploysService,
   getEmployeByIdService,
-  getCountPositionStatusService,
+  getCountDesignationStatusService,
   getTotalEmployesService
 };

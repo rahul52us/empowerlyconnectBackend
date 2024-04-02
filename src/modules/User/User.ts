@@ -307,7 +307,7 @@ const getUsersByCompany = async (
   next: NextFunction
 ) => {
   try {
-    const { is_active, position } = req.body;
+    const { is_active, designation } = req.body;
 
     const query: any = {
       company: req.bodyData.company,
@@ -317,8 +317,8 @@ const getUsersByCompany = async (
       query.is_active = is_active;
     }
 
-    if (position && position.length !== 0) {
-      query.position = { $in: position };
+    if (designation && designation.length !== 0) {
+      query.designation = { $in: designation };
     }
 
     const users = await User.find(query).select("-password");
