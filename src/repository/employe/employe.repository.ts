@@ -5,6 +5,7 @@ import BankDetails from "../../schemas/User/BankDetails";
 import DocumentDetails from "../../schemas/User/Document";
 import WorkExperience from "../../schemas/User/WorkExperience";
 import { generateError } from "../../config/Error/functions";
+import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 const createEmploye = async (data: any) => {
   try {
@@ -313,6 +314,47 @@ const getTotalEmployes = async (data: any) => {
   }
 };
 
+// UPDATE BANK DETAILS OF THE EMPLOYE
+
+const updateBankDetails = async (data: any) => {
+  try {
+    const updatedData: any = await BankDetails.findOneAndUpdate({user:data.id}, data, {
+      new: true,
+    });
+
+    if (!updatedData) {
+      return {
+        status: "error",
+        data: "bank Details does not exist",
+      };
+    }
+
+    if (data.isFileDeleted === 1 && updatedData.cancelledCheque) {
+      await deleteFile(updatedData.cancelledCheque.name);
+      updatedData.cancelledCheque = null;
+      await updatedData.save();
+    }
+
+    if (data.cancelledCheque?.filename && data.cancelledCheque?.buffer) {
+      const { filename, type } = data.cancelledCheque;
+      const url = await uploadFile(data.cancelledCheque);
+      updatedData.cancelledCheque = {
+        name: filename,
+        url,
+        type,
+      };
+      await updatedData.save();
+    }
+
+    return {
+      status: "success",
+      data: updatedData,
+    };
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
 
 export {
   createEmploye,
@@ -320,5 +362,6 @@ export {
   getEmployes,
   getEmployeById,
   getCountDesignationStatus,
-  getTotalEmployes
+  getTotalEmployes,
+  updateBankDetails
 };

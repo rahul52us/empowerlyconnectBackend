@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 interface CompanyI extends Document {
   company_name: string;
   companyOrg:mongoose.Schema.Types.ObjectId,
-  type:string;
+  companyType:string;
   verified_email_allowed: boolean;
   is_active?: boolean;
   logo?: string;
@@ -39,12 +39,13 @@ const companySchema = new mongoose.Schema<CompanyI>({
   companyOrg : {
     type : mongoose.Schema.Types.ObjectId,
   },
-  type:{
-
+  companyType:{
+    type : String,
+    default : 'company'
   },
   is_active: {
     type: Boolean,
-    default: true,
+    default: true
   },
   verified_email_allowed: {
     type: Boolean,

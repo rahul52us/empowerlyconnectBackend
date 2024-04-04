@@ -2,6 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface BankInterface extends Document {
   user: mongoose.Schema.Types.ObjectId;
+  createdBy:mongoose.Schema.Types.ObjectId;
+  company: mongoose.Schema.Types.ObjectId;
+  companyOrg: mongoose.Schema.Types.ObjectId;
   nameAsPerBank?: String;
   accountNo?: String;
   branch?: String;
@@ -19,6 +22,14 @@ const BankDetailsSchema: Schema<BankInterface> = new Schema<BankInterface>({
     required: true,
     ref: "User",
   },
+  company: {
+    type: Schema.Types.ObjectId,
+    ref: "Company",
+  },
+  companyOrg: {
+    type: Schema.Types.ObjectId,
+    ref: "Company",
+  },
   nameAsPerBank: { type: String, trim: true },
   name: { type: String, trim: true },
   accountNo: { type: String, trim: true },
@@ -34,6 +45,11 @@ const BankDetailsSchema: Schema<BankInterface> = new Schema<BankInterface>({
     type: {
       type: String,
     },
+  },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
   },
   deletedAt: {
     type: Date,
