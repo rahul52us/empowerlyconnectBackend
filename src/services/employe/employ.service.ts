@@ -9,6 +9,7 @@ import {
   getEmployes,
   getTotalEmployes,
   updateEmployeProfileDetails,
+  updateFamilyDetails,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 
@@ -25,7 +26,8 @@ const createEmployeService = async (
     const { status, data } = await createEmploye({
       ...value,
       company: req.bodyData.company,
-      companyOrg: req.bodyData.companyOrg
+      companyOrg: req.bodyData.companyOrg,
+      createdBy:req.userId
     });
 
     if (status === "success") {
@@ -79,10 +81,10 @@ const getAllEmploysService = async (
     const limit = req.query.limit || 10;
     const search = req.query.search || undefined;
     const { data, status, totalPages } = await getEmployes({
-      id:req.userId,
+      id: req.userId,
       search: search,
       company: req.bodyData.company,
-      companyOrg:req.bodyData.companyOrg,
+      companyOrg: req.bodyData.companyOrg,
       page: Number(page),
       limit: Number(limit),
     });
@@ -133,7 +135,7 @@ const getCountDesignationStatusService = async (
   try {
     const { status, data } = await getCountDesignationStatus({
       company: new mongoose.Types.ObjectId(req.bodyData.company),
-      companyOrg : req.bodyData.companyOrg
+      companyOrg: req.bodyData.companyOrg,
     });
     if (status === "success") {
       res.status(200).send({
@@ -156,7 +158,7 @@ const getTotalEmployesService = async (
   try {
     const { status, data } = await getTotalEmployes({
       company: new mongoose.Types.ObjectId(req.bodyData.company),
-      companyOrg : new mongoose.Types.ObjectId(req.bodyData.companyOrg)
+      companyOrg: new mongoose.Types.ObjectId(req.bodyData.companyOrg),
     });
     if (status === "success") {
       res.status(200).send({
@@ -171,32 +173,59 @@ const getTotalEmployesService = async (
   }
 };
 
-const updateBankDetialsService = async(req : any , res : Response,next : NextFunction ) => {
-  try
-  {
-    req.body.id = new mongoose.Types.ObjectId(req.params.id)
-    req.body.company = req.bodyData.company
-    req.body.companyOrg = req.bodyData.companyOrg
-    req.body.createdBy = req.userId
-    const {status , data} = await updateBankDetails(req.body)
-    if(status === "success"){
+const updateBankDetialsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    req.body.company = req.bodyData.company;
+    req.body.companyOrg = req.bodyData.companyOrg;
+    req.body.createdBy = req.userId;
+    const { status, data } = await updateBankDetails(req.body);
+    if (status === "success") {
       res.status(201).send({
-        status : 'success',
-        data : data
-      })
-    }
-    else {
+        status: "success",
+        data: data,
+      });
+    } else {
       res.status(400).send({
-        status : 'error',
-        data : data
-      })
+        status: "error",
+        data: data,
+      });
     }
+  } catch (err) {
+    next(err);
   }
-  catch(err)
-  {
-    next(err)
+};
+
+export const updateFamilyDetailsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    req.body.company = req.bodyData.company;
+    req.body.companyOrg = req.bodyData.companyOrg;
+    req.body.createdBy = req.userId;
+    const { status, data } = await updateFamilyDetails(req.body);
+    if (status === "success") {
+      res.status(201).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
   }
-}
+};
 
 export {
   createEmployeService,
@@ -205,5 +234,5 @@ export {
   getEmployeByIdService,
   getCountDesignationStatusService,
   getTotalEmployesService,
-  updateBankDetialsService
+  updateBankDetialsService,
 };

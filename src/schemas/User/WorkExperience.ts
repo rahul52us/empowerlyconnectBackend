@@ -2,6 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface WorkExperienceI extends Document {
   user:mongoose.Schema.Types.ObjectId;
+  createdBy:mongoose.Schema.Types.ObjectId;
+  company:mongoose.Schema.Types.ObjectId;
+  companyOrg:mongoose.Schema.Types.ObjectId;
   pastEmployer?:String;
   startDate?:String;
   endDate?:String;
@@ -22,6 +25,21 @@ const WorkExperienceSchema: Schema<WorkExperienceI> = new Schema<WorkExperienceI
         type: Schema.Types.ObjectId,
         required: true,
         ref: "User",
+    },
+    company: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required:true
+    },
+    companyOrg: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required:true
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
     },
     pastEmployer: { type: String, trim: true },
     startDate: { type: Date, trim: true },

@@ -8,6 +8,7 @@ import {
   getEmployeByIdService,
   getTotalEmployesService,
   updateEmployeProfileService,
+  updateFamilyDetailsService,
 } from "../services/employe/employ.service";
 
 const router = express.Router();
@@ -19,4 +20,6 @@ router.get("/", authenticate, getAllEmploysService);
 router.get("/total/count", authenticate, getTotalEmployesService);
 router.get("/designation/count", authenticate, getCountDesignationStatusService);
 router.put("/bankDetails/:id",authenticate,updateBankDetialsService)
+router.put('/familyDetails/:id',authenticate,updateFamilyDetailsService)
+
 export default router;

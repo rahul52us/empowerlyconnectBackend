@@ -1,4 +1,3 @@
-import { NextFunction, Response } from "express";
 import User from "../../schemas/User/User";
 import ProfileDetails from "../../schemas/User/ProfileDetails";
 import BankDetails from "../../schemas/User/BankDetails";
@@ -6,6 +5,7 @@ import DocumentDetails from "../../schemas/User/Document";
 import WorkExperience from "../../schemas/User/WorkExperience";
 import { generateError } from "../../config/Error/functions";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
+import FamilyDetails from "../../schemas/User/FamilyDetails";
 
 const createEmploye = async (data: any) => {
   try {
@@ -36,6 +36,9 @@ const createEmploye = async (data: any) => {
 
     const profile = new ProfileDetails({
       user: savedUser._id,
+      company:data.company,
+      companyOrg:data.companyOrg,
+      createdBy:data.createdBy,
       language: data.language,
       nickName: data.nickName,
       mobileNo: data.mobileNo,
@@ -58,19 +61,37 @@ const createEmploye = async (data: any) => {
     const savedProfile = await profile.save();
     savedUser.profile_details = savedProfile._id;
     await savedUser.save();
+
     const BankDetail = new BankDetails({
       user: savedUser._id,
+      company:data.company,
+      companyOrg:data.companyOrg,
+      createdBy:data.createdBy
     });
     const savedBank = await BankDetail.save();
 
     const WorkExperienceDetail = new WorkExperience({
       user: savedUser._id,
+      company:data.company,
+      companyOrg:data.companyOrg,
+      createdBy:data.createdBy
     });
 
     const savedWorkExperience = await WorkExperienceDetail.save();
 
+    const FamilyDetail = new FamilyDetails({
+      user: savedUser._id,
+      company:data.company,
+      companyOrg:data.companyOrg,
+      createdBy:data.createdBy
+    });
+    const savedFamilyDetail = await FamilyDetail.save();
+
     const documentDetails = new DocumentDetails({
       user: savedUser._id,
+      createdBy:data.createdBy,
+      company:data.company,
+      companyOrg:data.companyOrg
     });
 
     const savedDocument = await documentDetails.save();
@@ -85,6 +106,7 @@ const createEmploye = async (data: any) => {
         bankDetail: savedBank.toObject(),
         documentDetail: savedDocument.toObject(),
         WorkExperience: savedWorkExperience.toObject(),
+        FamilyDetail:savedFamilyDetail.toObject()
       },
     };
   } catch (err: any) {
@@ -219,6 +241,14 @@ const getEmployeById = async (data: any) => {
       },
       {
         $lookup: {
+          from: "familydetails",
+          localField: "_id",
+          foreignField: "user",
+          as: "familyDetails",
+        },
+      },
+      {
+        $lookup: {
           from: "workexperiences",
           localField: "_id",
           foreignField: "user",
@@ -318,7 +348,8 @@ const getTotalEmployes = async (data: any) => {
 
 const updateBankDetails = async (data: any) => {
   try {
-    const updatedData: any = await BankDetails.findOneAndUpdate({user:data.id}, data, {
+    const {cancelledCheque,...rest} = data
+    const updatedData: any = await BankDetails.findOneAndUpdate({user:data.id}, rest, {
       new: true,
     });
 
@@ -329,13 +360,17 @@ const updateBankDetails = async (data: any) => {
       };
     }
 
-    if (data.isFileDeleted === 1 && updatedData.cancelledCheque) {
+    if (data?.cancelledCheque?.isFileDeleted === 1 && updatedData.cancelledCheque?.name) {
       await deleteFile(updatedData.cancelledCheque.name);
-      updatedData.cancelledCheque = null;
+      updatedData.cancelledCheque = {
+        name: undefined,
+        url: undefined,
+        type: undefined,
+      };
       await updatedData.save();
     }
 
-    if (data.cancelledCheque?.filename && data.cancelledCheque?.buffer) {
+    if (data.cancelledCheque && data.cancelledCheque?.isAdd === 1 && data.cancelledCheque?.filename && data.cancelledCheque?.buffer) {
       const { filename, type } = data.cancelledCheque;
       const url = await uploadFile(data.cancelledCheque);
       updatedData.cancelledCheque = {
@@ -355,6 +390,28 @@ const updateBankDetails = async (data: any) => {
   }
 };
 
+const updateFamilyDetails = async (data: any) => {
+  try {
+    const updatedData: any = await FamilyDetails.findOneAndUpdate({user:data.id}, data, {
+      new: true,
+    });
+
+    if (!updatedData) {
+      return {
+        status: "error",
+        data: "Family Details does not exist"
+      };
+    }
+
+    return {
+      status: "success",
+      data: updatedData,
+    };
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
 
 export {
   createEmploye,
@@ -363,5 +420,6 @@ export {
   getEmployeById,
   getCountDesignationStatus,
   getTotalEmployes,
-  updateBankDetails
+  updateBankDetails,
+  updateFamilyDetails
 };

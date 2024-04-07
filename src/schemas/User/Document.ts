@@ -2,6 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface DocumentInterface extends Document {
   user: mongoose.Schema.Types.ObjectId;
+  createdBy:mongoose.Schema.Types.ObjectId;
+  company:mongoose.Schema.Types.ObjectId;
+  companyOrg:mongoose.Schema.Types.ObjectId;
   qualificationCertificate?: String;
   panCard?: any;
   aadharCard?: any;
@@ -21,6 +24,21 @@ const DocumentSchema: Schema<DocumentInterface> = new Schema<DocumentInterface>(
       type: Schema.Types.ObjectId,
       required: true,
       ref: "User",
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    company: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required:true
+    },
+    companyOrg: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required:true
     },
     qualificationCertificate: {
       name: {
