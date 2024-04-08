@@ -16,16 +16,16 @@ const createEmploye = async (data: any) => {
 
     const createdUser = new User({
       username: data.username,
-      companyOrg:data.companyOrg,
+      companyOrg: data.companyOrg,
       name: data.name,
       code: data.code,
       company: data.company,
       pic: data.pic,
-      designation:data.designation,
+      designation: data.designation,
       password: data.password,
       bio: data.bio,
       is_active: true,
-      title:data.title
+      title: data.title,
     });
 
     const savedUser = await createdUser.save();
@@ -36,9 +36,9 @@ const createEmploye = async (data: any) => {
 
     const profile = new ProfileDetails({
       user: savedUser._id,
-      company:data.company,
-      companyOrg:data.companyOrg,
-      createdBy:data.createdBy,
+      company: data.company,
+      companyOrg: data.companyOrg,
+      createdBy: data.createdBy,
       language: data.language,
       nickName: data.nickName,
       mobileNo: data.mobileNo,
@@ -64,34 +64,34 @@ const createEmploye = async (data: any) => {
 
     const BankDetail = new BankDetails({
       user: savedUser._id,
-      company:data.company,
-      companyOrg:data.companyOrg,
-      createdBy:data.createdBy
+      company: data.company,
+      companyOrg: data.companyOrg,
+      createdBy: data.createdBy,
     });
     const savedBank = await BankDetail.save();
 
     const WorkExperienceDetail = new WorkExperience({
       user: savedUser._id,
-      company:data.company,
-      companyOrg:data.companyOrg,
-      createdBy:data.createdBy
+      company: data.company,
+      companyOrg: data.companyOrg,
+      createdBy: data.createdBy,
     });
 
     const savedWorkExperience = await WorkExperienceDetail.save();
 
     const FamilyDetail = new FamilyDetails({
       user: savedUser._id,
-      company:data.company,
-      companyOrg:data.companyOrg,
-      createdBy:data.createdBy
+      company: data.company,
+      companyOrg: data.companyOrg,
+      createdBy: data.createdBy,
     });
     const savedFamilyDetail = await FamilyDetail.save();
 
     const documentDetails = new DocumentDetails({
       user: savedUser._id,
-      createdBy:data.createdBy,
-      company:data.company,
-      companyOrg:data.companyOrg
+      createdBy: data.createdBy,
+      company: data.company,
+      companyOrg: data.companyOrg,
     });
 
     const savedDocument = await documentDetails.save();
@@ -106,7 +106,7 @@ const createEmploye = async (data: any) => {
         bankDetail: savedBank.toObject(),
         documentDetail: savedDocument.toObject(),
         WorkExperience: savedWorkExperience.toObject(),
-        FamilyDetail:savedFamilyDetail.toObject()
+        FamilyDetail: savedFamilyDetail.toObject(),
       },
     };
   } catch (err: any) {
@@ -146,7 +146,7 @@ const getEmployes = async (data: any) => {
   try {
     let matchConditions: any = {
       company: data.company,
-      companyOrg:data.companyOrg,
+      companyOrg: data.companyOrg,
       deletedAt: { $exists: false },
     };
 
@@ -283,7 +283,7 @@ const getCountDesignationStatus = async (data: any) => {
       {
         $match: {
           company: data.company,
-          companyOrg:data.companyOrg,
+          companyOrg: data.companyOrg,
           deletedAt: { $exists: false },
         },
       },
@@ -298,8 +298,8 @@ const getCountDesignationStatus = async (data: any) => {
         $project: {
           _id: 0,
           designation: "$_id",
-          count: 1
-        }
+          count: 1,
+        },
       },
     ]);
 
@@ -327,9 +327,9 @@ const getTotalEmployes = async (data: any) => {
       {
         $group: {
           _id: null,
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     return {
@@ -348,10 +348,14 @@ const getTotalEmployes = async (data: any) => {
 
 const updateBankDetails = async (data: any) => {
   try {
-    const {cancelledCheque,...rest} = data
-    const updatedData: any = await BankDetails.findOneAndUpdate({user:data.id}, rest, {
-      new: true,
-    });
+    const { cancelledCheque, ...rest } = data;
+    const updatedData: any = await BankDetails.findOneAndUpdate(
+      { user: data.id },
+      rest,
+      {
+        new: true,
+      }
+    );
 
     if (!updatedData) {
       return {
@@ -360,7 +364,10 @@ const updateBankDetails = async (data: any) => {
       };
     }
 
-    if (data?.cancelledCheque?.isFileDeleted === 1 && updatedData.cancelledCheque?.name) {
+    if (
+      data?.cancelledCheque?.isFileDeleted === 1 &&
+      updatedData.cancelledCheque?.name
+    ) {
       await deleteFile(updatedData.cancelledCheque.name);
       updatedData.cancelledCheque = {
         name: undefined,
@@ -370,7 +377,12 @@ const updateBankDetails = async (data: any) => {
       await updatedData.save();
     }
 
-    if (data.cancelledCheque && data.cancelledCheque?.isAdd === 1 && data.cancelledCheque?.filename && data.cancelledCheque?.buffer) {
+    if (
+      data.cancelledCheque &&
+      data.cancelledCheque?.isAdd === 1 &&
+      data.cancelledCheque?.filename &&
+      data.cancelledCheque?.buffer
+    ) {
       const { filename, type } = data.cancelledCheque;
       const url = await uploadFile(data.cancelledCheque);
       updatedData.cancelledCheque = {
@@ -392,14 +404,18 @@ const updateBankDetails = async (data: any) => {
 
 const updateFamilyDetails = async (data: any) => {
   try {
-    const updatedData: any = await FamilyDetails.findOneAndUpdate({user:data.id}, data, {
-      new: true,
-    });
+    const updatedData: any = await FamilyDetails.findOneAndUpdate(
+      { user: data.id },
+      data,
+      {
+        new: true,
+      }
+    );
 
     if (!updatedData) {
       return {
         status: "error",
-        data: "Family Details does not exist"
+        data: "Family Details does not exist",
       };
     }
 
@@ -412,6 +428,55 @@ const updateFamilyDetails = async (data: any) => {
   }
 };
 
+const updateWorkExperienceDetails = async (data: any) => {
+  try {
+    let rest = data.experienceDetails;
+    let workExperience: any = await WorkExperience.findOne({ user: data.id });
+    if (workExperience) {
+      for (var i = 0; i < rest.length; i++) {
+        try {
+          if (
+            rest[i].certificate &&
+            rest[i].certificate?.buffer &&
+            rest[i].certificate.isAdd === 1
+          ) {
+            const { filename, type, isFileDeleted } = rest[i].certificate;
+            const url = await uploadFile(rest[i].certificate);
+            rest[i].certificate = {
+              name: filename,
+              url,
+              type,
+              isFileDeleted : isFileDeleted
+            };
+          }
+
+          if(rest[i].certificate.isFileDeleted === 1 && workExperience.experienceDetails[i]?.certificate){
+            await deleteFile(workExperience.experienceDetails[i].certificate?.name)
+          }
+
+        } catch (error) {}
+      }
+      const updatedData: any = await WorkExperience.findOneAndUpdate(
+        { user: data.id },
+        {experienceDetails : rest},
+        {
+          new: true,
+        }
+      );
+      return {
+        status: "success",
+        data: updatedData,
+      };
+    } else {
+      return {
+        status: "error",
+        data: "WorkExperience Details does not exists",
+      };
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
 
 export {
   createEmploye,
@@ -421,5 +486,6 @@ export {
   getCountDesignationStatus,
   getTotalEmployes,
   updateBankDetails,
-  updateFamilyDetails
+  updateFamilyDetails,
+  updateWorkExperienceDetails,
 };
