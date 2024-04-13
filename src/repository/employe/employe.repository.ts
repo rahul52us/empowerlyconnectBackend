@@ -483,7 +483,7 @@ const updateWorkExperienceDetails = async (data: any) => {
   }
 };
 
-async function uploadDocument(data: any, fieldName: string) {
+async function uploadDocument(originalDoc: any, data: any, fieldName: string) {
   try {
     if (
       data[fieldName] &&
@@ -493,43 +493,58 @@ async function uploadDocument(data: any, fieldName: string) {
     ) {
       const { filename, type } = data[fieldName];
       const url = await uploadFile(data[fieldName]);
-      return { name: filename, url, type };
+      return { name: filename, url, type, validTill: "", effectiveFrom: "" };
     }
+    if (
+      data[fieldName] &&
+      data[fieldName]?.isDeleted === 1 &&
+      originalDoc[fieldName]
+    ) {
+      const deleted = await deleteFile(originalDoc[fieldName]?.name);
+      return null;
+    }
+    return originalDoc[fieldName];
   } catch (error: any) {
-    console.error(`Error uploading file for ${fieldName}: ${error.message}`);
     return null;
   }
 }
 
 async function updateDocumentDetails(data: any) {
   try {
-    const {documents} = data
-    const documentFields = Object.keys(documents);
-    let uploadedDocuments: { [key: string]: any } = {};
+    const docum = await Documents.findOne({ user: data.id });
+    if (docum) {
+      const { documents } = data;
+      const documentFields = Object.keys(documents);
+      let uploadedDocuments: { [key: string]: any } = {};
 
-    for (const fieldName of documentFields) {
-      const documentInfo = await uploadDocument(documents, fieldName);
-      if (documentInfo) {
-        uploadedDocuments[fieldName] = documentInfo;
-      } else {
-      }
-    }
-
-    const docum = await Documents.findOne({user : data.id})
-    if(docum){
-        docum.documents = uploadedDocuments
-        await docum.save()
-        return {
-          status : 'success',
-          data : docum
+      for (const fieldName of documentFields) {
+        const documentInfo = await uploadDocument(
+          docum.documents,
+          documents,
+          fieldName
+        );
+        if (documentInfo) {
+          uploadedDocuments[fieldName] = {
+            name: String(documentInfo.name),
+            url: String(documentInfo.url),
+            type: String(documentInfo.type),
+            validTill: documentInfo.validTill,
+            effectiveFrom: documentInfo.effectiveFrom,
+          };
         }
-    }
-    else {
+      }
+      docum.documents = uploadedDocuments;
+      await docum.save();
       return {
-        status : 'error',
-        data : 'Documents does not exists'
+        status: "success",
+        data: docum,
+      };
+    } else {
+      return {
+        status: "error",
+        data: "Documents do not exist",
+      };
     }
-  }
   } catch (err) {
     return {
       status: "error",
@@ -537,6 +552,7 @@ async function updateDocumentDetails(data: any) {
     };
   }
 }
+
 export {
   createEmploye,
   updateEmployeProfileDetails,

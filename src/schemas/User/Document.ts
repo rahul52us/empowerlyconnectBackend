@@ -44,14 +44,7 @@ const DocumentSchema: Schema<DocumentInterface> = new Schema<DocumentInterface>(
       required: true,
     },
     documents: {
-      type: Map,
-      of: {
-        name: String,
-        url: String,
-        type: String,
-        validTill: Date,
-        effectiveFrom: Date,
-      },
+      type : mongoose.Schema.Types.Mixed,
       default: {},
     },
     deletedAt: {
