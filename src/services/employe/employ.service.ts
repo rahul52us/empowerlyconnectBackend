@@ -11,6 +11,7 @@ import {
   updateEmployeProfileDetails,
   updateFamilyDetails,
   updateWorkExperienceDetails,
+  updateDocumentDetails,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 
@@ -255,6 +256,32 @@ const updateWorkExperienceService = async (
   }
 };
 
+const updateDocumentService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    req.body.company = req.bodyData.company;
+    req.body.companyOrg = req.bodyData.companyOrg;
+    req.body.createdBy = req.userId;
+    const { status, data } = await updateDocumentDetails(req.body);
+    if (status === "success") {
+      res.status(201).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 
 export {
   createEmployeService,
@@ -264,5 +291,6 @@ export {
   getCountDesignationStatusService,
   getTotalEmployesService,
   updateBankDetialsService,
-  updateWorkExperienceService
+  updateWorkExperienceService,
+  updateDocumentService
 };

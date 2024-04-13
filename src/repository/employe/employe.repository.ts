@@ -6,6 +6,7 @@ import WorkExperience from "../../schemas/User/WorkExperience";
 import { generateError } from "../../config/Error/functions";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
+import Documents from "../../schemas/User/Document";
 
 const createEmploye = async (data: any) => {
   try {
@@ -446,19 +447,23 @@ const updateWorkExperienceDetails = async (data: any) => {
               name: filename,
               url,
               type,
-              isFileDeleted : isFileDeleted
+              isFileDeleted: isFileDeleted,
             };
           }
 
-          if(rest[i].certificate.isFileDeleted === 1 && workExperience.experienceDetails[i]?.certificate){
-            await deleteFile(workExperience.experienceDetails[i].certificate?.name)
+          if (
+            rest[i].certificate.isFileDeleted === 1 &&
+            workExperience.experienceDetails[i]?.certificate
+          ) {
+            await deleteFile(
+              workExperience.experienceDetails[i].certificate?.name
+            );
           }
-
         } catch (error) {}
       }
       const updatedData: any = await WorkExperience.findOneAndUpdate(
         { user: data.id },
-        {experienceDetails : rest},
+        { experienceDetails: rest },
         {
           new: true,
         }
@@ -478,6 +483,60 @@ const updateWorkExperienceDetails = async (data: any) => {
   }
 };
 
+async function uploadDocument(data: any, fieldName: string) {
+  try {
+    if (
+      data[fieldName] &&
+      data[fieldName]?.isAdd === 1 &&
+      data[fieldName]?.filename &&
+      data[fieldName]?.buffer
+    ) {
+      const { filename, type } = data[fieldName];
+      const url = await uploadFile(data[fieldName]);
+      return { name: filename, url, type };
+    }
+  } catch (error: any) {
+    console.error(`Error uploading file for ${fieldName}: ${error.message}`);
+    return null;
+  }
+}
+
+async function updateDocumentDetails(data: any) {
+  try {
+    const {documents} = data
+    const documentFields = Object.keys(documents);
+    let uploadedDocuments: { [key: string]: any } = {};
+
+    for (const fieldName of documentFields) {
+      const documentInfo = await uploadDocument(documents, fieldName);
+      if (documentInfo) {
+        uploadedDocuments[fieldName] = documentInfo;
+      } else {
+      }
+    }
+
+    const docum = await Documents.findOne({user : data.id})
+    if(docum){
+        docum.documents = uploadedDocuments
+        await docum.save()
+        return {
+          status : 'success',
+          data : docum
+        }
+    }
+    else {
+      return {
+        status : 'error',
+        data : 'Documents does not exists'
+    }
+  }
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+    };
+  }
+}
 export {
   createEmploye,
   updateEmployeProfileDetails,
@@ -488,4 +547,5 @@ export {
   updateBankDetails,
   updateFamilyDetails,
   updateWorkExperienceDetails,
+  updateDocumentDetails,
 };

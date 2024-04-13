@@ -1,18 +1,21 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+interface DocumentInfo {
+  name: string;
+  url: string;
+  type: string;
+  validTill?: Date;
+  effectiveFrom?: Date;
+}
+
 export interface DocumentInterface extends Document {
   user: mongoose.Schema.Types.ObjectId;
-  createdBy:mongoose.Schema.Types.ObjectId;
-  company:mongoose.Schema.Types.ObjectId;
-  companyOrg:mongoose.Schema.Types.ObjectId;
-  qualificationCertificate?: String;
-  panCard?: any;
-  aadharCard?: any;
-  highMarksheet?: any;
-  intermediateMarksheet?: any;
-  passport?: any;
-  drivingLicence?: any;
-  graduationMarksheet?: any;
+  createdBy: mongoose.Schema.Types.ObjectId;
+  company: mongoose.Schema.Types.ObjectId;
+  companyOrg: mongoose.Schema.Types.ObjectId;
+  documents: {
+    [key: string]: DocumentInfo;
+  };
   deletedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -33,100 +36,23 @@ const DocumentSchema: Schema<DocumentInterface> = new Schema<DocumentInterface>(
     company: {
       type: Schema.Types.ObjectId,
       ref: "Company",
-      required:true
+      required: true,
     },
     companyOrg: {
       type: Schema.Types.ObjectId,
       ref: "Company",
-      required:true
+      required: true,
     },
-    qualificationCertificate: {
-      name: {
+    documents: {
+      type: Map,
+      of: {
+        name: String,
+        url: String,
         type: String,
+        validTill: Date,
+        effectiveFrom: Date,
       },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    panCard: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    aadharCard: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    highMarksheet: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    intermediateMarksheet: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    passport: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    drivingLicence: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
-    },
-    graduationMarksheet: {
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
-      type: {
-        type: String,
-      },
+      default: {},
     },
     deletedAt: {
       type: Date,

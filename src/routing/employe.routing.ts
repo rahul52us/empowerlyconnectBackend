@@ -10,6 +10,7 @@ import {
   updateEmployeProfileService,
   updateFamilyDetailsService,
   updateWorkExperienceService,
+  updateDocumentService,
 } from "../services/employe/employ.service";
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.get("/designation/count", authenticate, getCountDesignationStatusService)
 router.put("/bankDetails/:id",authenticate,updateBankDetialsService)
 router.put('/familyDetails/:id',authenticate,updateFamilyDetailsService)
 router.put('/workExperience/:id',authenticate,updateWorkExperienceService)
+router.put('/updateDocuments/:id',authenticate,updateDocumentService)
 
 export default router;
