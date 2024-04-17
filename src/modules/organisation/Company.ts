@@ -51,22 +51,34 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const profileDetail = new ProfileDetails({
       user: user._id,
+      createdBy:user?._id,
+      companyOrg:createdComp?._id,
+      company:createdComp?._id
     });
     const createdProfileDetails = await profileDetail.save();
 
     const BankDetail = new BankDetails({
       user: user._id,
+      createdBy:user?._id,
+      companyOrg:createdComp?._id,
+      company:createdComp?._id
     });
     const savedBank = await BankDetail.save();
 
     const WorkExperienceDetail = new WorkExperience({
       user: user._id,
+      createdBy:user?._id,
+      companyOrg:createdComp?._id,
+      company:createdComp?._id
     });
 
     const savedWorkExperience = await WorkExperienceDetail.save();
 
     const documentDetails = new DocumentDetails({
       user: user._id,
+      createdBy:user?._id,
+      companyOrg:createdComp?._id,
+      company:createdComp?._id
     });
 
     const savedDocument = await documentDetails.save();
@@ -108,7 +120,6 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       success: true,
     });
   } catch (err : any) {
-    console.log(err.message)
     next(err);
   }
 };
