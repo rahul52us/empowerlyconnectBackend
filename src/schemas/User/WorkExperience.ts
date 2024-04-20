@@ -19,8 +19,6 @@ export interface WorkExperienceDetails {
 export interface WorkExperienceI extends Document {
     user: mongoose.Schema.Types.ObjectId;
     createdBy: mongoose.Schema.Types.ObjectId;
-    company: mongoose.Schema.Types.ObjectId;
-    companyOrg: mongoose.Schema.Types.ObjectId;
     experienceDetails: WorkExperienceDetails[];
     deletedAt?: Date;
     createdAt?: Date;
@@ -30,21 +28,6 @@ export interface WorkExperienceI extends Document {
 const WorkExperienceSchema: Schema<WorkExperienceI> = new Schema<WorkExperienceI>(
     {
         user: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "User",
-        },
-        company: {
-            type: Schema.Types.ObjectId,
-            ref: "Company",
-            required: true
-        },
-        companyOrg: {
-            type: Schema.Types.ObjectId,
-            ref: "Company",
-            required: true
-        },
-        createdBy: {
             type: Schema.Types.ObjectId,
             required: true,
             ref: "User",

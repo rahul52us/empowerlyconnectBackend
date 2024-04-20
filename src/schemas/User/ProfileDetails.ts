@@ -11,9 +11,6 @@ interface addressInfo  {
 
 interface ProfileDetailsI extends Document {
   user: mongoose.Schema.Types.ObjectId;
-  company:mongoose.Schema.Types.ObjectId;
-  createdBy:mongoose.Schema.Types.ObjectId;
-  companyOrg:mongoose.Schema.Types.ObjectId;
   nickName?: string;
   mobileNo?: string;
   language?: String[];
@@ -38,21 +35,6 @@ const ProfileDetailsSchema = new mongoose.Schema<ProfileDetailsI>({
     type: Schema.Types.ObjectId,
     required: true,
     unique: true,
-    ref: "User",
-  },
-  company: {
-    type: Schema.Types.ObjectId,
-    ref: "Company",
-    required:true
-  },
-  companyOrg: {
-    type: Schema.Types.ObjectId,
-    ref: "Company",
-    required:true
-  },
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    required: true,
     ref: "User",
   },
   nickName: {

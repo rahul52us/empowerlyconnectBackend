@@ -4,7 +4,8 @@ interface CompanyI extends Document {
   company_name: string;
   companyOrg:mongoose.Schema.Types.ObjectId,
   companyType:string;
-  verified_email_allowed: boolean;
+  verified_email_allowed:boolean;
+  policy:mongoose.Schema.Types.ObjectId;
   is_active?: boolean;
   logo?: string;
   bio?: string;
@@ -38,6 +39,10 @@ const companySchema = new mongoose.Schema<CompanyI>({
   },
   companyOrg : {
     type : mongoose.Schema.Types.ObjectId,
+  },
+  policy:{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'CompanyPolicy'
   },
   companyType:{
     type : String,

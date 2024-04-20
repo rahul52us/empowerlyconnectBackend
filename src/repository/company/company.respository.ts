@@ -1,4 +1,4 @@
-import Company from "../schemas/company/Company";
+import Company from "../../schemas/company/Company";
 
 export const getCompanyDetailsByName = async (data : any) => {
     try

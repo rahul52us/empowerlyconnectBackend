@@ -7,6 +7,7 @@ import { generateError } from "../../config/Error/functions";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
 import Documents from "../../schemas/User/Document";
+import CompanyDetails from "../../schemas/User/CompanyDetails";
 
 const createEmploye = async (data: any) => {
   try {
@@ -35,11 +36,18 @@ const createEmploye = async (data: any) => {
       throw generateError(`cannot create the user`, 400);
     }
 
+    const comDetails = new CompanyDetails({
+      user : savedUser._id,
+      eType:data.eType,
+      eCategory:data.eCategory,
+      workingLocation:data.workingLocation,
+      workTiming:data.workTiming
+    })
+
+    const savedComDetail = await comDetails.save()
+
     const profile = new ProfileDetails({
       user: savedUser._id,
-      company: data.company,
-      companyOrg: data.companyOrg,
-      createdBy: data.createdBy,
       language: data.language,
       nickName: data.nickName,
       mobileNo: data.mobileNo,
@@ -65,34 +73,22 @@ const createEmploye = async (data: any) => {
 
     const BankDetail = new BankDetails({
       user: savedUser._id,
-      company: data.company,
-      companyOrg: data.companyOrg,
-      createdBy: data.createdBy,
     });
     const savedBank = await BankDetail.save();
 
     const WorkExperienceDetail = new WorkExperience({
       user: savedUser._id,
-      company: data.company,
-      companyOrg: data.companyOrg,
-      createdBy: data.createdBy,
     });
 
     const savedWorkExperience = await WorkExperienceDetail.save();
 
     const FamilyDetail = new FamilyDetails({
       user: savedUser._id,
-      company: data.company,
-      companyOrg: data.companyOrg,
-      createdBy: data.createdBy,
     });
     const savedFamilyDetail = await FamilyDetail.save();
 
     const documentDetails = new DocumentDetails({
       user: savedUser._id,
-      createdBy: data.createdBy,
-      company: data.company,
-      companyOrg: data.companyOrg,
     });
 
     const savedDocument = await documentDetails.save();
@@ -108,6 +104,7 @@ const createEmploye = async (data: any) => {
         documentDetail: savedDocument.toObject(),
         WorkExperience: savedWorkExperience.toObject(),
         FamilyDetail: savedFamilyDetail.toObject(),
+        companyDetail: savedComDetail.toObject()
       },
     };
   } catch (err: any) {

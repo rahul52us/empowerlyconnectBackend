@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express"
-import { getCompanyDetailsByName } from "../../repository/company.respository"
+import { getCompanyDetailsByName } from "../../repository/company/company.respository"
 import { generateError } from "../../config/Error/functions"
 
 export const getCompanyDetailsByNameService = async (req : any, res : Response, next : NextFunction) => {

@@ -1,5 +1,4 @@
 import { Response, NextFunction } from "express";
-import dotenv from "dotenv";
 import User from "../../schemas/User/User";
 import Company from "../../schemas/company/Company";
 import ProfileDetails from "../../schemas/User/ProfileDetails";
@@ -10,8 +9,7 @@ import Token from "../../schemas/Token/Token";
 import WorkExperience from "../../schemas/User/WorkExperience";
 import BankDetails from '../../schemas/User/BankDetails'
 import DocumentDetails from '../../schemas/User/Document'
-
-dotenv.config();
+import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -49,40 +47,34 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
     createdComp.companyOrg = createdComp._id
     await createdComp.save()
 
+    const compPolicy = new CompanyPolicy({
+      company: createdComp._id,
+      createdBy:user._id
+    });
+
+    const createdCompPolicy : any = await compPolicy.save();
+
     const profileDetail = new ProfileDetails({
-      user: user._id,
-      createdBy:user?._id,
-      companyOrg:createdComp?._id,
-      company:createdComp?._id
+      user: user._id
     });
     const createdProfileDetails = await profileDetail.save();
 
     const BankDetail = new BankDetails({
       user: user._id,
-      createdBy:user?._id,
-      companyOrg:createdComp?._id,
-      company:createdComp?._id
     });
     const savedBank = await BankDetail.save();
 
     const WorkExperienceDetail = new WorkExperience({
       user: user._id,
-      createdBy:user?._id,
-      companyOrg:createdComp?._id,
-      company:createdComp?._id
     });
 
     const savedWorkExperience = await WorkExperienceDetail.save();
 
     const documentDetails = new DocumentDetails({
-      user: user._id,
-      createdBy:user?._id,
-      companyOrg:createdComp?._id,
-      company:createdComp?._id
+      user: user._id
     });
 
     const savedDocument = await documentDetails.save();
-
 
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
@@ -114,6 +106,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
         bankDetails:savedBank._id,
         documentDetails:savedDocument._id,
         workExperience:savedWorkExperience._id,
+        companyPolicy:createdCompPolicy._id,
         authorization_token: generateToken({ userId: updatedUser._id }),
       },
       statusCode: 201,
