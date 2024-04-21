@@ -10,6 +10,7 @@ import WorkExperience from "../../schemas/User/WorkExperience";
 import BankDetails from '../../schemas/User/BankDetails'
 import DocumentDetails from '../../schemas/User/Document'
 import CompanyPolicy from "../../schemas/company/CompanyPolicy";
+import CompanyDetails from "../../schemas/User/CompanyDetails";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -28,9 +29,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       throw generateError("Invalid token or token has expired", 400);
     }
 
-    const existsComp = await Company.findOne({
-      company_name: req.body.company_name,
-    });
+    const existsComp = await Company.findOne({ company_name: new RegExp(req.body.company_name?.trim(), 'i') });
     if (existsComp) {
       throw generateError(
         `${existsComp.company_name} company already exists`,
@@ -39,7 +38,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
     }
 
     const comp = new Company({
-      company_name: req.body.company_name,
+      company_name: req.body.company_name?.trim(),
     });
 
     const createdComp : any = await comp.save();
@@ -76,6 +75,13 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const savedDocument = await documentDetails.save();
 
+    const companyDetails = new CompanyDetails({
+      user: user._id,
+      company:createdComp._id
+    });
+
+    const savedCompanyDetails = await companyDetails.save();
+
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       {
@@ -84,6 +90,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
           profile_details: createdProfileDetails._id,
           companyOrg:createdComp._id,
           company: createdComp._id,
+          companyDetails: savedCompanyDetails._id,
           password: req.body.password,
         },
       },

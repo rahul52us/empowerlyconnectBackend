@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface CompanyDetailsI extends Document {
   user: mongoose.Schema.Types.ObjectId;
+  company:mongoose.Schema.Types.ObjectId;
   workingLocation: string;
   workTiming: string;
   eCategory: string;
@@ -17,6 +18,11 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
       type: Schema.Types.ObjectId,
       required: true,
       ref: "User",
+    },
+    company:{
+      type : Schema.Types.ObjectId,
+      ref : 'Company',
+      required:true
     },
     workingLocation: {
         type : String

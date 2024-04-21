@@ -38,6 +38,7 @@ const createEmploye = async (data: any) => {
 
     const comDetails = new CompanyDetails({
       user : savedUser._id,
+      company:data.company,
       eType:data.eType,
       eCategory:data.eCategory,
       workingLocation:data.workingLocation,
