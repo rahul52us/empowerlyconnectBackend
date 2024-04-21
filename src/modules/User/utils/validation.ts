@@ -2,7 +2,7 @@ import Joi from "joi";
 
 const UserValidation = Joi.object({
   name: Joi.string().when("role", {
-    is: Joi.not("admin"),
+    is: Joi.not("superadmin"),
     then: Joi.string().min(3).max(30).required().messages({
       "string.min": "Name must have a minimum length of {#limit}",
       "string.max": "Name should not exceed a maximum length of {#limit}",
@@ -19,14 +19,14 @@ const UserValidation = Joi.object({
   is_active: Joi.boolean().default(true),
   role: Joi.string().valid("user", "admin", "superadmin", "manager", "customer", "support").default("user"),
   company: Joi.string().when("role", {
-    is: Joi.not("admin"),
+    is: Joi.not("superadmin"),
     then: Joi.string().required().messages({
       "any.required": "Please select the company",
     }),
     otherwise: Joi.string().allow("").optional(),
   }),
   password: Joi.string().when("role", {
-    is: Joi.not("admin"),
+    is: Joi.not("superadmin"),
     then: Joi.string()
       .pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/)
       .message(

@@ -50,7 +50,7 @@ const companySchema = new mongoose.Schema<CompanyI>({
   },
   is_active: {
     type: Boolean,
-    default: true
+    default: false
   },
   verified_email_allowed: {
     type: Boolean,

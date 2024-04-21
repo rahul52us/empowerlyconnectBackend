@@ -21,7 +21,6 @@ const createEmploye = async (data: any) => {
       companyOrg: data.companyOrg,
       name: data.name,
       code: data.code,
-      company: data.company,
       pic: data.pic,
       designation: data.designation,
       password: data.password,
@@ -39,13 +38,19 @@ const createEmploye = async (data: any) => {
     const comDetails = new CompanyDetails({
       user : savedUser._id,
       company:data.company,
+      companyOrg:data.companyOrg,
+      department:data.department,
+      designation:data.designation,
+      position:data.position,
       eType:data.eType,
       eCategory:data.eCategory,
       workingLocation:data.workingLocation,
-      workTiming:data.workTiming
+      workTiming:data.workTiming,
+      is_active:true
     })
 
     const savedComDetail = await comDetails.save()
+    savedUser.companyDetail = await savedComDetail._id
 
     const profile = new ProfileDetails({
       user: savedUser._id,
@@ -316,7 +321,7 @@ const getCountDesignationStatus = async (data: any) => {
 
 const getTotalEmployes = async (data: any) => {
   try {
-    const result = await User.aggregate([
+    const result = await CompanyDetails.aggregate([
       {
         $match: {
           ...data,

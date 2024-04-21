@@ -16,6 +16,7 @@ const customMessages = {
 export const createEmployeValidation = Joi.object({
     title: Joi.string().required().messages(customMessages),
     name : Joi.string().min(5).max(80).trim().required().messages(customMessages),
+    company : Joi.string().min(5).max(80).trim().required().messages(customMessages),
     username: Joi.string().min(4).trim().required().messages(customMessages),
     personalEmail: Joi.string().min(5).trim().required().messages(customMessages),
     code:Joi.string().min(4).required().messages(customMessages),

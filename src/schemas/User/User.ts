@@ -8,7 +8,7 @@ export interface UserInterface extends Document {
   pic: any;
   bio?: string;
   designation?: string[];
-  company: Schema.Types.ObjectId;
+  companyDetail: Schema.Types.ObjectId;
   companyOrg: Schema.Types.ObjectId;
   profile_details: Schema.Types.ObjectId;
   is_active: boolean;
@@ -39,7 +39,7 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
     },
   },
   designation: { type: Array },
-  company: { type: Schema.Types.ObjectId, ref: "Company" },
+  companyDetail: { type: Schema.Types.ObjectId, ref: "CompanyDetail" },
   bio: { type: String, trim: true },
   profile_details: { type: Schema.Types.ObjectId, ref: "ProfileDetails" },
   is_active: { type: Boolean, default: false },

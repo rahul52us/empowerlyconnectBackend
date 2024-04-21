@@ -4,6 +4,7 @@ export interface IEmailToken extends Document {
   userId: mongoose.Types.ObjectId;
   token: string;
   type: string;
+  is_active:boolean;
   createdAt: Date;
 }
 
@@ -20,6 +21,10 @@ const Token: Schema<IEmailToken> = new Schema({
   token: {
     type: String,
     required: true,
+  },
+  is_active:{
+    type : Boolean,
+    default : false
   },
   createdAt: {
     type: Date,

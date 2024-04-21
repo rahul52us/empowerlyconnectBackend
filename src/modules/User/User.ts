@@ -19,16 +19,18 @@ import {
   FORGOT_PASSWORD_EMAIL_TOKEN_TYPE,
   REGISTER_NEW_USER_TOKEN_TYPE,
 } from "../config/sendMail/utils";
+import CompanyDetails from "../../schemas/User/CompanyDetails";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
   );
+  const companyDetail = await CompanyDetails.findById(req.bodyData.companyDetail)
   return res.status(200).send({
     message: `get successfully data`,
-    data: { ...req.bodyData, profile_details },
-    statusCode: 201,
+    data: { ...req.bodyData, profile_details, companyDetail },
+    statusCode: 200,
     success: true,
   });
 };
@@ -50,7 +52,7 @@ const createUser = async (
       throw generateError(`${existUser.username} user already exists`, 400);
     }
 
-    if (req.body.role !== "admin") {
+    if (req.body.role !== "superadmin") {
       const selectedCompany = await Company.findOne({
         _id: req.body.company?.trim(),
         is_active: true,
@@ -186,7 +188,7 @@ const VerifyEmailToken = async (
         { new: true }
       );
       if (updatedData) {
-        if (updatedData.role !== "admin") {
+        if (updatedData.role !== "superadmin") {
           await token.deleteOne();
         }
         res.status(200).send({

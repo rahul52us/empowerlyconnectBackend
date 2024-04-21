@@ -27,7 +27,7 @@ const createEmployeService = async (
     }
     const { status, data } = await createEmploye({
       ...value,
-      company: req.bodyData.company,
+      company: req.body.company,
       companyOrg: req.bodyData.companyOrg,
       createdBy:req.userId
     });
@@ -159,7 +159,6 @@ const getTotalEmployesService = async (
 ) => {
   try {
     const { status, data } = await getTotalEmployes({
-      company: new mongoose.Types.ObjectId(req.bodyData.company),
       companyOrg: new mongoose.Types.ObjectId(req.bodyData.companyOrg),
     });
     if (status === "success") {
@@ -182,9 +181,6 @@ const updateBankDetialsService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
-    req.body.createdBy = req.userId;
     const { status, data } = await updateBankDetails(req.body);
     if (status === "success") {
       res.status(201).send({
@@ -209,9 +205,6 @@ export const updateFamilyDetailsService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
-    req.body.createdBy = req.userId;
     const { status, data } = await updateFamilyDetails(req.body);
     if (status === "success") {
       res.status(201).send({
@@ -236,9 +229,6 @@ const updateWorkExperienceService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
-    req.body.createdBy = req.userId;
     const { status, data } = await updateWorkExperienceDetails(req.body);
     if (status === "success") {
       res.status(201).send({
@@ -263,9 +253,6 @@ const updateDocumentService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
-    req.body.createdBy = req.userId;
     const { status, data } = await updateDocumentDetails(req.body);
     if (status === "success") {
       res.status(201).send({

@@ -19,13 +19,13 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       throw generateError(result.error.details, 422);
     }
 
-    const token = await Token.findOne({ token: req.query.token });
+    const token = await Token.findOne({ token: req.query.token});
     if (!token) {
       throw generateError("Invalid token or token has expired", 400);
     }
 
     const user = await User.findById(token.userId);
-    if (!user || user?.role !== "admin") {
+    if (!user || user?.role !== "superadmin") {
       throw generateError("Invalid token or token has expired", 400);
     }
 
@@ -39,6 +39,8 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const comp = new Company({
       company_name: req.body.company_name?.trim(),
+      companyType : 'organisation',
+      is_active:true
     });
 
     const createdComp : any = await comp.save();
@@ -77,7 +79,9 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const companyDetails = new CompanyDetails({
       user: user._id,
-      company:createdComp._id
+      company:createdComp._id,
+      companyOrg:createdComp._id,
+      is_active:true
     });
 
     const savedCompanyDetails = await companyDetails.save();
@@ -89,15 +93,14 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
           name: req.body.name,
           profile_details: createdProfileDetails._id,
           companyOrg:createdComp._id,
-          company: createdComp._id,
-          companyDetails: savedCompanyDetails._id,
-          password: req.body.password,
+          companyDetail: savedCompanyDetails._id,
+          password: req.body.password
         },
       },
       { new: true }
     )
       .populate("profile_details")
-      .populate("company");
+      .populate("companyDetail");
 
     if (!updatedUser) {
       throw generateError("Something went wrong, contact administration", 400);
