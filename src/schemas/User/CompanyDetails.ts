@@ -5,6 +5,7 @@ export interface CompanyDetailsI extends Document {
   company: mongoose.Schema.Types.ObjectId;
   companyOrg: mongoose.Schema.Types.ObjectId;
   workHistory:mongoose.Schema.Types.Mixed;
+  eCode:string;
   position: string;
   department: string;
   designation: string;
@@ -49,6 +50,9 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
     },
     workTiming: {
       type: String,
+    },
+    eCode:{
+      type : String
     },
     eType: {
       type: String,

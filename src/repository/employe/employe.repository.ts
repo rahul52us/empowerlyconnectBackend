@@ -149,8 +149,7 @@ const updateEmployeProfileDetails = async (data: any) => {
 const getEmployes = async (data: any) => {
   try {
     let matchConditions: any = {
-      company: data.company,
-      companyOrg: data.companyOrg,
+      is_active:true,
       deletedAt: { $exists: false },
     };
 
@@ -166,9 +165,20 @@ const getEmployes = async (data: any) => {
       },
       {
         $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userData",
+        },
+      },
+      {
+        $unwind: "$userData",
+      },
+      {
+        $lookup: {
           from: "profiledetails",
-          localField: "_id",
-          foreignField: "user",
+          localField: "userData.profile_details",
+          foreignField: "_id",
           as: "profileDetails",
         },
       },
@@ -182,8 +192,8 @@ const getEmployes = async (data: any) => {
     ];
 
     const [resultData, countDocuments]: any = await Promise.all([
-      User.aggregate(documentPipeline),
-      User.aggregate([
+      CompanyDetails.aggregate(documentPipeline),
+      CompanyDetails.aggregate([
         ...pipeline,
         {
           $group: {
@@ -207,7 +217,8 @@ const getEmployes = async (data: any) => {
       data: err,
     };
   }
-};
+}
+;
 
 const getEmployeById = async (data: any) => {
   try {
@@ -325,6 +336,7 @@ const getTotalEmployes = async (data: any) => {
       {
         $match: {
           ...data,
+          is_active : true,
           deletedAt: { $exists: false },
         },
       },
