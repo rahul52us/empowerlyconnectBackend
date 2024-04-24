@@ -17,6 +17,7 @@ export interface UserInterface extends Document {
   deletedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  permissions?:any
 }
 
 const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
@@ -47,6 +48,10 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
     type: String,
     enum: ["user", "admin", "superadmin", "manager", "customer", "support"],
     default: "user",
+  },
+  permissions : {
+    type : mongoose.Schema.Types.Mixed,
+    default : {}
   },
   password: { type: String, trim: true },
   deletedAt: {

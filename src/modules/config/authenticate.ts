@@ -22,8 +22,8 @@ const authenticate = async (req: any, res: Response, next: NextFunction) => {
     if (!user) {
       throw generateError("Unauthorized User", 401);
     }
-
     const { password, ...userData } = user.toObject();
+
     req.userId = decoded.userId;
     req.bodyData = userData;
     next();

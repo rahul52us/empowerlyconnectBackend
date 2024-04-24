@@ -5,7 +5,7 @@ interface CompanyPolicyI extends Document {
   createdBy:mongoose.Schema.Types.ObjectId;
   workLocations: mongoose.Schema.Types.Mixed;
   workTiming: mongoose.Schema.Types.Mixed;
-  holydays:mongoose.Schema.Types.Mixed;
+  holidays:mongoose.Schema.Types.Mixed;
   ipAddressRange:mongoose.Schema.Types.Mixed;
   is_active?: boolean;
   deletedAt?: Date;
@@ -28,9 +28,10 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
   workTiming: {
     type: mongoose.Schema.Types.Mixed,
   },
-  holydays: {
-    type : mongoose.Schema.Types.Mixed
-  },
+  holidays: [{
+    date: { type: Date, required: true },
+    title: { type: String, required: true }
+  }],
   ipAddressRange : {
     type : mongoose.Schema.Types.Mixed
   },

@@ -26,7 +26,11 @@ const MeUser = async (req: any, res: Response): Promise<any> => {
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
   );
-  const companyDetail = await CompanyDetails.findById(req.bodyData.companyDetail)
+  const companyDetail = await CompanyDetails.findById(
+    req.bodyData.companyDetail
+  )
+    .populate("company")
+
   return res.status(200).send({
     message: `get successfully data`,
     data: { ...req.bodyData, profile_details, companyDetail },
