@@ -1,6 +1,7 @@
 import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 import Company from "../../schemas/company/Company";
 import { statusCode } from "../../config/helper/statusCode";
+import mongoose from "mongoose";
 
 export const getCompanyDetailsByName = async (data: any) => {
   try {
@@ -59,7 +60,7 @@ export const updateHolidays = async(data : any) => {
 
 export const getHolidays = async(data : any) => {
   try {
-    const policy : any = await CompanyPolicy.findOne({company : data.company})
+    const policy : any = await CompanyPolicy.findOne({company : new mongoose.Types.ObjectId(data.company)})
     if(policy){
         return {
             status : 'success',

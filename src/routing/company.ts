@@ -10,7 +10,7 @@ const router = express.Router();
 router.post("/create", createCompany);
 router.get("/search", filterCompany);
 router.get('/details', getCompanyDetailsByNameService)
-router.post('/holidays',authenticate,getHolidayService)
-router.put('/update/holidays',authenticate,updateHolidayService)
+router.post('/policy/holidays',authenticate,getHolidayService)
+router.put('/policy/holidays',authenticate,updateHolidayService)
 
 export default router;

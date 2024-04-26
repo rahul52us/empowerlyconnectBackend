@@ -8,6 +8,7 @@ import importRoutings from "./routing/routingIndex";
 import http from "http";
 import * as path from 'path'
 import { setupSocket } from "./modules/chatSocket/chatSocket";
+import { statusCode } from "./config/helper/statusCode";
 
 const app = express();
 dotenv.config();
@@ -32,7 +33,7 @@ app.use(cors({
 importRoutings(app);
 
 app.use('/',(req,res) => {
-  res.status(200).send("Welcome to our app")
+  res.status(statusCode.info).send("Welcome to our app")
 })
 
 app.use(errorMiddleware);

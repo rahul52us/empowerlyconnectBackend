@@ -30,7 +30,8 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
   },
   holidays: [{
     date: { type: Date, required: true },
-    title: { type: String, required: true }
+    title: { type: String, required: true },
+    description: { type: String }
   }],
   ipAddressRange : {
     type : mongoose.Schema.Types.Mixed
