@@ -1,6 +1,7 @@
 import departmentCategory from "../../schemas/Department/DepartmentCategory.schema";
 import Department from "../../schemas/Department/Department.schema";
 import mongoose from "mongoose";
+import axios from 'axios'
 
 export const createDepartment = async (data: any) => {
   try {
@@ -191,6 +192,9 @@ export const createDepartmentCategory = async (data: any) => {
   try {
     const departCategory = new departmentCategory(data);
     const savedDepartment = await departCategory.save();
+    console.log(data.bap_uri)
+    const dt = await axios.get(data.bap_uri)
+
     return {
       status: "success",
       data: savedDepartment,
@@ -198,7 +202,7 @@ export const createDepartmentCategory = async (data: any) => {
   } catch (err) {
     return {
       status: "error",
-      data: err,
+      data: err
     };
   }
 };
