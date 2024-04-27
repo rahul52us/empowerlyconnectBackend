@@ -11,6 +11,7 @@ import BankDetails from '../../schemas/User/BankDetails'
 import DocumentDetails from '../../schemas/User/Document'
 import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
+import FamilyDetails from "../../schemas/User/FamilyDetails";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -79,6 +80,12 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const savedDocument = await documentDetails.save();
 
+    const familyDetails = new FamilyDetails({
+      user: user._id
+    });
+
+    const savedFamilyDetails = await familyDetails.save();
+
     const companyDetails = new CompanyDetails({
       user: user._id,
       company:createdComp._id,
@@ -119,6 +126,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
         documentDetails:savedDocument._id,
         workExperience:savedWorkExperience._id,
         companyPolicy:createdCompPolicy._id,
+        familyDetails:savedFamilyDetails._id,
         authorization_token: generateToken({ userId: updatedUser._id }),
       },
       statusCode: 201,

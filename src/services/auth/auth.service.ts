@@ -18,10 +18,10 @@ const loginUserService = async (
       throw generateError(result.error.details, 422);
     }
 
-    const { status, data } = await loginUser(req.body);
+    const { status, data, message } = await loginUser(req.body);
     if (status === "success") {
       res.status(200).send({
-        message: `${data.username} user has been logged in successfully`,
+        message: message,
         data: data,
         statusCode: 200,
         success: true,

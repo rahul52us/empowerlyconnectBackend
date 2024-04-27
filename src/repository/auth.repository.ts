@@ -16,22 +16,20 @@ const findUserByUserName = async (data: any) => {
 
 const loginUser = async (data: any): Promise<any> => {
   try {
-    const existUser = await User.findOne({ username: new RegExp(data.username, 'i') }).populate("profile_details");
+    const existUser = await User.findOne({ username: new RegExp(data.username, 'i') })
     if (!existUser) {
       throw generateError(`${data.username} user does not exist`, 401);
     }
 
-    const { password, ...userData } = existUser.toObject();
-    if (password !== data.password) {
+    if (existUser.password !== data.password) {
       throw generateError(`Invalid username and password`, 400);
     }
 
     const responseUser = {
-      ...userData,
-      authorization_token: generateToken({ userId: userData._id }),
+      authorization_token: generateToken({ userId: existUser._id }),
     };
 
-    return { status: "success", data: responseUser };
+    return { status: "success", data: responseUser , message : `${existUser?.name} has been logged in successfully`};
   } catch (err) {
     return { status: "error", data: err };
   }
