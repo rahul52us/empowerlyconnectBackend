@@ -10,7 +10,7 @@ export const getCompanyDetailsByNameService = async (req : any, res : Response, 
         if(status === "success")
         {
         return res.status(200).send({
-            message : 'Get Company Details Successfully',
+            message : 'Company details retrieved successfully',
             data : data,
             status : 'success'
         })

@@ -31,53 +31,100 @@ export const getCompanyDetailsByName = async (data: any) => {
   }
 };
 
-export const updateHolidays = async(data : any) => {
+export const updateHolidays = async (data: any) => {
   try {
-    const policy : any = await CompanyPolicy.findOne({company : data.company})
-    if(policy){
-        policy.holidays = [...policy.holidays,data.holidays]
-        const savedPolicy = await policy.save()
-        return {
-            status : 'success',
-            data : savedPolicy,
-            message : 'holidays has been updated successfully',
-            statusCode:statusCode.success
-        }
+    const policy: any = await CompanyPolicy.findOne({ company: data.company });
+
+    if (!policy) {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: null,
+        statusCode: statusCode.info,
+      };
     }
-    else {
+
+    if (data?.holidays?.edit === 1) {
+      const index = policy.holidays.findIndex(
+        (item: any) => item.title === data.holidays?.oldTitle
+      );
+
+      if (index !== -1) {
+        policy.holidays[index] = data.holidays;
+        const savedPolicy = await policy.save();
+
         return {
-            status : 'success',
-            message : 'Policy does not exists',
-            data : 'Policy does not exists',
-            statusCode : statusCode.info
-        }
+          status: "success",
+          data: savedPolicy,
+          message: "Holidays have been updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          message: "The specified holiday does not exist",
+          data: null,
+          statusCode: statusCode.info,
+        };
+      }
+    } else if (data?.holidays?.delete === 1) {
+      const index = policy.holidays.findIndex(
+        (item: any) => item.title === data.holidays?.title
+      );
+      if (index !== -1) {
+        policy.holidays.splice(index, 1);
+        const savedPolicy = await policy.save();
+        return {
+          status: "success",
+          data: savedPolicy,
+          message: "Holidays updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          message: "The specified holiday does not exist",
+          data: null,
+          statusCode: statusCode.info,
+        };
+      }
+    } else {
+      policy.holidays.push(data.holidays);
+      const savedPolicy = await policy.save();
+
+      return {
+        status: "success",
+        data: savedPolicy,
+        message: "Holidays updated successfully",
+        statusCode: statusCode.success,
+      };
     }
   } catch (err: any) {
-    throw new Error(err)
+    throw new Error(err);
   }
 };
 
-
-export const getHolidays = async(data : any) => {
+export const getHolidays = async (data: any) => {
   try {
-    const policy : any = await CompanyPolicy.findOne({company : new mongoose.Types.ObjectId(data.company)})
-    if(policy){
-        return {
-            status : 'success',
-            data : policy.holidays || [],
-            message : 'Successfully get holidays',
-            statusCode:statusCode.success
-        }
-    }
-    else {
-        return {
-            status : 'success',
-            message : 'Policy does not exists',
-            data : 'Policy does not exists',
-            statusCode : statusCode.info
-        }
+    const policy: any = await CompanyPolicy.findOne({
+      company: new mongoose.Types.ObjectId(data.company),
+    });
+    if (policy) {
+      return {
+        status: "success",
+        data: policy.holidays || [],
+        message: "Successfully retrieved holidays",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: "Policy not found",
+        statusCode: statusCode.info,
+      };
     }
   } catch (err: any) {
-    throw new Error(err)
+    throw new Error(err);
   }
 };
