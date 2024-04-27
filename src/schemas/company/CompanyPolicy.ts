@@ -1,10 +1,20 @@
 import mongoose, { Document } from "mongoose";
 
+interface WorkTiming {
+  startTime: string;
+  endTime: string;
+  daysOfWeek: string[];
+}
+
+
 interface CompanyPolicyI extends Document {
   company: mongoose.Schema.Types.ObjectId;
   createdBy:mongoose.Schema.Types.ObjectId;
-  workLocations: mongoose.Schema.Types.Mixed;
-  workTiming: mongoose.Schema.Types.Mixed;
+  workLocations: {
+    ipAddress: string;
+    locationName: string;
+  }[];
+  workTiming: WorkTiming[];
   holidays:mongoose.Schema.Types.Mixed;
   ipAddressRange:mongoose.Schema.Types.Mixed;
   is_active?: boolean;
@@ -22,12 +32,29 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
     type : mongoose.Schema.Types.ObjectId,
     ref : 'User'
   },
-  workLocations: {
-    type: mongoose.Schema.Types.Mixed,
-  },
-  workTiming: {
-    type: mongoose.Schema.Types.Mixed,
-  },
+  workLocations: [{
+    ipAddress: {
+      type: String
+    },
+    locationName: {
+      type: String,
+      required : true
+    },
+  }],
+  workTiming: [{
+    startTime: {
+      type: String,
+      required: true,
+    },
+    endTime: {
+      type: String,
+      required: true,
+    },
+    daysOfWeek: {
+      type: [String],
+      required: true,
+    },
+  }],
   holidays: [{
     date: { type: Date, required: true },
     title: { type: String, required: true },

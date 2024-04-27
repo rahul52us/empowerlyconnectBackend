@@ -65,7 +65,7 @@ const loginValidation = Joi.object({
       "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, and one digit."
     )
     .required(),
-    username: Joi.string().min(5).max(30).required().messages({
+    username: Joi.string().min(5).max(60).required().messages({
         "string.min": "username must have a minimum length of {#limit}",
         "string.max": "username should not exceed a maximum length of {#limit}",
         "any.required": "Username is required",

@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express"
-import { getCompanyDetailsByName, getHolidays, updateHolidays } from "../../repository/company/company.respository"
+import { getCompanyDetailsByName, getHolidays, updateHolidays, updateWorkLocations, updateWorkTiming } from "../../repository/company/company.respository"
 import { generateError } from "../../config/Error/functions"
 import mongoose from "mongoose"
 
@@ -46,6 +46,38 @@ export const updateHolidayService = async (req : any, res : Response, next : Nex
     try
     {
         const {status , data, statusCode, message} = await updateHolidays({holidays:{...req.body},company : new mongoose.Types.ObjectId(req.body.company)})
+        return res.status(statusCode).send({
+            message : message,
+            data : data,
+            status : status
+        })
+    }
+    catch(err : any)
+    {
+        next(err)
+    }
+}
+
+export const updateWorkTimingService = async (req : any, res : Response, next : NextFunction) => {
+    try
+    {
+        const {status , data, statusCode, message} = await updateWorkTiming({workTiming:{...req.body},company : new mongoose.Types.ObjectId(req.body.company)})
+        return res.status(statusCode).send({
+            message : message,
+            data : data,
+            status : status
+        })
+    }
+    catch(err : any)
+    {
+        next(err)
+    }
+}
+
+export const updateWorkLocationService = async (req : any, res : Response, next : NextFunction) => {
+    try
+    {
+        const {status , data, statusCode, message} = await updateWorkLocations({workLocation:{...req.body},company : new mongoose.Types.ObjectId(req.body.company)})
         return res.status(statusCode).send({
             message : message,
             data : data,

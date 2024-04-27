@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import User from "../../schemas/User/User";
 import { generateError } from "../config/function";
-import dotenv from "dotenv";
+import dotenv, { populate } from "dotenv";
 import {
   UserValidation,
   forgotEmailValidation,
@@ -26,10 +26,13 @@ const MeUser = async (req: any, res: Response): Promise<any> => {
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
   );
-  const companyDetail = await CompanyDetails.findById(
-    req.bodyData.companyDetail
-  )
-    .populate("company")
+  const companyDetail = await CompanyDetails.findById(req.bodyData.companyDetail)
+  .populate({
+      path: 'company',
+      populate: {
+          path: 'policy'
+      }
+  });
 
   return res.status(200).send({
     message: `get successfully data`,

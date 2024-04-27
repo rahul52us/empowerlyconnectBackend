@@ -31,6 +31,31 @@ export const getCompanyDetailsByName = async (data: any) => {
   }
 };
 
+export const getHolidays = async (data: any) => {
+  try {
+    const policy: any = await CompanyPolicy.findOne({
+      company: new mongoose.Types.ObjectId(data.company),
+    });
+    if (policy) {
+      return {
+        status: "success",
+        data: policy.holidays || [],
+        message: "Successfully retrieved holidays",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: "Policy not found",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
 export const updateHolidays = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
@@ -104,24 +129,103 @@ export const updateHolidays = async (data: any) => {
   }
 };
 
-export const getHolidays = async (data: any) => {
-  try {
-    const policy: any = await CompanyPolicy.findOne({
-      company: new mongoose.Types.ObjectId(data.company),
-    });
-    if (policy) {
-      return {
-        status: "success",
-        data: policy.holidays || [],
-        message: "Successfully retrieved holidays",
-        statusCode: statusCode.success,
-      };
-    } else {
+export const updateWorkTiming = async(data : any) => {
+  try
+  {
+    const policy: any = await CompanyPolicy.findOne({ company: data.company });
+
+    if (!policy) {
       return {
         status: "success",
         message: "Policy not found",
-        data: "Policy not found",
+        data: null,
         statusCode: statusCode.info,
+      };
+    }
+
+
+    policy.workTiming = data.workTiming?.workTiming || []
+    const savedPolicy = await policy.save()
+
+    return {
+      status: "success",
+      data: savedPolicy,
+      message: "WorkTiming updated successfully",
+      statusCode: statusCode.success,
+    };
+  }
+  catch(err : any)
+  {
+    throw new Error(err);
+  }
+}
+
+export const updateWorkLocations = async (data: any) => {
+  try {
+    const policy: any = await CompanyPolicy.findOne({ company: data.company });
+
+    if (!policy) {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: null,
+        statusCode: statusCode.info,
+      };
+    }
+
+    if (data?.workLocation?.edit === 1) {
+      const index = policy.workLocations.findIndex(
+        (item: any) => item.locationName === data.workLocation?.oldLocation
+      );
+
+      if (index !== -1) {
+        policy.workLocations[index] = data.workLocation;
+        const savedPolicy = await policy.save();
+
+        return {
+          status: "success",
+          data: savedPolicy,
+          message: "Location have been updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          message: "The specified location does not exist",
+          data: null,
+          statusCode: statusCode.info,
+        };
+      }
+    } else if (data?.workLocation?.delete === 1) {
+      const index = policy.workLocations.findIndex(
+        (item: any) => item.locationName === data.workLocation?.locationName
+      );
+      if (index !== -1) {
+        policy.workLocations.splice(index, 1);
+        const savedPolicy = await policy.save();
+        return {
+          status: "success",
+          data: savedPolicy,
+          message: "Holidays updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          message: "The specified holiday does not exist",
+          data: null,
+          statusCode: statusCode.info,
+        };
+      }
+    } else {
+      policy.workLocations.push(data.workLocation);
+      const savedPolicy = await policy.save();
+
+      return {
+        status: "success",
+        data: savedPolicy,
+        message: "Location updated successfully",
+        statusCode: statusCode.success,
       };
     }
   } catch (err: any) {

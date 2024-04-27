@@ -45,15 +45,17 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const createdComp : any = await comp.save();
 
-    createdComp.companyOrg = createdComp._id
-    await createdComp.save()
-
     const compPolicy = new CompanyPolicy({
       company: createdComp._id,
       createdBy:user._id
     });
 
     const createdCompPolicy : any = await compPolicy.save();
+
+    createdComp.policy = createdCompPolicy._id
+    createdComp.companyOrg = createdComp._id
+    await createdComp.save()
+
 
     const profileDetail = new ProfileDetails({
       user: user._id
