@@ -56,6 +56,31 @@ export const getHolidays = async (data: any) => {
   }
 };
 
+export const getWorkLocations = async (data: any) => {
+  try {
+    const policy: any = await CompanyPolicy.findOne({
+      company: new mongoose.Types.ObjectId(data.company),
+    });
+    if (policy) {
+      return {
+        status: "success",
+        data: policy.workLocations || [],
+        message: "Successfully retrieved Locations",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: "Policy not found",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
 export const updateHolidays = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
