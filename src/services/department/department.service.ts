@@ -17,8 +17,6 @@ export const createDepartmentCategoryService = async (
 ) => {
   try {
     req.body.user = req.userId;
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
     const { status, data } = await createDepartmentCategory(req.body);
     if (status === "success") {
       res.status(200).send({
@@ -40,8 +38,6 @@ export const createDepartmentService = async (
 ) => {
   try {
     req.body.user = req.userId;
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
     const { status, data } = await createDepartment(req.body);
     if (status === "success") {
       res.status(200).send({
@@ -62,8 +58,7 @@ export const getCategoryDepartmentCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = req.bodyData.companyOrg;
+    req.body.company = new mongoose.Types.ObjectId(req.query.company)
     const { status, data } = await getCategoryDepartmentCount(req.body);
     if (status === "success") {
       res.status(200).send({
@@ -89,8 +84,7 @@ export const getCategoryDepartmentService = async (
     const search = req.query.search || undefined;
     const { data, status, totalPages } = await getCategoryDepartment({
       search: search,
-      company: req.bodyData.company,
-      companyOrg: req.bodyData.companyOrg,
+      company: new mongoose.Types.ObjectId(req.query.company),
       page: Number(page),
       limit: Number(limit),
     });
@@ -122,8 +116,7 @@ export const getDepartmentService = async (
     const { data, status, totalPages } = await getAllDepartment({
       category: new mongoose.Types.ObjectId(req.params.category),
       search: search,
-      company: req.bodyData.company,
-      companyOrg: req.bodyData.companyOrg,
+      company: new mongoose.Types.ObjectId(req.query.company),
       page: Number(page),
       limit: Number(limit),
     });

@@ -3,7 +3,6 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface DepartmentI extends Document {
   user: mongoose.Schema.Types.ObjectId;
   company: mongoose.Schema.Types.ObjectId;
-  companyOrg: mongoose.Schema.Types.ObjectId;
   category:mongoose.Schema.Types.ObjectId;
   title:string;
   code:string;
@@ -19,11 +18,6 @@ const DepartmentSchema: Schema<DepartmentI> = new Schema<DepartmentI>({
     ref: "User",
   },
   company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Company",
-    required : true
-  },
-  companyOrg: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Company",
     required : true

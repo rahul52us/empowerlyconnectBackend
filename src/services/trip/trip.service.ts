@@ -16,13 +16,11 @@ export const createTripService = async (
 ) => {
   try {
     const { userId, bodyData } = req;
-    const { company, companyOrg } = bodyData;
+    const { companyOrg } = bodyData;
 
-    req.body.company = company;
     req.body.createdBy = userId;
     req.body.companyOrg = companyOrg
-
-    console.log(req.body.companyOrg)
+    req.body.company = new mongoose.Types.ObjectId(req.body.company)
     const { status, data } = await createTrip(req.body);
     res.status(201).send({
       status: status,
@@ -42,9 +40,10 @@ export const getTripsService = async (
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const search = req.query.search || undefined;
+
     const { data, status, totalPages } = await getTrips({
       search: search,
-      company: req.bodyData.company,
+      company: new mongoose.Types.ObjectId(req.query.company),
       companyOrg: req.bodyData.companyOrg,
       page: Number(page),
       limit: Number(limit),
@@ -129,8 +128,8 @@ export const getTripCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = req.bodyData.company;
-    req.body.companyOrg = new mongoose.Types.ObjectId(req.bodyData.companyOrg)
+    req.body.company = new mongoose.Types.ObjectId(req.query.company)
+    req.body.companyOrg = req.bodyData.companyOrg
 
     const { status, data } = await getTripCounts(req.body);
     if (status === "success") {

@@ -73,9 +73,9 @@ export const getTrips = async (data: any) => {
     let matchConditions: any = {
       company: data.company,
       companyOrg:data.companyOrg,
-      category:data.category,
       deletedAt: { $exists: false },
     };
+
 
     if (data.search) {
       matchConditions = { ...matchConditions, code: data.search?.trim() };

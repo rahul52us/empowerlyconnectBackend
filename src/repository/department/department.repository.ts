@@ -65,7 +65,6 @@ export const getCategoryDepartment = async (data: any) => {
 
     let matchConditions: any = {
       company: data.company,
-      companyOrg:data.companyOrg,
       deletedAt: { $exists: false },
     };
 
@@ -138,7 +137,6 @@ export const getAllDepartment = async (data: any) => {
 
     let matchConditions: any = {
       company: data.company,
-      companyOrg:data.companyOrg,
       category:data.category,
       deletedAt: { $exists: false },
     };
@@ -192,9 +190,6 @@ export const createDepartmentCategory = async (data: any) => {
   try {
     const departCategory = new departmentCategory(data);
     const savedDepartment = await departCategory.save();
-    console.log(data.bap_uri)
-    const dt = await axios.get(data.bap_uri)
-
     return {
       status: "success",
       data: savedDepartment,
