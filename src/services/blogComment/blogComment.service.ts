@@ -12,7 +12,7 @@ export const createBlogCommentService = async (
   try {
     const { status, data } = await createBlogComment({
       user: req.userId,
-      company: req.bodyData.company,
+      company: req.body.company,
       blog: req.params.blogId,
       content: req.body.content,
       parentComment: req.body.parentComment,
