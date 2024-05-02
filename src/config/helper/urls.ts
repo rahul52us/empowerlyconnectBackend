@@ -9,3 +9,5 @@ if(process.env.NODE_ENV === "production"){
 else {
     baseURL = process.env.FRONTEND_BASE_DEV_URL
 }
+
+export {baseURL}

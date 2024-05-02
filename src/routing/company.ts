@@ -10,8 +10,8 @@ const router = express.Router();
 router.post("/create", createCompany);
 router.get("/search", filterCompany);
 router.get('/details', getCompanyDetailsByNameService)
-router.post('/policy/holidays',authenticate,getHolidayService)
-router.post('/policy/workLocations',authenticate,getWorkLocationservice)
+router.get('/policy/holidays',authenticate,getHolidayService)
+router.get('/policy/workLocations',authenticate,getWorkLocationservice)
 router.put('/policy/holidays',authenticate,updateHolidayService)
 router.put('/policy/workTiming',authenticate,updateWorkTimingService)
 router.put('/policy/workLocation',authenticate,updateWorkLocationService)

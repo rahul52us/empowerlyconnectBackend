@@ -6,6 +6,7 @@ import SendMail from "../../config/sendMail/sendMail";
 import { generateResetPasswordToken } from "../../config/helper/generateToken";
 import { FORGOT_PASSWORD_EMAIL_TOKEN_TYPE } from "../../config/sendMail/utils";
 import Token from "../../schemas/Token/Token";
+import { baseURL } from "../../config/helper/urls";
 
 const loginUserService = async (
   req: Request,
@@ -96,7 +97,7 @@ const forgotPasswordService = async (
       const sendMail: any = await SendMail(
       user.name,
       user.username,
-      `${process.env.RESET_PASSWORD_LINK}/${resetData.token}`,
+      `${baseURL}/reset-password/${resetData.token}`,
       'Reset Your Password',
       'forgot_email_templates.html'
     );

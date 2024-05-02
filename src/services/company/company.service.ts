@@ -29,7 +29,7 @@ export const getCompanyDetailsByNameService = async (req : any, res : Response, 
 export const getHolidayService = async (req : any, res : Response, next : NextFunction) => {
     try
     {
-        const {status , data, statusCode, message} = await getHolidays({company : req.body.company})
+        const {status , data, statusCode, message} = await getHolidays({company : req.query.company})
         return res.status(statusCode).send({
             message : message,
             data : data,
@@ -45,7 +45,7 @@ export const getHolidayService = async (req : any, res : Response, next : NextFu
 export const getWorkLocationservice = async (req : any, res : Response, next : NextFunction) => {
     try
     {
-        const {status , data, statusCode, message} = await getWorkLocations({company : req.body.company})
+        const {status , data, statusCode, message} = await getWorkLocations({company : req.query.company})
         return res.status(statusCode).send({
             message : message,
             data : data,

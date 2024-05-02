@@ -85,8 +85,7 @@ const getAllEmploysService = async (
     const { data, status, totalPages } = await getEmployes({
       id: req.userId,
       search: search,
-      company: req.bodyData.company,
-      companyOrg: req.bodyData.companyOrg,
+      company: new mongoose.Types.ObjectId(req.query.company),
       page: Number(page),
       limit: Number(limit),
     });

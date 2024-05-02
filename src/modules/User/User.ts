@@ -20,6 +20,7 @@ import {
   REGISTER_NEW_USER_TOKEN_TYPE,
 } from "../config/sendMail/utils";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
+import {baseURL} from '../../config/helper/urls'
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
@@ -42,6 +43,7 @@ const MeUser = async (req: any, res: Response): Promise<any> => {
   });
 };
 
+console.log('the base url', baseURL)
 const createUser = async (
   req: Request,
   res: Response,
@@ -97,7 +99,7 @@ const createUser = async (
         const sendMail: any = await SendMail(
           savedUser.name,
           savedUser.username,
-          `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
+          `${baseURL}/verify-account/${token}`,
           "Register New User",
           "Register_email_templates.html"
         );
@@ -153,7 +155,7 @@ const createUser = async (
       const sendMail: any = await SendMail(
         createdUser.username,
         createdUser.username,
-        `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
+        `${baseURL}/verify-account/${token}`,
         "Verify Your Account",
         "Register_email_templates.html"
       );
