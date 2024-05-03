@@ -1,5 +1,5 @@
 import express from "express";
-import { MeUser, createUser,forgotPassword, resetPassword, VerifyEmailToken, getUsersByCompany, updateUserProfile } from "../modules/User/User";
+import { MeUser, createUser,resetPassword, VerifyEmailToken, getUsersByCompany, updateUserProfile } from "../modules/User/User";
 import authenticate from "../modules/config/authenticate";
 import { loginUserService,changePasswordService, forgotPasswordService } from "../services/auth/auth.service";
 const router = express.Router();

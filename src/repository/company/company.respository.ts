@@ -81,6 +81,31 @@ export const getWorkLocations = async (data: any) => {
   }
 };
 
+export const getWorkTiming = async (data: any) => {
+  try {
+    const policy: any = await CompanyPolicy.findOne({
+      company: new mongoose.Types.ObjectId(data.company),
+    });
+    if (policy) {
+      return {
+        status: "success",
+        data: policy.workTiming || [],
+        message: "Successfully retrieved Timings",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: "Policy not found",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
 export const updateHolidays = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
@@ -105,7 +130,7 @@ export const updateHolidays = async (data: any) => {
 
         return {
           status: "success",
-          data: savedPolicy,
+          data: savedPolicy.holidays,
           message: "Holidays have been updated successfully",
           statusCode: statusCode.success,
         };
@@ -126,7 +151,7 @@ export const updateHolidays = async (data: any) => {
         const savedPolicy = await policy.save();
         return {
           status: "success",
-          data: savedPolicy,
+          data: savedPolicy.holidays,
           message: "Holidays updated successfully",
           statusCode: statusCode.success,
         };
@@ -168,13 +193,12 @@ export const updateWorkTiming = async(data : any) => {
       };
     }
 
-
     policy.workTiming = data.workTiming?.workTiming || []
     const savedPolicy = await policy.save()
 
     return {
       status: "success",
-      data: savedPolicy,
+      data: savedPolicy.workTiming,
       message: "WorkTiming updated successfully",
       statusCode: statusCode.success,
     };
@@ -209,7 +233,7 @@ export const updateWorkLocations = async (data: any) => {
 
         return {
           status: "success",
-          data: savedPolicy,
+          data: savedPolicy.workLocations,
           message: "Location have been updated successfully",
           statusCode: statusCode.success,
         };
@@ -230,7 +254,7 @@ export const updateWorkLocations = async (data: any) => {
         const savedPolicy = await policy.save();
         return {
           status: "success",
-          data: savedPolicy,
+          data: savedPolicy.workLocations,
           message: "Holidays updated successfully",
           statusCode: statusCode.success,
         };
@@ -248,7 +272,7 @@ export const updateWorkLocations = async (data: any) => {
 
       return {
         status: "success",
-        data: savedPolicy,
+        data: savedPolicy.workLocations,
         message: "Location updated successfully",
         statusCode: statusCode.success,
       };

@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express"
-import { getCompanyDetailsByName, getHolidays, getWorkLocations, updateHolidays, updateWorkLocations, updateWorkTiming } from "../../repository/company/company.respository"
+import { getCompanyDetailsByName, getHolidays, getWorkLocations, getWorkTiming, updateHolidays, updateWorkLocations, updateWorkTiming } from "../../repository/company/company.respository"
 import { generateError } from "../../config/Error/functions"
 import mongoose from "mongoose"
 
@@ -58,6 +58,21 @@ export const getWorkLocationservice = async (req : any, res : Response, next : N
     }
 }
 
+export const getWorkTimingService = async (req : any, res : Response, next : NextFunction) => {
+    try
+    {
+        const {status , data, statusCode, message} = await getWorkTiming({company : req.query.company})
+        return res.status(statusCode).send({
+            message : message,
+            data : data,
+            status : status
+        })
+    }
+    catch(err : any)
+    {
+        next(err)
+    }
+}
 
 export const updateHolidayService = async (req : any, res : Response, next : NextFunction) => {
     try

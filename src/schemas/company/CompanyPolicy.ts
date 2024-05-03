@@ -6,7 +6,6 @@ interface WorkTiming {
   daysOfWeek: string[];
 }
 
-
 interface CompanyPolicyI extends Document {
   company: mongoose.Schema.Types.ObjectId;
   createdBy:mongoose.Schema.Types.ObjectId;
