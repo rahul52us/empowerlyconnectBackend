@@ -43,7 +43,6 @@ const MeUser = async (req: any, res: Response): Promise<any> => {
   });
 };
 
-console.log('the base url', baseURL)
 const createUser = async (
   req: Request,
   res: Response,
