@@ -8,6 +8,8 @@ import {
   getCategoryDepartmentCountService,
   getCategoryDepartmentService,
   getDepartmentService,
+  updateDepartmentCategoryService,
+  updateDepartmentService,
 } from "../services/department/department.service";
 
 const router = express.Router();
@@ -21,6 +23,8 @@ router.get(
   authenticate,
   getCategoryDepartmentCountService
 );
+router.put("/category/:id", authenticate, updateDepartmentCategoryService);
+router.put("/:id", authenticate, updateDepartmentService);
 router.delete("/:id", authenticate, deleteDepartmentService);
 router.delete('/category/:id',authenticate,deleteDepartmentCategoryService)
 export default router;

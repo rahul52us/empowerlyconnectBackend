@@ -7,6 +7,8 @@ import {
   getAllDepartment,
   deleteDepartment,
   deleteDepartmentCategory,
+  updateDepartmentCategory,
+  updateDepartment
 } from "../../repository/department/department.repository";
 import mongoose from "mongoose";
 
@@ -30,6 +32,38 @@ export const createDepartmentCategoryService = async (
     next(err);
   }
 };
+
+export const updateDepartmentCategoryService = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const {status, statusCode, data , message} = await updateDepartmentCategory({...req.body,_id : req.params.id})
+    return res.status(statusCode).send({
+      message,
+      status:status,
+      data : data
+    })
+  }
+  catch(err)
+  {
+    next(err)
+  }
+}
+
+export const updateDepartmentService = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const {status, statusCode, data , message} = await updateDepartment({...req.body,_id : req.params.id})
+    return res.status(statusCode).send({
+      message,
+      status:status,
+      data : data
+    })
+  }
+  catch(err)
+  {
+    next(err)
+  }
+}
 
 export const createDepartmentService = async (
   req: any,

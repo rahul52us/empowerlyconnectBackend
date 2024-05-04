@@ -41,9 +41,9 @@ const DepartmentSchema: Schema<DepartmentI> = new Schema<DepartmentI>({
   },
 });
 
-const departmentCategory = mongoose.model<DepartmentI>(
+const DepartmentCategory = mongoose.model<DepartmentI>(
   "DepartmentCategory",
   DepartmentSchema
 );
 
-export default departmentCategory;
+export default DepartmentCategory;

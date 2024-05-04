@@ -1,7 +1,6 @@
-import departmentCategory from "../../schemas/Department/DepartmentCategory.schema";
+import DepartmentCategory from "../../schemas/Department/DepartmentCategory.schema";
 import Department from "../../schemas/Department/Department.schema";
 import mongoose from "mongoose";
-import axios from 'axios'
 
 export const createDepartment = async (data: any) => {
   try {
@@ -46,7 +45,7 @@ export const getCategoryDepartmentCount = async (data: any) => {
         },
       }
     );
-    const result = await departmentCategory.aggregate(pipeline);
+    const result = await DepartmentCategory.aggregate(pipeline);
     return {
       status: "success",
       data: result.length > 0 ? result[0].count : 0,
@@ -103,8 +102,8 @@ export const getCategoryDepartment = async (data: any) => {
     ];
 
     const [resultData, countDocuments]: any = await Promise.all([
-      departmentCategory.aggregate(documentPipeline),
-      departmentCategory.aggregate([
+      DepartmentCategory.aggregate(documentPipeline),
+      DepartmentCategory.aggregate([
         ...pipeline,
         {
           $group: {
@@ -188,7 +187,7 @@ export const getAllDepartment = async (data: any) => {
 
 export const createDepartmentCategory = async (data: any) => {
   try {
-    const departCategory = new departmentCategory(data);
+    const departCategory = new DepartmentCategory(data);
     const savedDepartment = await departCategory.save();
     return {
       status: "success",
@@ -198,6 +197,68 @@ export const createDepartmentCategory = async (data: any) => {
     return {
       status: "error",
       data: err
+    };
+  }
+};
+
+export const updateDepartmentCategory = async (data: any) => {
+  try {
+    const department : any = await DepartmentCategory.findByIdAndUpdate(data._id)
+    if(department && department.company?.toString() === data.company){
+      department.title = data.title
+      department.code = data.code
+      await department.save()
+      return {
+        status : 'success',
+        message : 'Category has been Updated Successfully',
+        statusCode : 200,
+        data : department
+      }
+    }
+    else {
+      return {
+        status : 'success',
+        message : 'Category does not exists',
+        statusCode : 300
+      }
+    }
+  } catch (err : any) {
+    return {
+      status: "error",
+      message : err?.message,
+      data: err?.message,
+      statusCode : 500
+    };
+  }
+};
+
+export const updateDepartment = async (data: any) => {
+  try {
+    const department : any = await Department.findByIdAndUpdate(data._id)
+    if(department && department.company?.toString() === data.company && department.category?.toString() === data.category){
+      department.title = data.title
+      department.code = data.code
+      await department.save()
+      return {
+        status : 'success',
+        message : 'Department has been Updated Successfully',
+        statusCode : 200,
+        data : department
+      }
+    }
+    else {
+      return {
+        status : 'success',
+        message : 'Department does not exists',
+        statusCode : 300
+      }
+    }
+  } catch (err : any) {
+    return {
+      status: "error",
+      message : err?.message,
+      data: err?.message,
+      statusCode : 500
     };
   }
 };
@@ -231,7 +292,7 @@ export const deleteDepartment = async(id : mongoose.Types.ObjectId) => {
 export const deleteDepartmentCategory = async(id : mongoose.Types.ObjectId) => {
   try
   {
-    const departs = await departmentCategory.findByIdAndUpdate(id,{deletedAt : new Date()})
+    const departs = await DepartmentCategory.findByIdAndUpdate(id,{deletedAt : new Date()})
     await Department.updateMany({ category: id }, { $set: { deletedAt: new Date() } });
     if(departs){
       return {

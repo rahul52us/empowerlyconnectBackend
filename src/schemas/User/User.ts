@@ -25,7 +25,7 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
     type : String
   },
   name: { type: String, trim: true },
-  username: { type: String, required: true, index: true, wtrim: true },
+  username: { type: String, required: true, index: true, trim: true },
   code : {type : String, index : true},
   companyOrg : {type : Schema.Types.ObjectId, ref:'Company'},
   pic: {

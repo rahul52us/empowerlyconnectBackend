@@ -5,6 +5,7 @@ export interface CompanyDetailsI extends Document {
   company: mongoose.Schema.Types.ObjectId;
   companyOrg: mongoose.Schema.Types.ObjectId;
   workHistory:mongoose.Schema.Types.Mixed;
+  managers:mongoose.Schema.Types.ObjectId[],
   eCode:string;
   position: string;
   department: string;
@@ -35,6 +36,13 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
       type: Schema.Types.ObjectId,
       ref: "Company",
       required: true,
+    },
+    managers: {
+      type: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+      }],
+      default: []
     },
     position: {
       type: mongoose.Schema.Types.Mixed,
