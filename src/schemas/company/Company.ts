@@ -1,5 +1,13 @@
 import mongoose, { Document } from "mongoose";
 
+interface addressInfo  {
+  address?:string;
+  country?:string;
+  state?:string;
+  city?:string;
+  pinCode?:string
+}
+
 interface CompanyI extends Document {
   company_name: string;
   companyOrg:mongoose.Schema.Types.ObjectId,
@@ -28,6 +36,7 @@ interface CompanyI extends Document {
   deletedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  addressInfo?:addressInfo[]
 }
 
 const companySchema = new mongoose.Schema<CompanyI>({
@@ -57,7 +66,15 @@ const companySchema = new mongoose.Schema<CompanyI>({
     default: false,
   },
   logo: {
-    type: String,
+    name : {
+      type : String
+    },
+    url : {
+      type : String
+    },
+    type : {
+      type : String
+    }
   },
   bio: {
     type: String,
@@ -89,29 +106,14 @@ const companySchema = new mongoose.Schema<CompanyI>({
   otherLinks: {
     type: [{ type: String }],
   },
-  address1: {
-    type: String,
-    trim: true,
-  },
-  address2: {
-    type: String,
-    trim: true,
-  },
-  country: {
-    type: String,
-    trim: true,
-  },
-  state: {
-    type: String,
-    trim: true,
-  },
-  pinCode: {
-    type: String,
-    trim: true,
-  },
-  city: {
-    type: String,
-    trim: true,
+  addressInfo: {
+    type: [{
+      address : String,
+      country: String,
+      state:String,
+      city: String,
+      pinCode: String
+    }]
   },
   deletedAt: {
     type: Date,

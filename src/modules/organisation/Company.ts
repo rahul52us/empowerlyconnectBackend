@@ -12,6 +12,7 @@ import DocumentDetails from '../../schemas/User/Document'
 import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
+import { uploadFile } from "../../repository/uploadDoc.repository";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -30,7 +31,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       throw generateError("Invalid token or token has expired", 400);
     }
 
-    const existsComp = await Company.findOne({ company_name: new RegExp(req.body.company_name?.trim(), 'i') });
+    const existsComp = await Company.findOne({ company_name: new RegExp(req.body.companyDetails?.company_name?.trim(), 'i') });
     if (existsComp) {
       throw generateError(
         `${existsComp.company_name} company already exists`,
@@ -38,10 +39,11 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
       );
     }
 
-    const comp = new Company({
-      company_name: req.body.company_name?.trim(),
+    const comp : any = new Company({
+      company_name: req.body.companyDetails?.company_name?.trim(),
       companyType : 'organisation',
-      is_active:true
+      is_active:true,
+      ...req.body.companyDetails
     });
 
     const createdComp : any = await comp.save();
@@ -116,6 +118,16 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
     }
 
     await token.deleteOne();
+
+    if (req.body.companyDetails.logo && req.body.companyDetails.logo !== "") {
+      let url = await uploadFile(req.body.companyDetails.logo);
+      comp.logo = {
+        name: req.body.companyDetails.logo.filename,
+        url: url,
+        type: req.body.companyDetails.logo.type,
+      };
+      await comp.save();
+    }
 
     const { password, ...rest } = updatedUser.toObject();
     return res.status(201).send({

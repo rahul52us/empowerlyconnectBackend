@@ -294,7 +294,7 @@ const resetPassword = async (
     await SendMail(
       user.name,
       user.username,
-      `${process.env.FRONTEND_BASE_URL}`,
+      `${baseURL}`,
       "Password Changed Successfully!",
       "reset_email_templates.html"
     );
