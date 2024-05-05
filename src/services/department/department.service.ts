@@ -114,7 +114,7 @@ export const getCategoryDepartmentService = async (
 ) => {
   try {
     const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
+    const limit = 50;
     const search = req.query.search || undefined;
     const { data, status, totalPages } = await getCategoryDepartment({
       search: search,
