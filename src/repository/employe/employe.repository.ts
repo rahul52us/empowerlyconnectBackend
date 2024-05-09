@@ -270,6 +270,14 @@ const getEmployeById = async (data: any) => {
           as: "workExperience",
         },
       },
+      {
+        $lookup: {
+          from: "companydetails",
+          localField: "_id",
+          foreignField: "user",
+          as: "companyDetail",
+        },
+      },
     ];
 
     const employeData = await User.aggregate(pipeline);
@@ -568,6 +576,30 @@ async function updateDocumentDetails(data: any) {
   }
 }
 
+async function updateCompanyDetails(data: any) {
+  try {
+    const docum = await CompanyDetails.findOne({ user: data.id });
+    if (docum) {
+      docum.details.push(data.details)
+      await docum.save();
+      return {
+        status: "success",
+        data: docum,
+      };
+    } else {
+      return {
+        status: "error",
+        data: "Company Details do not exist",
+      };
+    }
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+    };
+  }
+}
+
 export {
   createEmploye,
   updateEmployeProfileDetails,
@@ -579,4 +611,5 @@ export {
   updateFamilyDetails,
   updateWorkExperienceDetails,
   updateDocumentDetails,
+  updateCompanyDetails
 };

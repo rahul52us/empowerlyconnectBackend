@@ -7,22 +7,17 @@ export interface CompanyDetailsI extends Document {
   details: {
     doj: Date;
     confirmationDate: Date;
-    confirmationDueDate: Date;
-    managers: {
-      user: mongoose.Schema.Types.ObjectId;
-      active: boolean;
-      createdAt: Date;
-      deletedAt?: Date;
-    }[];
+    managers:mongoose.Schema.Types.ObjectId[];
     department: mongoose.Schema.Types.ObjectId;
     designation: mongoose.Schema.Types.ObjectId;
     noticePeriod: string;
-    workingLocation: string;
-    workTiming: string;
+    workingLocation: mongoose.Schema.Types.ObjectId[];
+    workTiming: mongoose.Schema.Types.ObjectId[];
     eCode: string;
     eType: string;
     eCategory: string;
     description: string;
+    createdAt : Date
   }[];
   workHistory: any[];
   is_active: boolean;
@@ -56,34 +51,26 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
         confirmationDate: {
           type: Date,
         },
-        confirmationDueDate: {
-          type: Date,
-        },
-        managers: [
-          {
-            user: { type: Schema.Types.ObjectId, ref: "User" },
-            active: { type: Boolean, default: false },
-            createdAt: { type: Date, default: new Date() },
-            deletedAt: { type: Date },
-          },
-        ],
+        managers: [{ type: Schema.Types.ObjectId, ref: "User" }],
         department: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Department',
+          ref: "Department",
         },
         designation: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'DepartmentCategory',
+          ref: "DepartmentCategory",
         },
         noticePeriod: {
           type: String,
         },
-        workingLocation: {
-          type: String,
-        },
-        workTiming: {
-          type: String,
-        },
+        workingLocation: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "workLocation",
+        }],
+        workTiming: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "workTiming",
+        }],
         eCode: {
           type: String,
         },
@@ -93,8 +80,12 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
         eCategory: {
           type: String,
         },
-        description : {
-          type : String
+        description: {
+          type: String,
+        },
+        createdAt : {
+          type : Date,
+          default : new Date()
         }
       },
     ],

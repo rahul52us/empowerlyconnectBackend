@@ -11,6 +11,7 @@ import {
   updateFamilyDetailsService,
   updateWorkExperienceService,
   updateDocumentService,
+  updateCompanyDetailsService,
 } from "../services/employe/employ.service";
 
 const router = express.Router();
@@ -22,6 +23,7 @@ router.get("/", authenticate, getAllEmploysService);
 router.get("/total/count", authenticate, getTotalEmployesService);
 router.get("/designation/count", authenticate, getCountDesignationStatusService);
 router.put("/bankDetails/:id",authenticate,updateBankDetialsService)
+router.put('/companyDetails/:id',authenticate,updateCompanyDetailsService)
 router.put('/familyDetails/:id',authenticate,updateFamilyDetailsService)
 router.put('/workExperience/:id',authenticate,updateWorkExperienceService)
 router.put('/updateDocuments/:id',authenticate,updateDocumentService)
