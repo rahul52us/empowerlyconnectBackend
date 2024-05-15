@@ -69,7 +69,11 @@ const loginValidation = Joi.object({
         "string.min": "username must have a minimum length of {#limit}",
         "string.max": "username should not exceed a maximum length of {#limit}",
         "any.required": "Username is required",
-      })
+      }),
+    loginType: Joi.string().valid('username', 'code').required().messages({
+        "any.only": "loginType must be either 'username' or 'code'",
+        "any.required": "Login type is required",
+    }),
 })
 
 const changePasswordValidation = Joi.object({

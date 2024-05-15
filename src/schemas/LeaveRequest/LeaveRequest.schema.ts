@@ -33,7 +33,9 @@ const LeaveRequestSchema = new mongoose.Schema({
     type: Date,
     reqiured: true,
   },
-  leaveType: {},
+  leaveType: {
+    type : String
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
