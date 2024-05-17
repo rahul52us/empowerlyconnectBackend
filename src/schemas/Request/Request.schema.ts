@@ -20,7 +20,7 @@ const ApprovalSchema: Schema = new mongoose.Schema(
     },
 );
 
-const LeaveRequestSchema = new mongoose.Schema({
+const RequestSchema = new mongoose.Schema({
   companyDetail : {
     type : mongoose.Schema.Types.ObjectId,
     ref : 'CompanyDetail'
@@ -46,11 +46,16 @@ const LeaveRequestSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  sendTo: {},
+  sendTo : [{
+    type : mongoose.Schema.Types.ObjectId
+  }],
   status: {
     type: String,
   },
-  approval: [ApprovalSchema],
+  approvals: [ApprovalSchema],
+  deletedAt : {
+    type : Date
+  },
   createdAt: {
     type: Date,
     default: new Date(),
@@ -60,4 +65,4 @@ const LeaveRequestSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("LeaveRequest", LeaveRequestSchema);
+export default mongoose.model("Request", RequestSchema);
