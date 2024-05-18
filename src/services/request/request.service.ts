@@ -1,6 +1,23 @@
 import { NextFunction, Response } from "express";
-import { createRequest, getRequests } from "../../repository/request/Request.repository";
+import { createRequest, getRequestById, getRequests } from "../../repository/request/Request.repository";
 import mongoose from "mongoose";
+
+
+export const getRequestByIdService = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const {status, statusCode, data, message} = await getRequestById({_id : new mongoose.Types.ObjectId(req.params.id)})
+    return res.status(statusCode).send({
+      status : status,
+      message : message,
+      data : data
+    })
+  }
+  catch(err)
+  {
+    next(err)
+  }
+}
 
 export const getRequestService = async (
   req: any,

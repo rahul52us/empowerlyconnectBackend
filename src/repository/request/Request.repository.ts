@@ -16,6 +16,63 @@ export const createRequest = async (data: any) => {
   }
 };
 
+export const getRequestById = async (data: any) => {
+  try {
+    const pipeline: any = [];
+
+    let matchConditions: any = {
+      deletedAt: { $exists: false },
+      _id : data._id
+    };
+
+    pipeline.push(
+      {
+        $match: matchConditions
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "sendTo",
+          foreignField: "_id",
+          as: "sendTo",
+        },
+      },
+      {
+        $limit : 1
+      }
+    );
+    let documentPipeline: any = [
+      ...pipeline,
+    ];
+
+    const [resultData]: any = await Promise.all([
+      Request.aggregate(documentPipeline),
+    ]);
+
+    if(resultData.length === 0){
+      return {
+        status: "error",
+      statusCode : 300,
+      data: resultData,
+      message : 'Request Does not Exists'
+      }
+    }
+    return {
+      status: "success",
+      statusCode : 200,
+      data: resultData,
+      message : 'Get Request Successfully'
+    };
+
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+      statusCode : 500
+    };
+  }
+};
+
 export const getRequests = async (data: any) => {
   try {
     const pipeline: any = [];
@@ -26,7 +83,15 @@ export const getRequests = async (data: any) => {
 
     pipeline.push(
       {
-        $match: matchConditions,
+        $match: matchConditions
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "sendTo",
+          foreignField: "_id",
+          as: "sendTo",
+        },
       },
     );
     let documentPipeline: any = [
