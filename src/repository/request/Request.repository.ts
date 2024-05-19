@@ -35,6 +35,30 @@ export const getRequestById = async (data: any) => {
           localField: "sendTo",
           foreignField: "_id",
           as: "sendTo",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                username: 1
+              }
+            }
+          ]
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                username: 1
+              }
+            }
+          ]
         },
       },
       {
