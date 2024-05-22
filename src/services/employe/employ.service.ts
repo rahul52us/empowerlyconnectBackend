@@ -15,6 +15,7 @@ import {
   updateCompanyDetails,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
+import { getRoleUsersService } from "../auth/auth.service";
 
 const createEmployeService = async (
   req: any,
@@ -294,7 +295,24 @@ const updateCompanyDetailsService = async (
   }
 };
 
-
+export const getUserRoleEmploye = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const company = new mongoose.Types.ObjectId(req.query.company)
+    const {status,statusCode,data} : any = await getRoleUsersService({company : company})
+    return res.status(statusCode).send({
+      status,
+      data
+    })
+  }
+  catch(err : any)
+  {
+    res.status(500).send({
+      status : 'error',
+      data : err?.message
+    })
+  }
+}
 export {
   createEmployeService,
   updateEmployeProfileService,

@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { changePasswordValidation, forgotEmailValidation, loginValidation } from "./utils/validation";
 import { generateError } from "../../config/Error/functions";
-import { changePassword, findUserByUserName, loginUser } from "../../repository/auth.repository";
+import { changePassword, findUserByUserName, getRoleUsers, loginUser, updateUserRole } from "../../repository/auth/auth.repository";
 import SendMail from "../../config/sendMail/sendMail";
 import { generateResetPasswordToken } from "../../config/helper/generateToken";
 import { FORGOT_PASSWORD_EMAIL_TOKEN_TYPE } from "../../config/sendMail/utils";
 import Token from "../../schemas/Token/Token";
 import { baseURL } from "../../config/helper/urls";
+import mongoose from "mongoose";
 
 const loginUserService = async (
   req: Request,
@@ -118,5 +119,42 @@ const forgotPasswordService = async (
   }
 };
 
+export const updateUserRoleService = async(id : string, role : string) => {
+  try
+  {
+    const {status, data} = await updateUserRole(id, role)
+    return {
+      status : status,
+      data : data
+    }
+  }
+  catch(err : any)
+  {
+    return {
+      status : 'error',
+      data : err?.message
+    }
+  }
+}
 
-export { loginUserService, changePasswordService, forgotPasswordService };
+const getRoleUsersService = async(company : any) => {
+  try
+  {
+    const {statusCode, status, data} = await getRoleUsers(company)
+    return {
+      statusCode,
+      status,
+      data
+    }
+  }
+  catch(err : any)
+  {
+    return {
+      status : 'error',
+      statusCode : 500,
+      data : err?.message
+    }
+  }
+}
+
+export { loginUserService, changePasswordService, forgotPasswordService, getRoleUsersService };

@@ -8,6 +8,7 @@ import { deleteFile, uploadFile } from "../uploadDoc.repository";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
 import Documents from "../../schemas/User/Document";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
+import { updateUserRoleService } from "../../services/auth/auth.service";
 
 const createEmploye = async (data: any) => {
   try {
@@ -151,6 +152,7 @@ const getEmployes = async (data: any) => {
     let matchConditions: any = {
       is_active:true,
       deletedAt: { $exists: false },
+      company:data.company
     };
 
     if (data.search) {
@@ -582,6 +584,7 @@ async function updateCompanyDetails(data: any) {
     if (docum) {
       docum.details.push(data.details)
       await docum.save();
+      await updateUserRoleService(data.id, data.details.eType)
       return {
         status: "success",
         data: docum,
@@ -597,6 +600,17 @@ async function updateCompanyDetails(data: any) {
       status: "error",
       data: err,
     };
+  }
+}
+
+export const getManagerByCompany = () => {
+  try
+  {
+
+  }
+  catch(err)
+  {
+
   }
 }
 
