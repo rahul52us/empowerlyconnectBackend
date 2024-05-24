@@ -36,7 +36,7 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
     company: {
       type: Schema.Types.ObjectId,
       ref: "Company",
-      required: true,
+      required: true
     },
     companyOrg: {
       type: Schema.Types.ObjectId,

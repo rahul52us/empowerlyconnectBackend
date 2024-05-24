@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Request from "../../schemas/Request/Request.schema";
 
 export const createRequest = async (data: any) => {
@@ -110,10 +111,41 @@ export const getRequests = async (data: any) => {
       },
       {
         $lookup: {
+          from: "work",
+          localField: "sendTo",
+          foreignField: "_id",
+          as: "sendTo",
+        },
+      },
+      {
+        $lookup: {
           from: "users",
           localField: "sendTo",
           foreignField: "_id",
           as: "sendTo",
+        },
+      },
+      {
+        $addFields: {
+          latestApproval: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: "$approvals",
+                  as: "approval",
+                  cond: {
+                    $eq: ["$$approval.user", new mongoose.Types.ObjectId(data.user)],
+                  },
+                },
+              },
+              -1,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          "latestApproval.status": data.status,
         },
       },
     );

@@ -219,8 +219,7 @@ const getEmployes = async (data: any) => {
       data: err,
     };
   }
-}
-;
+};
 
 const getEmployeById = async (data: any) => {
   try {
@@ -603,14 +602,86 @@ async function updateCompanyDetails(data: any) {
   }
 }
 
-export const getManagerByCompany = () => {
-  try
-  {
+export const getManagerEmployes = async(data : any) => {
+  try {
+    let matchConditions: any = {
+      is_active:true,
+      deletedAt: { $exists: false },
+      company:data.company
+    };
 
-  }
-  catch(err)
-  {
+    if (data.search) {
+      matchConditions = { ...matchConditions, code: data.search?.trim() };
+    }
 
+    if (data.managersId) {
+      matchConditions['details'] = {
+        $elemMatch: {
+          $eq: [{ $arrayElemAt: ['$details', -1] }]
+        },
+        managers: { $in: data.managersId }
+      };
+    }
+
+    const pipeline: any = [
+      {
+        $match: {
+          ...matchConditions,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userData",
+        },
+      },
+      {
+        $unwind: "$userData",
+      },
+      {
+        $lookup: {
+          from: "profiledetails",
+          localField: "userData.profile_details",
+          foreignField: "_id",
+          as: "profileDetails",
+        },
+      },
+    ];
+
+    let documentPipeline: any = [
+      ...pipeline,
+      { $sort: { createdAt: -1 } },
+      { $skip: (data.page - 1) * data.limit },
+      { $limit: Number(data.limit) },
+    ];
+
+    const [resultData, countDocuments]: any = await Promise.all([
+      CompanyDetails.aggregate(documentPipeline),
+      CompanyDetails.aggregate([
+        ...pipeline,
+        {
+          $group: {
+            _id: null,
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    const totalCounts = countDocuments.length > 0 ? countDocuments[0].count : 0;
+
+    return {
+      status: "success",
+      data: resultData,
+      totalPages: Math.ceil(totalCounts / data.limit),
+    };
+  } catch (err) {
+    return {
+      status: "error",
+      data: err,
+    };
   }
 }
 

@@ -29,10 +29,12 @@ export const getRequestService = async (
     const limit = req.query.limit || 10;
     const search = req.query.search || undefined;
 
-    const { data, status, totalPages } = await getRequests({
+    const { data, status , totalPages } = await getRequests({
       search: search,
+      status : req.body.status || "pending",
       company: new mongoose.Types.ObjectId(req.query.company),
       companyOrg: req.bodyData.companyOrg,
+      user:req.userId,
       page: Number(page),
       limit: Number(limit),
     });

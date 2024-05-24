@@ -18,7 +18,6 @@ const ApprovalSchema: Schema = new mongoose.Schema(
         default : new Date()
       }
     },
-
 );
 
 const RequestSchema = new mongoose.Schema({
@@ -26,13 +25,17 @@ const RequestSchema = new mongoose.Schema({
     type : mongoose.Schema.Types.ObjectId,
     ref : 'CompanyDetail'
   },
+  workingLocation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "workLocation",
+  },
   startDate: {
     type: Date,
-    required: true,
+    required: true
   },
   endDate: {
     type: Date,
-    reqiured: true,
+    reqiured: true
   },
   leaveType: {
     type : String

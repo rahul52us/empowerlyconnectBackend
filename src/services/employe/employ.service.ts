@@ -13,6 +13,7 @@ import {
   updateWorkExperienceDetails,
   updateDocumentDetails,
   updateCompanyDetails,
+  getManagerEmployes,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -313,6 +314,42 @@ export const getUserRoleEmploye = async(req : any, res : Response, next : NextFu
     })
   }
 }
+
+const getManagersEmploysService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const search = req.query.search || undefined;
+    const { data, status, totalPages } = await getManagerEmployes({
+      id: req.userId,
+      managerId:req.params.id,
+      search: search,
+      company: new mongoose.Types.ObjectId(req.query.company),
+      page: Number(page),
+      limit: Number(limit),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: status,
+        data: {
+          data,
+          totalPages,
+        },
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+
 export {
   createEmployeService,
   updateEmployeProfileService,
@@ -323,5 +360,6 @@ export {
   updateBankDetialsService,
   updateWorkExperienceService,
   updateDocumentService,
-  updateCompanyDetailsService
+  updateCompanyDetailsService,
+  getManagersEmploysService
 };
