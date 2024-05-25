@@ -610,20 +610,34 @@ async function updateCompanyDetails(data: any) {
 
 export const getManagerEmployes = async (data: any) => {
   try {
-
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
       company: data.company,
     };
 
-    if (data.search) {
-      matchConditions = { ...matchConditions, code: data.search.trim() };
-    }
-
     const pipeline: any = [
       {
         $match: matchConditions,
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userData',
+        },
+      },
+      {
+        $unwind: '$userData',
+      },
+      {
+        $lookup: {
+          from: 'departments',
+          localField: 'details.designation',
+          foreignField: '_id',
+          as: 'designation',
+        },
       },
       {
         $addFields: {
@@ -635,17 +649,21 @@ export const getManagerEmployes = async (data: any) => {
           'details.managers': { $in: data.managers },
         },
       },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'userData',
-        },
-      }
     ];
 
-    let documentPipeline: any = [
+    if (data.search) {
+      const searchRegex = new RegExp(data.search.trim(), 'i');
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'userData.username': { $regex: searchRegex } },
+            { 'userData.code': { $regex: searchRegex } },
+          ],
+        },
+      });
+    }
+
+    const documentPipeline: any = [
       ...pipeline,
       { $sort: { createdAt: -1 } },
       { $skip: (data.page - 1) * data.limit },
@@ -679,8 +697,6 @@ export const getManagerEmployes = async (data: any) => {
     };
   }
 };
-
-
 
 export {
   createEmploye,
