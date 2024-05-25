@@ -621,6 +621,16 @@ export const getManagerEmployes = async (data: any) => {
         $match: matchConditions,
       },
       {
+        $addFields: {
+          details: { $arrayElemAt: ['$details', -1] },
+        },
+      },
+      {
+        $match: {
+          'details.managers': { $in: data.managers },
+        },
+      },
+      {
         $lookup: {
           from: 'users',
           localField: 'user',
@@ -638,17 +648,7 @@ export const getManagerEmployes = async (data: any) => {
           foreignField: '_id',
           as: 'designation',
         },
-      },
-      {
-        $addFields: {
-          details: { $arrayElemAt: ['$details', -1] },
-        },
-      },
-      {
-        $match: {
-          'details.managers': { $in: data.managers },
-        },
-      },
+      }
     ];
 
     if (data.search) {

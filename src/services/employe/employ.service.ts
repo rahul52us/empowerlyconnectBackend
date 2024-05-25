@@ -323,7 +323,7 @@ const getManagersEmploysService = async (
   try {
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
-    const search = req.query.search || undefined;
+    const search = req.query.search?.trim() || undefined;
     const { data, status, totalPages } = await getManagerEmployes({
       id: req.userId,
       managers:[new mongoose.Types.ObjectId(req.params.id)],
