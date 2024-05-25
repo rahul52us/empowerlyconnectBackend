@@ -326,7 +326,7 @@ const getManagersEmploysService = async (
     const search = req.query.search || undefined;
     const { data, status, totalPages } = await getManagerEmployes({
       id: req.userId,
-      managerId:req.params.id,
+      managers:[new mongoose.Types.ObjectId(req.params.id)],
       search: search,
       company: new mongoose.Types.ObjectId(req.query.company),
       page: Number(page),

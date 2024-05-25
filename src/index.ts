@@ -9,6 +9,7 @@ import http from "http";
 import * as path from 'path'
 import { setupSocket } from "./modules/chatSocket/chatSocket";
 import { statusCode } from "./config/helper/statusCode";
+// import './testing/index'
 
 const app = express();
 dotenv.config();

@@ -13,6 +13,9 @@ const ApprovalSchema: Schema = new mongoose.Schema(
         type: mongoose.Types.ObjectId,
         ref: "User",
       },
+      sendTo:[{
+        type : mongoose.Schema.Types.ObjectId
+      }],
       createdAt : {
         type : Date,
         default : new Date()

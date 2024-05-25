@@ -111,14 +111,6 @@ export const getRequests = async (data: any) => {
       },
       {
         $lookup: {
-          from: "work",
-          localField: "sendTo",
-          foreignField: "_id",
-          as: "sendTo",
-        },
-      },
-      {
-        $lookup: {
           from: "users",
           localField: "sendTo",
           foreignField: "_id",
@@ -149,6 +141,21 @@ export const getRequests = async (data: any) => {
         },
       },
     );
+
+    if (data.managerId) {
+      pipeline.push(
+        {
+          $match: {
+            "sendTo": {
+              $elemMatch: {
+                _id: new mongoose.Types.ObjectId(data.managerId),
+              },
+            },
+          },
+        }
+      );
+    }
+
     let documentPipeline: any = [
       ...pipeline,
       { $sort: { createdAt: -1 } },

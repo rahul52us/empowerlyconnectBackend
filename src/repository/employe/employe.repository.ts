@@ -9,12 +9,18 @@ import FamilyDetails from "../../schemas/User/FamilyDetails";
 import Documents from "../../schemas/User/Document";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
 import { updateUserRoleService } from "../../services/auth/auth.service";
+import mongoose from "mongoose";
 
 const createEmploye = async (data: any) => {
   try {
     const user = await User.findOne({ username: data.username });
     if (user) {
-      throw generateError(`${user.username} user is already exists`, 400);
+      throw generateError(`${user.username} user is already exists`, 300);
+    }
+
+    const userCode = await User.findOne({ code: data.code });
+    if (userCode) {
+      throw generateError(`${userCode.username} is already exists with ${data.code}`, 300);
     }
 
     const createdUser = new User({
@@ -602,52 +608,41 @@ async function updateCompanyDetails(data: any) {
   }
 }
 
-export const getManagerEmployes = async(data : any) => {
+export const getManagerEmployes = async (data: any) => {
   try {
+
     let matchConditions: any = {
-      is_active:true,
+      is_active: true,
       deletedAt: { $exists: false },
-      company:data.company
+      company: data.company,
     };
 
     if (data.search) {
-      matchConditions = { ...matchConditions, code: data.search?.trim() };
-    }
-
-    if (data.managersId) {
-      matchConditions['details'] = {
-        $elemMatch: {
-          $eq: [{ $arrayElemAt: ['$details', -1] }]
-        },
-        managers: { $in: data.managersId }
-      };
+      matchConditions = { ...matchConditions, code: data.search.trim() };
     }
 
     const pipeline: any = [
       {
+        $match: matchConditions,
+      },
+      {
+        $addFields: {
+          details: { $arrayElemAt: ['$details', -1] },
+        },
+      },
+      {
         $match: {
-          ...matchConditions,
+          'details.managers': { $in: data.managers },
         },
       },
       {
         $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "userData",
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userData',
         },
-      },
-      {
-        $unwind: "$userData",
-      },
-      {
-        $lookup: {
-          from: "profiledetails",
-          localField: "userData.profile_details",
-          foreignField: "_id",
-          as: "profileDetails",
-        },
-      },
+      }
     ];
 
     let documentPipeline: any = [
@@ -673,17 +668,19 @@ export const getManagerEmployes = async(data : any) => {
     const totalCounts = countDocuments.length > 0 ? countDocuments[0].count : 0;
 
     return {
-      status: "success",
+      status: 'success',
       data: resultData,
       totalPages: Math.ceil(totalCounts / data.limit),
     };
   } catch (err) {
     return {
-      status: "error",
+      status: 'error',
       data: err,
     };
   }
-}
+};
+
+
 
 export {
   createEmploye,
