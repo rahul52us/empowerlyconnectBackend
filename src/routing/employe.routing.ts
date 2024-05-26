@@ -14,6 +14,7 @@ import {
   updateCompanyDetailsService,
   getUserRoleEmploye,
   getManagersEmploysService,
+  getManagerEmployesCountsService,
 } from "../services/employe/employ.service";
 
 const router = express.Router();
@@ -31,5 +32,6 @@ router.put('/familyDetails/:id',authenticate,updateFamilyDetailsService)
 router.put('/workExperience/:id',authenticate,updateWorkExperienceService)
 router.put('/updateDocuments/:id',authenticate,updateDocumentService)
 router.get('/users/roles',authenticate,getUserRoleEmploye)
+router.get('/managers/employes/count',authenticate,getManagerEmployesCountsService)
 
 export default router;

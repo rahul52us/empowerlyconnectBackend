@@ -706,6 +706,73 @@ export const getManagerEmployes = async (data: any) => {
   }
 };
 
+const getManagerEmployesCounts = async (data: any) => {
+  try {
+    let matchConditions: any = {
+      is_active: true,
+      deletedAt: { $exists: false },
+      company: data.company
+    };
+
+    const pipeline: any = [
+      {
+        $match: matchConditions
+      },
+      {
+        $addFields: {
+          details: { $arrayElemAt: ['$details', -1] },
+        },
+      },
+      {
+        $unwind: '$details.managers',
+      },
+      {
+        $group: {
+          _id: '$details.managers',
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'managerDetails'
+        }
+      },
+      {
+        $unwind: '$managerDetails'
+      },
+      {
+        $addFields: {
+          title: { $concat: ['$managerDetails.name', ' ', '(', '$managerDetails.code',')'] }
+        }
+      },
+      {
+        $project: {
+          managerDetails: 0
+        }
+      }
+    ];
+
+    const resultData = await CompanyDetails.aggregate(pipeline).exec();
+
+    return {
+      status: 'success',
+      data: resultData,
+    };
+  } catch (err) {
+    return {
+      status: 'error',
+      data: err,
+    };
+  }
+};
+
+
+
+
+
 export {
   createEmploye,
   updateEmployeProfileDetails,
@@ -717,5 +784,6 @@ export {
   updateFamilyDetails,
   updateWorkExperienceDetails,
   updateDocumentDetails,
-  updateCompanyDetails
+  updateCompanyDetails,
+  getManagerEmployesCounts
 };
