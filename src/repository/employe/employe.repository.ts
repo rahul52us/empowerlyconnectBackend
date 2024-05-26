@@ -161,10 +161,6 @@ const getEmployes = async (data: any) => {
       company:data.company
     };
 
-    if (data.search) {
-      matchConditions = { ...matchConditions, code: data.search?.trim() };
-    }
-
     const pipeline: any = [
       {
         $match: {
@@ -191,6 +187,18 @@ const getEmployes = async (data: any) => {
         },
       },
     ];
+
+    if (data.search) {
+      const searchRegex = new RegExp(data.search.trim(), 'i');
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'userData.username': { $regex: searchRegex } },
+            { 'userData.code': { $regex: searchRegex } },
+          ],
+        },
+      });
+    }
 
     let documentPipeline: any = [
       ...pipeline,
