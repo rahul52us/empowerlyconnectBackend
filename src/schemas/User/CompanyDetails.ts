@@ -54,11 +54,11 @@ const CompanyDetailsSchema: Schema<CompanyDetailsI> =
         managers: [{ type: Schema.Types.ObjectId, ref: "User" }],
         department: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Department",
+          ref: "DepartmentCategory",
         },
         designation: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "DepartmentCategory",
+          ref: "Department",
         },
         noticePeriod: {
           type: String,

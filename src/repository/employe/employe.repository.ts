@@ -20,7 +20,10 @@ const createEmploye = async (data: any) => {
 
     const userCode = await User.findOne({ code: data.code });
     if (userCode) {
-      throw generateError(`${userCode.username} is already exists with ${data.code}`, 300);
+      throw generateError(
+        `${userCode.username} is already exists with ${data.code}`,
+        300
+      );
     }
 
     const createdUser = new User({
@@ -43,21 +46,21 @@ const createEmploye = async (data: any) => {
     }
 
     const comDetails = new CompanyDetails({
-      user : savedUser._id,
-      company:data.company,
-      companyOrg:data.companyOrg,
-      department:data.department,
-      designation:data.designation,
-      position:data.position,
-      eType:data.eType,
-      eCategory:data.eCategory,
-      workingLocation:data.workingLocation,
-      workTiming:data.workTiming,
-      is_active:true
-    })
+      user: savedUser._id,
+      company: data.company,
+      companyOrg: data.companyOrg,
+      department: data.department,
+      designation: data.designation,
+      position: data.position,
+      eType: data.eType,
+      eCategory: data.eCategory,
+      workingLocation: data.workingLocation,
+      workTiming: data.workTiming,
+      is_active: true,
+    });
 
-    const savedComDetail = await comDetails.save()
-    savedUser.companyDetail = await savedComDetail._id
+    const savedComDetail = await comDetails.save();
+    savedUser.companyDetail = await savedComDetail._id;
 
     const profile = new ProfileDetails({
       user: savedUser._id,
@@ -117,7 +120,7 @@ const createEmploye = async (data: any) => {
         documentDetail: savedDocument.toObject(),
         WorkExperience: savedWorkExperience.toObject(),
         FamilyDetail: savedFamilyDetail.toObject(),
-        companyDetail: savedComDetail.toObject()
+        companyDetail: savedComDetail.toObject(),
       },
     };
   } catch (err: any) {
@@ -156,9 +159,9 @@ const updateEmployeProfileDetails = async (data: any) => {
 const getEmployes = async (data: any) => {
   try {
     let matchConditions: any = {
-      is_active:true,
+      is_active: true,
       deletedAt: { $exists: false },
-      company:data.company
+      company: data.company,
     };
 
     const pipeline: any = [
@@ -189,12 +192,12 @@ const getEmployes = async (data: any) => {
     ];
 
     if (data.search) {
-      const searchRegex = new RegExp(data.search.trim(), 'i');
+      const searchRegex = new RegExp(data.search.trim(), "i");
       pipeline.push({
         $match: {
           $or: [
-            { 'userData.username': { $regex: searchRegex } },
-            { 'userData.code': { $regex: searchRegex } },
+            { "userData.username": { $regex: searchRegex } },
+            { "userData.code": { $regex: searchRegex } },
           ],
         },
       });
@@ -359,7 +362,7 @@ const getTotalEmployes = async (data: any) => {
       {
         $match: {
           ...data,
-          is_active : true,
+          is_active: true,
           deletedAt: { $exists: false },
         },
       },
@@ -595,9 +598,9 @@ async function updateCompanyDetails(data: any) {
   try {
     const docum = await CompanyDetails.findOne({ user: data.id });
     if (docum) {
-      docum.details.push(data.details)
+      docum.details.push(data.details);
       await docum.save();
-      await updateUserRoleService(data.id, data.details.eType)
+      await updateUserRoleService(data.id, data.details.eType);
       return {
         status: "success",
         data: docum,
@@ -630,42 +633,42 @@ export const getManagerEmployes = async (data: any) => {
       },
       {
         $addFields: {
-          details: { $arrayElemAt: ['$details', -1] },
+          details: { $arrayElemAt: ["$details", -1] },
         },
       },
       {
         $match: {
-          'details.managers': { $in: data.managers },
+          "details.managers": { $in: data.managers },
         },
       },
       {
         $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'userData',
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userData",
         },
       },
       {
-        $unwind: '$userData',
+        $unwind: "$userData",
       },
       {
         $lookup: {
-          from: 'departments',
-          localField: 'details.designation',
-          foreignField: '_id',
-          as: 'designation',
+          from: "departments",
+          localField: "details.designation",
+          foreignField: "_id",
+          as: "designation",
         },
-      }
+      },
     ];
 
     if (data.search) {
-      const searchRegex = new RegExp(data.search.trim(), 'i');
+      const searchRegex = new RegExp(data.search.trim(), "i");
       pipeline.push({
         $match: {
           $or: [
-            { 'userData.username': { $regex: searchRegex } },
-            { 'userData.code': { $regex: searchRegex } },
+            { "userData.username": { $regex: searchRegex } },
+            { "userData.code": { $regex: searchRegex } },
           ],
         },
       });
@@ -694,13 +697,13 @@ export const getManagerEmployes = async (data: any) => {
     const totalCounts = countDocuments.length > 0 ? countDocuments[0].count : 0;
 
     return {
-      status: 'success',
+      status: "success",
       data: resultData,
       totalPages: Math.ceil(totalCounts / data.limit),
     };
   } catch (err) {
     return {
-      status: 'error',
+      status: "error",
       data: err,
     };
   }
@@ -711,67 +714,147 @@ const getManagerEmployesCounts = async (data: any) => {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      company: data.company
+      company: data.company,
     };
 
     const pipeline: any = [
       {
-        $match: matchConditions
+        $match: matchConditions,
       },
       {
         $addFields: {
-          details: { $arrayElemAt: ['$details', -1] },
+          details: { $arrayElemAt: ["$details", -1] },
         },
       },
       {
-        $unwind: '$details.managers',
+        $unwind: "$details.managers",
       },
       {
         $group: {
-          _id: '$details.managers',
+          _id: "$details.managers",
           count: { $sum: 1 },
         },
       },
       {
         $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'managerDetails'
-        }
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "managerDetails",
+        },
       },
       {
-        $unwind: '$managerDetails'
+        $unwind: "$managerDetails",
       },
       {
         $addFields: {
-          title: { $concat: ['$managerDetails.name', ' ', '(', '$managerDetails.code',')'] }
-        }
+          title: {
+            $concat: [
+              "$managerDetails.name",
+              " ",
+              "(",
+              "$managerDetails.code",
+              ")",
+            ],
+          },
+        },
       },
       {
         $project: {
-          managerDetails: 0
-        }
-      }
+          managerDetails: 0,
+        },
+      },
     ];
 
     const resultData = await CompanyDetails.aggregate(pipeline).exec();
 
     return {
-      status: 'success',
+      status: "success",
       data: resultData,
     };
   } catch (err) {
     return {
-      status: 'error',
+      status: "error",
       data: err,
     };
   }
 };
 
+export const getUserInfoWithManagers = async (data: any) => {
+  try {
+    const matchCriteria: any = {};
 
+    if (data.username) {
+      matchCriteria.username = { $regex: data.username, $options: "i" };
+    }
 
+    if (data.code) {
+      matchCriteria.code = data.code;
+    }
 
+    const pipeline: any = [
+      {
+        $match: matchCriteria
+      },
+      {
+        $lookup: {
+          from: "profiledetails",
+          localField: "_id",
+          foreignField: "user",
+          as: "profileDetails",
+        },
+      },
+      {
+        $unwind: "$profileDetails"
+      },
+      {
+        $lookup: {
+          from: "companydetails",
+          localField: "companyDetail",
+          foreignField: "_id",
+          as: "company",
+        },
+      },
+      {
+        $unwind: "$company"
+      },
+      {
+        $addFields: {
+          "company_details": { $arrayElemAt: ["$company.details", -1] }
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          company: 0
+        }
+      }
+    ];
+
+    if (data.bloodGroup) {
+      pipeline.splice(3, 0, { $match: { "profileDetails.bloodGroup": data.bloodGroup } });
+    }
+
+    if (data.designation) {
+      pipeline.push({ $match: { "company_details.designation": new mongoose.Types.ObjectId(data.designation) } });
+    }
+
+    if (data.department) {
+      pipeline.push({ $match: { "company_details.department": new mongoose.Types.ObjectId(data.department) } });
+    }
+
+    const datas = await User.aggregate(pipeline).exec();
+    return {
+      status: "success",
+      data: datas,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err?.message || "An error occurred",
+    };
+  }
+};
 
 export {
   createEmploye,
@@ -785,5 +868,5 @@ export {
   updateWorkExperienceDetails,
   updateDocumentDetails,
   updateCompanyDetails,
-  getManagerEmployesCounts
+  getManagerEmployesCounts,
 };

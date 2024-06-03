@@ -15,6 +15,7 @@ import {
   updateCompanyDetails,
   getManagerEmployes,
   getManagerEmployesCounts,
+  getUserInfoWithManagers,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -350,6 +351,43 @@ const getManagersEmploysService = async (
 };
 
 
+const getUserInfoWithManagerService = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+  const { data, status } = await getUserInfoWithManagers({
+    username: req.body.username,
+    code : req.body.code,
+    company: new mongoose.Types.ObjectId(req.body.company),
+    page:req.body.page || 1,
+    limit:req.body.limit || 10,
+    bloodGroup:req.body.bloodGroup || undefined,
+    department:req.body.department || undefined
+  });
+
+  if(status === "success"){
+    res.status(200).send({
+      status : 'success',
+      data : data
+    })
+  }
+  else {
+    return res.status(300).send({
+      status : 'error',
+      data : data,
+      message : data
+    })
+  }
+ }
+ catch(err : any)
+ {
+  res.status(400).send({
+    status : 'error',
+    data : err?.message,
+    message : err?.message
+  })
+ }
+}
+
 const getManagerEmployesCountsService = async(req : any , res : Response, next : NextFunction) => {
   try
   {
@@ -391,5 +429,6 @@ export {
   updateDocumentService,
   updateCompanyDetailsService,
   getManagersEmploysService,
-  getManagerEmployesCountsService
+  getManagerEmployesCountsService,
+  getUserInfoWithManagerService
 };
