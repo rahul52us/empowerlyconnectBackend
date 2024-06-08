@@ -824,6 +824,22 @@ export const getUserInfoWithManagers = async (data: any) => {
         }
       },
       {
+        $lookup: {
+          from: "departments",
+          localField: "company_details.designation",
+          foreignField: "_id",
+          as: "designation",
+        },
+      },
+      {
+        $lookup: {
+          from: "departmentcategories",
+          localField: "company_details.department",
+          foreignField: "_id",
+          as: "departmentCategory",
+        },
+      },
+      {
         $project: {
           password: 0,
           company: 0
