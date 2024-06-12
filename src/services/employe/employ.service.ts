@@ -16,6 +16,7 @@ import {
   getManagerEmployes,
   getManagerEmployesCounts,
   getUserInfoWithManagers,
+  getUserInfoWithManagersAction,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -34,7 +35,7 @@ const createEmployeService = async (
       ...value,
       company: req.body.company,
       companyOrg: req.bodyData.companyOrg,
-      createdBy:req.userId
+      createdBy: req.userId,
     });
 
     if (status === "success") {
@@ -298,24 +299,27 @@ const updateCompanyDetailsService = async (
   }
 };
 
-export const getUserRoleEmploye = async(req : any, res : Response, next : NextFunction) => {
-  try
-  {
-    const company = new mongoose.Types.ObjectId(req.query.company)
-    const {status,statusCode,data} : any = await getRoleUsersService({company : company})
+export const getUserRoleEmploye = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const company = new mongoose.Types.ObjectId(req.query.company);
+    const { status, statusCode, data }: any = await getRoleUsersService({
+      company: company,
+    });
     return res.status(statusCode).send({
       status,
-      data
-    })
-  }
-  catch(err : any)
-  {
+      data,
+    });
+  } catch (err: any) {
     res.status(500).send({
-      status : 'error',
-      data : err?.message
-    })
+      status: "error",
+      data: err?.message,
+    });
   }
-}
+};
 
 const getManagersEmploysService = async (
   req: any,
@@ -328,7 +332,7 @@ const getManagersEmploysService = async (
     const search = req.query.search?.trim() || undefined;
     const { data, status, totalPages } = await getManagerEmployes({
       id: req.userId,
-      managers:[new mongoose.Types.ObjectId(req.params.id)],
+      managers: [new mongoose.Types.ObjectId(req.params.id)],
       search: search,
       company: new mongoose.Types.ObjectId(req.query.company),
       page: Number(page),
@@ -350,72 +354,104 @@ const getManagersEmploysService = async (
   }
 };
 
+const getUserInfoWithManagerService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { data, status } = await getUserInfoWithManagers({
+      username: req.body.username,
+      code: req.body.code,
+      company: new mongoose.Types.ObjectId(req.body.company),
+      page: req.body.page || 1,
+      limit: req.body.limit || 10,
+      bloodGroup: req.body.bloodGroup || undefined,
+      department: req.body.department || undefined,
+    });
 
-const getUserInfoWithManagerService = async(req : any , res : Response, next : NextFunction) => {
-  try
-  {
-  const { data, status } = await getUserInfoWithManagers({
-    username: req.body.username,
-    code : req.body.code,
-    company: new mongoose.Types.ObjectId(req.body.company),
-    page:req.body.page || 1,
-    limit:req.body.limit || 10,
-    bloodGroup:req.body.bloodGroup || undefined,
-    department:req.body.department || undefined
-  });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      return res.status(300).send({
+        status: "error",
+        data: data,
+        message: data,
+      });
+    }
+  } catch (err: any) {
+    res.status(400).send({
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+    });
+  }
+};
 
-  if(status === "success"){
-    res.status(200).send({
-      status : 'success',
-      data : data
-    })
-  }
-  else {
-    return res.status(300).send({
-      status : 'error',
-      data : data,
-      message : data
-    })
-  }
- }
- catch(err : any)
- {
-  res.status(400).send({
-    status : 'error',
-    data : err?.message,
-    message : err?.message
-  })
- }
-}
+const getUserInfoWithManagerActionService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
 
-const getManagerEmployesCountsService = async(req : any , res : Response, next : NextFunction) => {
-  try
-  {
-  const { data, status } = await getManagerEmployesCounts({
-    id: req.userId,
-    company: new mongoose.Types.ObjectId(req.query.company),
-  });
-  if(status === "success"){
-    res.status(200).send({
-      status : 'success',
-      data : data
-    })
+    const { data, status } = await getUserInfoWithManagersAction({
+      userId: new mongoose.Types.ObjectId(req.params.id),
+      company : new mongoose.Types.ObjectId(req.query.company)
+    });
+
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      return res.status(300).send({
+        status: "error",
+        data: data,
+        message: data,
+      });
+    }
+  } catch (err: any) {
+    res.status(400).send({
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+    });
   }
-  else {
-    return res.status(400).send({
-      status : 'error',
-      data : data
-    })
+};
+
+const getManagerEmployesCountsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { data, status } = await getManagerEmployesCounts({
+      id: req.userId,
+      company: new mongoose.Types.ObjectId(req.query.company),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      return res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err: any) {
+    res.status(400).send({
+      status: "error",
+      data: err?.message,
+    });
   }
- }
- catch(err : any)
- {
-  res.status(400).send({
-    status : 'error',
-    data : err?.message
-  })
- }
-}
+};
 
 export {
   createEmployeService,
@@ -430,5 +466,6 @@ export {
   updateCompanyDetailsService,
   getManagersEmploysService,
   getManagerEmployesCountsService,
-  getUserInfoWithManagerService
+  getUserInfoWithManagerService,
+  getUserInfoWithManagerActionService
 };

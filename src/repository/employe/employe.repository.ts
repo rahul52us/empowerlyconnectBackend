@@ -794,7 +794,7 @@ export const getUserInfoWithManagers = async (data: any) => {
 
     const pipeline: any = [
       {
-        $match: matchCriteria
+        $match: matchCriteria,
       },
       {
         $lookup: {
@@ -805,7 +805,7 @@ export const getUserInfoWithManagers = async (data: any) => {
         },
       },
       {
-        $unwind: "$profileDetails"
+        $unwind: "$profileDetails",
       },
       {
         $lookup: {
@@ -816,12 +816,12 @@ export const getUserInfoWithManagers = async (data: any) => {
         },
       },
       {
-        $unwind: "$company"
+        $unwind: "$company",
       },
       {
         $addFields: {
-          "company_details": { $arrayElemAt: ["$company.details", -1] }
-        }
+          company_details: { $arrayElemAt: ["$company.details", -1] },
+        },
       },
       {
         $lookup: {
@@ -842,27 +842,210 @@ export const getUserInfoWithManagers = async (data: any) => {
       {
         $project: {
           password: 0,
-          company: 0
-        }
-      }
+          company: 0,
+        },
+      },
     ];
 
     if (data.bloodGroup) {
-      pipeline.splice(3, 0, { $match: { "profileDetails.bloodGroup": data.bloodGroup } });
+      pipeline.splice(3, 0, {
+        $match: { "profileDetails.bloodGroup": data.bloodGroup },
+      });
     }
 
     if (data.designation) {
-      pipeline.push({ $match: { "company_details.designation": new mongoose.Types.ObjectId(data.designation) } });
+      pipeline.push({
+        $match: {
+          "company_details.designation": new mongoose.Types.ObjectId(
+            data.designation
+          ),
+        },
+      });
     }
 
     if (data.department) {
-      pipeline.push({ $match: { "company_details.department": new mongoose.Types.ObjectId(data.department) } });
+      pipeline.push({
+        $match: {
+          "company_details.department": new mongoose.Types.ObjectId(
+            data.department
+          ),
+        },
+      });
     }
 
     const datas = await User.aggregate(pipeline).exec();
     return {
       status: "success",
       data: datas,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err?.message || "An error occurred",
+    };
+  }
+};
+
+export const getUserInfoWithManagersAction = async (data: any) => {
+  try {
+    // Step 1: Create the pipeline to get the company details
+    const pipeline: any = [
+      {
+        $match: {
+          _id: data.userId
+        },
+      },
+      {
+        $lookup: {
+          from: "profiledetails",
+          localField: "_id",
+          foreignField: "user",
+          as: "profiledetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "companydetails",
+          localField: "companyDetail",
+          foreignField: "_id",
+          as: "companydetail",
+        },
+      },
+      {
+        $unwind: "$companydetail",
+      },
+      {
+        $addFields: {
+          companydetail: { $arrayElemAt: ["$companydetail.details", -1] },
+        },
+      },
+      {
+        $unwind: "$companydetail.managers",
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "companydetail.designation",
+          foreignField: "_id",
+          as: "designation",
+        },
+      },
+      {
+        $lookup: {
+          from: "departmentcategories",
+          localField: "companydetail.department",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { managerId: "$companydetail.managers" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$managerId"],
+                },
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                username: 1,
+                code: 1,
+                title: 1,
+              },
+            },
+          ],
+          as: "managerDetails",
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          username: 1,
+          code: 1,
+          title: 1,
+          'designation.title':1,
+          'department.title':1,
+          profiledetails:1,
+          managerDetails: 1,
+        },
+      },
+    ];
+
+    const userPipeline: any = [
+      {
+        $lookup: {
+          from: "companydetails",
+          localField: "companyDetail",
+          foreignField: "_id",
+          as: "companydetail",
+        },
+      },
+      {
+        $unwind: "$companydetail",
+      },
+      {
+        $addFields: {
+          companydetail: { $arrayElemAt: ["$companydetail.details", -1] },
+        },
+      },
+      {
+        $match: {
+          "companydetail.managers": { $elemMatch: { $eq: data.userId } },
+        },
+      },
+      {
+        $lookup: {
+          from: "departmentcategories",
+          localField: "companydetail.department",
+          foreignField: "_id",
+          as: "companydetail.department",
+        },
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "companydetail.designation",
+          foreignField: "_id",
+          as: "companydetail.designation",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          "userDetails.name": 1,
+          "userDetails.username": 1,
+          "userDetails.code": 1,
+          "userDetails.title": 1,
+          'companydetail.designation':1,
+          'companydetail.department':1,
+          'companydetail.doj':1,
+        },
+      },
+    ];
+
+    const [userDetails, users] = await Promise.all([
+      User.aggregate(pipeline),
+      User.aggregate(userPipeline),
+    ]);
+
+    return {
+      status: "success",
+      data: { userDetails, users },
     };
   } catch (err: any) {
     return {
