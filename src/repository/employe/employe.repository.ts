@@ -888,7 +888,10 @@ export const getUserInfoWithManagers = async (data: any) => {
 
 export const getUserInfoWithManagersAction = async (data: any) => {
   try {
-    // Step 1: Create the pipeline to get the company details
+    const page = data.page
+    const limit = data.limit
+    const skip = (page - 1) * limit;
+
     const pipeline: any = [
       {
         $match: {
@@ -968,12 +971,14 @@ export const getUserInfoWithManagersAction = async (data: any) => {
           username: 1,
           code: 1,
           title: 1,
-          'designation.title':1,
-          'department.title':1,
-          profiledetails:1,
+          'designation.title': 1,
+          'department.title': 1,
+          profiledetails: 1,
           managerDetails: 1,
         },
       },
+      { $skip: skip },
+      { $limit: limit },
     ];
 
     const userPipeline: any = [
@@ -1031,11 +1036,13 @@ export const getUserInfoWithManagersAction = async (data: any) => {
           "userDetails.username": 1,
           "userDetails.code": 1,
           "userDetails.title": 1,
-          'companydetail.designation':1,
-          'companydetail.department':1,
-          'companydetail.doj':1,
+          'companydetail.designation': 1,
+          'companydetail.department': 1,
+          'companydetail.doj': 1,
         },
       },
+      { $skip: skip },
+      { $limit: limit },
     ];
 
     const [userDetails, users] = await Promise.all([
@@ -1045,7 +1052,7 @@ export const getUserInfoWithManagersAction = async (data: any) => {
 
     return {
       status: "success",
-      data: { userDetails, users },
+      data: { userDetails, users, page, limit },
     };
   } catch (err: any) {
     return {
@@ -1054,6 +1061,7 @@ export const getUserInfoWithManagersAction = async (data: any) => {
     };
   }
 };
+
 
 export {
   createEmploye,

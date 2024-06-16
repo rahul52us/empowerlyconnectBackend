@@ -20,6 +20,7 @@ import {
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
+import { PaginationLimit } from "../../config/helper/constant";
 
 const createEmployeService = async (
   req: any,
@@ -400,7 +401,9 @@ const getUserInfoWithManagerActionService = async (
 
     const { data, status } = await getUserInfoWithManagersAction({
       userId: new mongoose.Types.ObjectId(req.params.id),
-      company : new mongoose.Types.ObjectId(req.query.company)
+      company : new mongoose.Types.ObjectId(req.query.company),
+      page : req.query.page ? Number(req.query.page) : 1,
+      limit : req.query.limit ? Number(req.query.limit) : PaginationLimit
     });
 
     if (status === "success") {

@@ -27,6 +27,7 @@ export const getRequestService = async (
   try {
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
+    const user = new mongoose.Types.ObjectId(req.query.user)
     const search = req.query.search || undefined;
 
     let query : any = {
@@ -34,13 +35,13 @@ export const getRequestService = async (
       status : req.query.status || "pending",
       company: new mongoose.Types.ObjectId(req.query.company),
       companyOrg: req.bodyData.companyOrg,
-      user:req.userId,
+      user:user,
       page: Number(page),
       limit: Number(limit)
     }
 
     if(req.query.userType === "manager"){
-      query = {...query,managerId : req.userId}
+      query = {...query,managerId : req.query.managerId}
     }
 
     const { data, status , totalPages } = await getRequests(query);
@@ -66,14 +67,14 @@ export const createRequestService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.user = req.userId;
+    req.body.user = new mongoose.Types.ObjectId(req.query.user);
     req.body.createdBy = req.userId
     req.body.approvals = [{reason : req.body.reason, status : req.body.status, user : req.body.user, sendTo : req.body.sendTo}]
     const { status, data } = await createRequest(req.body);
     if (status === "success") {
       res.status(200).send({
         status: status,
-        data: data,
+        data: data
       });
     } else {
       next(data);

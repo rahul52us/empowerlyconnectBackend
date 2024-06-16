@@ -14,7 +14,8 @@ const ApprovalSchema: Schema = new mongoose.Schema(
         ref: "User",
       },
       sendTo:[{
-        type : mongoose.Schema.Types.ObjectId
+        type : mongoose.Schema.Types.ObjectId,
+        ref : 'User'
       }],
       createdAt : {
         type : Date,
@@ -54,7 +55,8 @@ const RequestSchema = new mongoose.Schema({
     required: true,
   },
   sendTo : [{
-    type : mongoose.Schema.Types.ObjectId
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'User'
   }],
   status: {
     type: String,
