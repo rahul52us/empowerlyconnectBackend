@@ -42,7 +42,8 @@ const RequestSchema = new mongoose.Schema({
     reqiured: true
   },
   leaveType: {
-    type : String
+    type : String,
+    required : true
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,

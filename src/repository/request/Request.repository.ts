@@ -99,6 +99,8 @@ export const getRequestById = async (data: any) => {
 
 export const getRequests = async (data: any) => {
   try {
+
+    console.log('the console are', data)
     const pipeline: any = [];
 
     let matchConditions: any = {

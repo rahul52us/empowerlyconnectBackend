@@ -444,6 +444,33 @@ const updateBankDetails = async (data: any) => {
   }
 };
 
+const updatePermissions = async (data: any) => {
+  try {
+    const updatedData: any = await User.findByIdAndUpdate(
+      data.id,
+      {permissions : data.permissions},
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedData) {
+      return {
+        status: "error",
+        data: "User does not exist",
+      };
+    }
+
+    return {
+      status: "success",
+      data: updatedData,
+    };
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
+
 const updateFamilyDetails = async (data: any) => {
   try {
     const updatedData: any = await FamilyDetails.findOneAndUpdate(
@@ -1075,5 +1102,6 @@ export {
   updateWorkExperienceDetails,
   updateDocumentDetails,
   updateCompanyDetails,
+  updatePermissions,
   getManagerEmployesCounts,
 };

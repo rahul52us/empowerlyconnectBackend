@@ -17,6 +17,7 @@ import {
   getManagerEmployesCountsService,
   getUserInfoWithManagerService,
   getUserInfoWithManagerActionService,
+  updatePermissionsService,
 } from "../services/employe/employ.service";
 
 const router = express.Router();
@@ -33,6 +34,7 @@ router.put('/companyDetails/:id',authenticate,updateCompanyDetailsService)
 router.put('/familyDetails/:id',authenticate,updateFamilyDetailsService)
 router.put('/workExperience/:id',authenticate,updateWorkExperienceService)
 router.put('/updateDocuments/:id',authenticate,updateDocumentService)
+router.put('/permissions/:id',authenticate,updatePermissionsService)
 router.get('/users/roles',authenticate,getUserRoleEmploye)
 router.get('/managers/employes/count',authenticate,getManagerEmployesCountsService)
 router.post('/info/Subordinate',getUserInfoWithManagerService)

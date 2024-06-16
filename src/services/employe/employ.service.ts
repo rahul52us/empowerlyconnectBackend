@@ -17,6 +17,7 @@ import {
   getManagerEmployesCounts,
   getUserInfoWithManagers,
   getUserInfoWithManagersAction,
+  updatePermissions,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -300,6 +301,30 @@ const updateCompanyDetailsService = async (
   }
 };
 
+const updatePermissionsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, data } = await updatePermissions({id : req.body.id, permissions : req.body.permissions});
+    if (status === "success") {
+      res.status(201).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getUserRoleEmploye = async (
   req: any,
   res: Response,
@@ -466,6 +491,7 @@ export {
   updateBankDetialsService,
   updateWorkExperienceService,
   updateDocumentService,
+  updatePermissionsService,
   updateCompanyDetailsService,
   getManagersEmploysService,
   getManagerEmployesCountsService,
