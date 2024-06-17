@@ -1089,6 +1089,68 @@ export const getUserInfoWithManagersAction = async (data: any) => {
   }
 };
 
+// get the managers of the particular users
+const getManagersOfUser = async (data: any) => {
+  try {
+    const pipeline = [
+      {
+        $match: { _id: data.user },
+      },
+      {
+        $lookup: {
+          from: "companydetails",
+          localField: "companyDetail",
+          foreignField: "_id",
+          as: "companydetail",
+        },
+      },
+      {
+        $unwind: "$companydetail",
+      },
+      {
+        $project: {
+          managers: {
+            $arrayElemAt: ["$companydetail.details.managers", -1],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "managers",
+          foreignField: "_id",
+          as: "managerDetails",
+        },
+      },
+      {
+        $project: {
+          managers: {
+            $map: {
+              input: "$managerDetails",
+              as: "manager",
+              in: {
+                _id: "$$manager._id",
+                username: "$$manager.username"
+              }
+            }
+          }
+        }
+      }
+    ];
+
+    const managers = await User.aggregate(pipeline);
+    return {
+      status: 'success',
+      data: managers,
+    };
+  } catch (err: any) {
+    return {
+      status: 'error',
+      message: err?.message || 'An unknown error occurred',
+    };
+  }
+};
+
 
 export {
   createEmploye,
@@ -1104,4 +1166,5 @@ export {
   updateCompanyDetails,
   updatePermissions,
   getManagerEmployesCounts,
+  getManagersOfUser
 };

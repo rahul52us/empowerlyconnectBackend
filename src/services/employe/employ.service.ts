@@ -18,11 +18,14 @@ import {
   getUserInfoWithManagers,
   getUserInfoWithManagersAction,
   updatePermissions,
+  getManagersOfUser,
 } from "../../repository/employe/employe.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
 import { PaginationLimit } from "../../config/helper/constant";
 
+
+// create the new employe of the particular employe
 const createEmployeService = async (
   req: any,
   res: Response,
@@ -55,6 +58,7 @@ const createEmployeService = async (
   }
 };
 
+// update the employe profile by the user id
 const updateEmployeProfileService = async (
   req: any,
   res: Response,
@@ -81,6 +85,8 @@ const updateEmployeProfileService = async (
   }
 };
 
+
+// Get the employes of the particular company
 const getAllEmploysService = async (
   req: any,
   res: Response,
@@ -113,6 +119,7 @@ const getAllEmploysService = async (
   }
 };
 
+// get the user details by the particular id
 const getEmployeByIdService = async (
   req: any,
   res: Response,
@@ -136,6 +143,7 @@ const getEmployeByIdService = async (
   }
 };
 
+// get the designation of the department of the particular company
 const getCountDesignationStatusService = async (
   req: any,
   res: Response,
@@ -159,6 +167,7 @@ const getCountDesignationStatusService = async (
   }
 };
 
+// get the total numbers of users of the specific company
 const getTotalEmployesService = async (
   req: any,
   res: Response,
@@ -181,6 +190,8 @@ const getTotalEmployesService = async (
   }
 };
 
+
+// update the bank details of the particular user
 const updateBankDetialsService = async (
   req: any,
   res: Response,
@@ -205,6 +216,7 @@ const updateBankDetialsService = async (
   }
 };
 
+// update the family details of the particular users
 export const updateFamilyDetailsService = async (
   req: any,
   res: Response,
@@ -229,6 +241,7 @@ export const updateFamilyDetailsService = async (
   }
 };
 
+// update the workExperience of the particular users
 const updateWorkExperienceService = async (
   req: any,
   res: Response,
@@ -253,6 +266,7 @@ const updateWorkExperienceService = async (
   }
 };
 
+// update the document of the particular users
 const updateDocumentService = async (
   req: any,
   res: Response,
@@ -277,6 +291,7 @@ const updateDocumentService = async (
   }
 };
 
+// update the company details of the particular users
 const updateCompanyDetailsService = async (
   req: any,
   res: Response,
@@ -301,6 +316,7 @@ const updateCompanyDetailsService = async (
   }
 };
 
+// update the permission of the particular user by the user id
 const updatePermissionsService = async (
   req: any,
   res: Response,
@@ -347,6 +363,7 @@ export const getUserRoleEmploye = async (
   }
 };
 
+// fetch the users of the managers
 const getManagersEmploysService = async (
   req: any,
   res: Response,
@@ -481,6 +498,30 @@ const getManagerEmployesCountsService = async (
   }
 };
 
+
+const getManagersOfUserService = async (req : any , res : Response) => {
+  try
+  {
+    const user = new mongoose.Types.ObjectId(req.params.userId)
+    const {status, data} = await getManagersOfUser({user})
+    if(status === "success"){
+      res.status(200).send({
+        status : status,
+        data : data
+      })
+    }
+    else {
+      res.status(400).send({
+        data,
+        status
+      })
+    }
+  }
+  catch(err)
+  {
+
+  }
+}
 export {
   createEmployeService,
   updateEmployeProfileService,
@@ -496,5 +537,6 @@ export {
   getManagersEmploysService,
   getManagerEmployesCountsService,
   getUserInfoWithManagerService,
-  getUserInfoWithManagerActionService
+  getUserInfoWithManagerActionService,
+  getManagersOfUserService
 };
