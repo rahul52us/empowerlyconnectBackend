@@ -17,6 +17,35 @@ export const createRequest = async (data: any) => {
   }
 };
 
+export const updateRequest = async (data : any) => {
+  try
+  {
+    const requestData = await Request.findById(data._id)
+    if(requestData){
+      return {
+        data : requestData,
+        status : 'success',
+        statusCode : 200
+      }
+    }
+    else {
+      return {
+        data : 'Request does not exists',
+        status : 'error',
+        statusCode : 300
+      }
+    }
+  }
+  catch(err : any)
+  {
+    return {
+      status : 'error',
+      data : err,
+      statusCode : 500
+    }
+  }
+}
+
 export const getRequestById = async (data: any) => {
   try {
     const pipeline: any = [];
@@ -134,12 +163,15 @@ export const getRequests = async (data: any) => {
           },
         },
       },
-      {
-        $match: {
-          "latestApproval.status": data.status,
-        },
-      },
     );
+
+    if(data.status !== "all"){
+      pipeline.push({
+        $match : {
+          "latestApproval.status": data.status
+        }
+      })
+    }
 
     if (data.managerId) {
       pipeline.push(

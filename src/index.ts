@@ -43,3 +43,10 @@ app.use(errorMiddleware);
 server.listen(process.env.PORT, () => {
   console.log(`The server is running on port ${process.env.PORT}`);
 });
+
+const today = new Date().getDay();
+if (today === 0 || today === 6) {
+  console.log('Today is a weekend. Punching in/out is not allowed.');
+} else {
+  console.log('Today is a weekday. Punching in/out is allowed.');
+}
