@@ -1,8 +1,10 @@
 import { NextFunction, Response } from "express";
 import {
   createRequest,
+  findSingleRequestById,
   getRequestById,
   getRequests,
+  updateRequest,
 } from "../../repository/request/Request.repository";
 import mongoose from "mongoose";
 
@@ -74,17 +76,15 @@ export const createRequestService = async (
 ) => {
   try {
     req.body.user = new mongoose.Types.ObjectId(req.body.user);
-    req.body.createdBy = req.userId;
+    req.body.sendTo = req.body.sendTo,
     req.body.approvals = [
       {
         reason: req.body.reason,
         status: req.body.status,
         user: req.body.user,
-        sendTo: req.body.sendTo,
+        createdBy:req.userId
       },
     ];
-
-    console.log("the request body are", req.body);
 
     const { status, data } = await createRequest(req.body);
     if (status === "success") {
@@ -94,6 +94,53 @@ export const createRequestService = async (
       });
     } else {
       next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateRequestService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {status, user, reason} = req.body
+    const {statusCode, status : st, data : request} = await findSingleRequestById({_id : new mongoose.Types.ObjectId(req.params.id)})
+    if(st === "success"){
+      switch (status) {
+        case 'submitted':
+          if (request.status !== 'pending') {
+            return res.status(400).json({ error: 'Request cannot be submitted' });
+          }
+          request.status = 'submitted';
+          request.submittedAt = new Date();
+          break;
+        case 'approved':
+          request.status = 'approved';
+          break;
+        case 'rejected':
+          request.status = 'rejected';
+          break;
+        case 'cancelled':
+          request.status = 'cancelled';
+          break;
+        default:
+          return res.status(400).json({ error: 'Invalid action' });
+      }
+        request.approvals.push({
+        user: user,
+        status : status,
+        reason : reason,
+        createdBy : req.userId
+      });
+      const updatedData = await updateRequest(request)
+      res.status(200).send({
+        status : 'success',
+        data : updatedData,
+        statusCode : 200
+      })
     }
   } catch (err) {
     next(err);

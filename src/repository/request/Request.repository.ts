@@ -17,46 +17,71 @@ export const createRequest = async (data: any) => {
   }
 };
 
-export const updateRequest = async (data : any) => {
-  try
-  {
-    const requestData = await Request.findById(data._id)
-    if(requestData){
+export const updateRequest = async (data: any) => {
+  try {
+    const requestData = await Request.findByIdAndUpdate(
+      data._id,
+      { $set: { ...data } },
+      { new: true }
+    );
+    if (requestData) {
       return {
-        data : requestData,
-        status : 'success',
-        statusCode : 200
-      }
-    }
-    else {
+        data: requestData,
+        status: "success",
+        statusCode: 200,
+      };
+    } else {
       return {
-        data : 'Request does not exists',
-        status : 'error',
-        statusCode : 300
-      }
+        data: "Request does not exists",
+        status: "error",
+        statusCode: 300,
+      };
     }
-  }
-  catch(err : any)
-  {
+  } catch (err: any) {
     return {
-      status : 'error',
-      data : err,
-      statusCode : 500
-    }
+      status: "error",
+      data: err,
+      statusCode: 500,
+    };
   }
-}
+};
+
+export const findSingleRequestById = async (data: any) => {
+  try {
+    const record = await Request.findById(data._id);
+    if (record) {
+      return {
+        statusCode: 200,
+        data: record,
+        status: "success",
+      };
+    } else {
+      return {
+        statusCode: 300,
+        data: "Record does not exists",
+        status: "error",
+      };
+    }
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err?.message,
+      statusCode: 500,
+    };
+  }
+};
 
 export const getRequestById = async (data: any) => {
   try {
     const pipeline: any = [];
     let matchConditions: any = {
       deletedAt: { $exists: false },
-      _id : data._id
+      _id: data._id,
     };
 
     pipeline.push(
       {
-        $match: matchConditions
+        $match: matchConditions,
       },
       {
         $lookup: {
@@ -68,10 +93,10 @@ export const getRequestById = async (data: any) => {
             {
               $project: {
                 _id: 1,
-                username: 1
-              }
-            }
-          ]
+                username: 1,
+              },
+            },
+          ],
         },
       },
       {
@@ -84,44 +109,41 @@ export const getRequestById = async (data: any) => {
             {
               $project: {
                 _id: 1,
-                username: 1
-              }
-            }
-          ]
+                username: 1,
+              },
+            },
+          ],
         },
       },
       {
-        $limit : 1
+        $limit: 1,
       }
     );
-    let documentPipeline: any = [
-      ...pipeline,
-    ];
+    let documentPipeline: any = [...pipeline];
 
     const [resultData]: any = await Promise.all([
       Request.aggregate(documentPipeline),
     ]);
 
-    if(resultData.length === 0){
+    if (resultData.length === 0) {
       return {
         status: "error",
-      statusCode : 300,
-      data: resultData,
-      message : 'Request Does not Exists'
-      }
+        statusCode: 300,
+        data: resultData,
+        message: "Request Does not Exists",
+      };
     }
     return {
       status: "success",
-      statusCode : 200,
+      statusCode: 200,
       data: resultData,
-      message : 'Get Request Successfully'
+      message: "Get Request Successfully",
     };
-
   } catch (err) {
     return {
       status: "error",
       data: err,
-      statusCode : 500
+      statusCode: 500,
     };
   }
 };
@@ -130,12 +152,16 @@ export const getRequests = async (data: any) => {
   try {
     const pipeline: any = [];
     let matchConditions: any = {
-      deletedAt: { $exists: false },
+      deletedAt: { $exists: false }
     };
+
+    if (data.managerId) {
+      matchConditions.status = { $ne: "pending" };
+    }
 
     pipeline.push(
       {
-        $match: matchConditions
+        $match: matchConditions,
       },
       {
         $lookup: {
@@ -147,44 +173,41 @@ export const getRequests = async (data: any) => {
       },
       {
         $addFields: {
-          latestApproval: {
-            $arrayElemAt: [
-              {
-                $filter: {
-                  input: "$approvals",
-                  as: "approval",
-                  cond: {
-                    $eq: ["$$approval.user", new mongoose.Types.ObjectId(data.user)],
-                  },
-                },
-              },
-              -1,
-            ],
+          lastApproval: { $arrayElemAt: ["$approvals", -1] },
+        },
+      },
+      {
+        $addFields: {
+          userCheck: { $eq: ["$lastApproval.user", data.user] },
+          statusCheck: {
+            $cond: {
+              if: { $eq: [data.status, "all"] },
+              then: true,
+              else: { $eq: ["$lastApproval.status", data.status] },
+            },
           },
         },
       },
+      {
+        $match: {
+          $and: [
+            { userCheck: true },
+            { statusCheck: true },
+          ],
+        },
+      }
     );
 
-    if(data.status !== "all"){
-      pipeline.push({
-        $match : {
-          "latestApproval.status": data.status
-        }
-      })
-    }
-
     if (data.managerId) {
-      pipeline.push(
-        {
-          $match: {
-            "sendTo": {
-              $elemMatch: {
-                _id: new mongoose.Types.ObjectId(data.managerId),
-              },
+      pipeline.push({
+        $match: {
+          sendTo: {
+            $elemMatch: {
+              _id: new mongoose.Types.ObjectId(data.managerId),
             },
           },
-        }
-      );
+        },
+      });
     }
 
     let documentPipeline: any = [
@@ -214,7 +237,6 @@ export const getRequests = async (data: any) => {
       data: resultData,
       totalPages: Math.ceil(totalCounts / data.limit),
     };
-
   } catch (err) {
     return {
       status: "error",
@@ -222,3 +244,4 @@ export const getRequests = async (data: any) => {
     };
   }
 };
+

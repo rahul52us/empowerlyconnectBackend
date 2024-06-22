@@ -13,10 +13,11 @@ const ApprovalSchema: Schema = new mongoose.Schema(
         type: mongoose.Types.ObjectId,
         ref: "User",
       },
-      sendTo:[{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : 'User'
-      }],
+      createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
       createdAt : {
         type : Date,
         default : new Date()
@@ -50,11 +51,6 @@ const RequestSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
   sendTo : [{
     type : mongoose.Schema.Types.ObjectId,
     ref : 'User'
@@ -64,6 +60,9 @@ const RequestSchema = new mongoose.Schema({
   },
   approvals: [ApprovalSchema],
   deletedAt : {
+    type : Date
+  },
+  submittedAt : {
     type : Date
   },
   createdAt: {
