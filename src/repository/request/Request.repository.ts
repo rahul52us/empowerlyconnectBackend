@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Request from "../../schemas/Request/Request.schema";
 
+// CREATE THE NEW REQUEST
 export const createRequest = async (data: any) => {
   try {
     const request = new Request(data);
@@ -17,6 +18,7 @@ export const createRequest = async (data: any) => {
   }
 };
 
+// UPDATE THE REQUEST
 export const updateRequest = async (data: any) => {
   try {
     const requestData = await Request.findByIdAndUpdate(
@@ -46,6 +48,54 @@ export const updateRequest = async (data: any) => {
   }
 };
 
+// DELETE THE REQUEST
+export const deleteRequest = async (data : any) => {
+  try
+  {
+    const record = await Request.findById(data._id)
+    if(record){
+      await record.deleteOne()
+      return {
+        message : 'Record has been deleted successfully',
+        statusCode : 200,
+        data : 'Record has been deleted successfully',
+        status : 'success'
+      }
+    }
+    else {
+      return {
+        message : 'Record does not exists',
+        statusCode : 300,
+        data : 'Record does not exists',
+        status : 'error'
+      }
+    }
+  }
+  catch(err : any){
+    return {
+      message : err?.message,
+      statusCode : 300,
+      data : 'Record does not exists',
+      status : 'error'
+    }
+  }
+}
+
+// CHECK THE REQUEST BY THE PAYLOAD
+export const checkRequests = async (data: any) => {
+  try {
+    const record = await Request.findOne(data);
+    if (record) {
+      return true
+    } else {
+      return false
+    }
+  } catch (err: any) {
+    return false
+  }
+};
+
+// FIND SINGLE REQUEST BY THE REQUEST ID
 export const findSingleRequestById = async (data: any) => {
   try {
     const record = await Request.findById(data._id);
@@ -71,6 +121,7 @@ export const findSingleRequestById = async (data: any) => {
   }
 };
 
+// FIND SINGLE REQUEST BY THE REQUEST ID WITH DESCRIPTION
 export const getRequestById = async (data: any) => {
   try {
     const pipeline: any = [];
@@ -148,6 +199,7 @@ export const getRequestById = async (data: any) => {
   }
 };
 
+// GET THE ALL THE REQUEST FOR THE MANAGER AND USERS BOTH
 export const getRequests = async (data: any) => {
   try {
     const pipeline: any = [];
@@ -174,6 +226,19 @@ export const getRequests = async (data: any) => {
       {
         $addFields: {
           lastApproval: { $arrayElemAt: ["$approvals", -1] },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "lastApproval.createdBy",
+          foreignField: "_id",
+          as: "lastApproval.createdBy",
+        },
+      },
+      {
+        $addFields: {
+          "lastApproval.createdBy": { $arrayElemAt: ["$lastApproval.createdBy", 0] },
         },
       },
       {
@@ -210,11 +275,14 @@ export const getRequests = async (data: any) => {
       });
     }
 
-    let documentPipeline: any = [
+    const page = data.page || 1;
+    const limit = data.limit || 10;
+
+    const documentPipeline: any = [
       ...pipeline,
       { $sort: { createdAt: -1 } },
-      { $skip: (data.page - 1) * data.limit },
-      { $limit: Number(data.limit) },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
     ];
 
     const [resultData, countDocuments]: any = await Promise.all([
@@ -235,7 +303,8 @@ export const getRequests = async (data: any) => {
     return {
       status: "success",
       data: resultData,
-      totalPages: Math.ceil(totalCounts / data.limit),
+      totalPages: Math.ceil(totalCounts / limit),
+      currentPage: page,
     };
   } catch (err) {
     return {
@@ -244,4 +313,3 @@ export const getRequests = async (data: any) => {
     };
   }
 };
-
