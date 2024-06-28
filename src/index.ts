@@ -37,6 +37,8 @@ app.use('/',(req,res) => {
   res.status(statusCode.info).send("Welcome to our app")
 })
 
+
+// To handle the error which is throw by the next
 app.use(errorMiddleware);
 
 

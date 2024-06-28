@@ -4,8 +4,7 @@ const Schema = mongoose.Schema;
 const notificationSchema = new Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    index: true,
+    index: true
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,

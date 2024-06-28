@@ -14,6 +14,7 @@ import TripRouting from "./trip.routing";
 import employeRouting from "./employe.routing";
 import departmentRouting from "./department.routing";
 import requestRouting from './request.routing'
+import attendencRequestRouting from './attendenceRequest.routing'
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
@@ -32,6 +33,7 @@ const importRoutings = (app: any) => {
   app.use("/api/trip", TripRouting);
   app.use("/api/department", departmentRouting);
   app.use('/api/request', requestRouting)
+  app.use('/api/attendenceRequest',attendencRequestRouting)
 };
 
 export default importRoutings;
