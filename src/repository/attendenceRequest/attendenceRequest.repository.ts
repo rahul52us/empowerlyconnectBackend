@@ -179,11 +179,3 @@ export async function findAttendanceRequests(data: any) {
     throw new Error(`Failed to perform attendance requests aggregation: ${error.message}`);
   }
 }
-
-
-
-
-
-
-
-
