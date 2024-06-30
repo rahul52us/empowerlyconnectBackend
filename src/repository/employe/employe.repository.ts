@@ -74,7 +74,7 @@ const createEmploye = async (data: any) => {
       maritalStatus: data.maritalStatus,
       medicalCertificationDetails: data.medicalCertificationDetails,
       weddingDate: data.weddingDate,
-      dob: data.weddingDate,
+      dob: data.dob,
       aadharNo: data.aadharNo,
       panNo: data.panNo,
       pfUanNo: data.pfUanNo,
