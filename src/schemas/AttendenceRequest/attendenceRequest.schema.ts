@@ -20,7 +20,7 @@ const PunchRecordSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     required: true,
-  }
+  },
 });
 
 const AttendanceRequestSchema = new mongoose.Schema({
@@ -37,6 +37,24 @@ const AttendanceRequestSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now,
+  },
+  officeStartTime: {
+    type: String,
+    required: true,
+  },
+  officeEndTime: {
+    type: String,
+    required: true,
+  },
+  gracePeriodMinutesLate: {
+    type: Number,
+    required: true,
+    default :10
+  },
+  gracePeriodMinutesEarly: {
+    type: Number,
+    required: true,
+    default:20
   },
 });
 

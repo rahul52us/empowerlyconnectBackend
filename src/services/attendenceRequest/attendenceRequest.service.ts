@@ -4,9 +4,7 @@ import {
   findOneAttendenceRequest,
   findAttendanceRequests,
 } from "../../repository/attendenceRequest/attendenceRequest.repository";
-
-const OFFICE_START_HOUR = 9;
-const OFFICE_END_HOUR = 18;
+import mongoose from "mongoose";
 
 const predefinedLocation = {
   latitude: 37.7749,
@@ -36,7 +34,7 @@ const calculateDistance = (
 
 const calculateTimeDifference = (startTime: Date, endTime: Date): number => {
   const diffInMilliseconds = endTime.getTime() - startTime.getTime();
-  return Math.floor(diffInMilliseconds / (1000 * 60)); // Convert milliseconds to minutes
+  return Math.floor(diffInMilliseconds / (1000 * 60));
 };
 
 export const createAttendenceRequestService = async (
@@ -71,6 +69,13 @@ export const createAttendenceRequestService = async (
 
     if (!attendance) {
 
+      function createOfficeTime(hours : number, minutes : number) {
+        const date = new Date();
+        date.setUTCHours(hours, minutes, 0, 0);
+        return date;
+      }
+
+
       const { statusCode, status, data, message } =
         await createAttendenceRequest({
           user: userId,
@@ -85,6 +90,8 @@ export const createAttendenceRequestService = async (
             },
           ],
           date: new Date(),
+           officeStartTime: "08:00",
+           officeEndTime: "12:00"
         });
 
       res.status(statusCode).send({
@@ -128,9 +135,9 @@ export const getAttendenceRequestsService = async (
     const userId = req.userId;
 
     const attendenceRequests = await findAttendanceRequests({
-      user: userId,
-      startDate: new Date(),
-      endDate: new Date()
+      user: new mongoose.Types.ObjectId(userId),
+      startDate: startDate,
+      endDate: endDate
     });
 
     res.status(200).send({
@@ -145,33 +152,4 @@ export const getAttendenceRequestsService = async (
       message: err?.message,
     });
   }
-};
-
-export const calculateLateAndEarly = (
-  attendance: any
-): { late: number; early: number } => {
-  const punchRecords = attendance.punchRecords;
-  if (punchRecords.length < 2) {
-    return { late: 0, early: 0 };
-  }
-
-  const firstPunch = punchRecords[0].time;
-  const lastPunch = punchRecords[punchRecords.length - 1].time;
-
-  const officeStartTime = new Date(firstPunch);
-  officeStartTime.setHours(OFFICE_START_HOUR, 0, 0, 0);
-
-  const officeEndTime = new Date(firstPunch);
-  officeEndTime.setHours(OFFICE_END_HOUR, 0, 0, 0);
-
-  const lateMinutes = Math.max(
-    0,
-    calculateTimeDifference(officeStartTime, firstPunch)
-  );
-  const earlyMinutes = Math.max(
-    0,
-    calculateTimeDifference(lastPunch, officeEndTime)
-  );
-
-  return { late: lateMinutes, early: earlyMinutes };
 };

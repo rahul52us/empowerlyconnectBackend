@@ -1,14 +1,16 @@
-import AttendanceRequest from '../../schemas/AttendenceRequest/attendenceRequest.schema';
+import AttendanceRequest from "../../schemas/AttendenceRequest/attendenceRequest.schema";
 
+// Find one request by the query
 export async function findOneAttendenceRequest(query: any) {
   try {
     const attendance = await AttendanceRequest.findOne(query);
     return attendance;
-  } catch (err : any) {
+  } catch (err: any) {
     throw new Error(`Failed to find attendance request: ${err.message}`);
   }
 }
 
+// create and update existing request
 export async function createAttendenceRequest(data: any): Promise<any> {
   try {
     const attendanceData = new AttendanceRequest(data);
@@ -16,158 +18,152 @@ export async function createAttendenceRequest(data: any): Promise<any> {
 
     return {
       statusCode: 200,
-      status: 'success',
+      status: "success",
       data: savedAttendance,
-      message: 'Attendance request created successfully',
+      message: "Attendance request created successfully",
     };
-  } catch (err : any) {
+  } catch (err: any) {
     return {
       statusCode: 500,
-      status: 'error',
+      status: "error",
       data: err.message,
-      message: 'Failed to create attendance request',
+      message: "Failed to create attendance request",
     };
   }
 }
 
-
 export async function findAttendanceRequests(data: any) {
   try {
-    const officeStartTime = "23:30:00"; // Adjust according to your office start time
-    const officeEndTime = "23:59:59";   // Adjust according to your office end time
+    const { startDate, endDate, user } = data;
 
-    const pipeline: any = [
+    const startUTC = new Date(startDate);
+    const endUTC = new Date(endDate);
+
+    const pipeline: any[] = [
       {
         $match: {
-          // Add your match conditions if needed
-          // user: data.user,
-          // date: {
-          //   $gte: new Date(data.startDate),
-          //   $lte: new Date(data.endDate),
-          // },
-        },
-      },
-      {
-        $unwind: "$punchRecords",
-      },
-      {
-        $match: {
-          "punchRecords.isActive": true,
-        },
-      },
-      {
-        $sort: {
-          "punchRecords.time": 1,
-        },
-      },
-      {
-        $group: {
-          _id: {
-            _id: "$_id",
-            user: "$user",
-            companyDetail: "$companyDetail",
-            date: "$date",
+          // user : user,
+          date: {
+            $gte: startUTC,
+            $lte: endUTC,
           },
-          firstPunchIn: { $first: "$punchRecords.time" },
-          lastPunchOut: { $last: "$punchRecords.time" },
-          totalPunches: { $sum: 1 },
         },
       },
       {
         $addFields: {
-          lateMinutes: {
-            $cond: {
-              if: {
-                $gt: [
-                  "$firstPunchIn",
-                  {
-                    $dateFromString: {
-                      dateString: {
-                        $concat: [
-                          { $substr: ["$_id.date", 0, 10] }, // Extract the date part
-                          `T${officeStartTime}.000Z`, // Add the office start time
-                        ],
-                      },
-                    },
-                  },
-                ],
-              },
-              then: {
-                $divide: [
-                  {
-                    $subtract: [
-                      "$firstPunchIn",
-                      {
-                        $dateFromString: {
-                          dateString: {
-                            $concat: [
-                              { $substr: ["$_id.date", 0, 10] },
-                              `T${officeStartTime}.000Z`,
-                            ],
-                          },
-                        },
-                      },
+          officeStartTimeUTC: {
+            $dateAdd: {
+              startDate: {
+                $dateFromString: {
+                  dateString: {
+                    $concat: [
+                      { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                      "T",
+                      "$officeStartTime",
+                      ":00",
                     ],
                   },
-                  60000,
-                ],
+                },
               },
-              else: 0,
+              unit: "minute",
+              amount: -330, // Convert IST to UTC (5 hours 30 minutes difference)
             },
           },
-          earlyMinutes: {
-            $cond: {
-              if: {
-                $lt: [
-                  "$lastPunchOut",
-                  {
-                    $dateFromString: {
-                      dateString: {
-                        $concat: [
-                          { $substr: ["$_id.date", 0, 10] },
-                          `T${officeEndTime}.000Z`,
-                        ],
-                      },
-                    },
-                  },
-                ],
-              },
-              then: {
-                $divide: [
-                  {
-                    $subtract: [
-                      {
-                        $dateFromString: {
-                          dateString: {
-                            $concat: [
-                              { $substr: ["$_id.date", 0, 10] },
-                              `T${officeEndTime}.000Z`,
-                            ],
-                          },
-                        },
-                      },
-                      "$lastPunchOut",
+          officeEndTimeUTC: {
+            $dateAdd: {
+              startDate: {
+                $dateFromString: {
+                  dateString: {
+                    $concat: [
+                      { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                      "T",
+                      "$officeEndTime",
+                      ":00",
                     ],
                   },
-                  60000,
-                ],
+                },
               },
-              else: 0,
+              unit: "minute",
+              amount: -330, // Convert IST to UTC (5 hours 30 minutes difference)
+            },
+          },
+          activePunches: {
+            $filter: {
+              input: "$punchRecords",
+              as: "punch",
+              cond: { $eq: ["$$punch.isActive", true] },
             },
           },
         },
       },
       {
         $project: {
-          _id: "$_id._id",
-          user: "$_id.user",
-          companyDetail: "$_id.companyDetail",
-          date: "$_id.date",
-          firstPunchIn: 1,
-          lastPunchOut: 1,
-          totalPunches: 1,
-          lateMinutes: 1,
-          earlyMinutes: 1,
+          punchInTime: { $arrayElemAt: ["$activePunches.time", 0] },
+          punchOutTime: { $arrayElemAt: ["$activePunches.time", -1] },
+          officeStartTimeUTC: 1,
+          officeEndTimeUTC: 1,
+          punchRecords: 1,
+          date: 1,
+          gracePeriodMinutesLate: 1,
+          gracePeriodMinutesEarly: 1,
+        },
+      },
+      {
+        $addFields: {
+          lateComingMinutes: {
+            $cond: [
+              {
+                $gt: [
+                  { $subtract: ["$punchInTime", "$officeStartTimeUTC"] },
+                  { $multiply: ["$gracePeriodMinutesLate", 60000] }, // Convert minutes to milliseconds
+                ],
+              },
+              {
+                $divide: [
+                  {
+                    $subtract: [
+                      "$punchInTime",
+                      { $add: ["$officeStartTimeUTC", { $multiply: ["$gracePeriodMinutesLate", 60000] }] },
+                    ],
+                  },
+                  60000, // Convert milliseconds to minutes
+                ],
+              },
+              0, // Default value if condition is false
+            ],
+          },
+          earlyGoingMinutes: {
+            $cond: [
+              {
+                $gt: [
+                  { $subtract: ["$officeEndTimeUTC", { $multiply: ["$gracePeriodMinutesEarly", 60000] }] },
+                  "$punchOutTime",
+                ],
+              },
+              {
+                $divide: [
+                  {
+                    $subtract: [
+                      { $add: ["$officeEndTimeUTC", { $multiply: ["$gracePeriodMinutesEarly", 60000] }] },
+                      "$punchOutTime",
+                    ],
+                  },
+                  60000, // Convert milliseconds to minutes
+                ],
+              },
+              0, // Default value if condition is false
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          punchInTime: 1,
+          punchOutTime: 1,
+          lateComingMinutes: 1,
+          earlyGoingMinutes: 1,
+          punchRecords: 1,
+          date: 1,
         },
       },
     ];
@@ -175,7 +171,18 @@ export async function findAttendanceRequests(data: any) {
     const attendanceRequests = await AttendanceRequest.aggregate(pipeline);
     return attendanceRequests;
   } catch (error: any) {
-    console.error(`Failed to perform attendance requests aggregation: ${error.message}`);
-    throw new Error(`Failed to perform attendance requests aggregation: ${error.message}`);
+    console.error(
+      `Failed to perform attendance requests aggregation: ${error.message}`
+    );
+    throw new Error(
+      `Failed to perform attendance requests aggregation: ${error.message}`
+    );
   }
 }
+
+
+
+
+
+
+
