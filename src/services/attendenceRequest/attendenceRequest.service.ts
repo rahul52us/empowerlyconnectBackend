@@ -82,8 +82,8 @@ export const createAttendenceRequestService = async (
             },
           ],
           date: new Date(),
-          officeStartTime: "08:00",
-          officeEndTime: "12:00",
+          officeStartTime: "12:00",
+          officeEndTime: "18:00",
         });
 
       res.status(statusCode).send({
@@ -97,7 +97,7 @@ export const createAttendenceRequestService = async (
         latitude,
         longitude,
         deviceInfo,
-        isActive,
+        isActive: true,
       });
 
       const savedAttendance = await attendance.save();
@@ -123,14 +123,13 @@ export const getAttendenceRequestsService = async (
   next: NextFunction
 ) => {
   try {
-    const { startDate, endDate, companyId } = req.query;
-    const userId = req.userId;
-
+    const { startDate, endDate, companyId, user } = req.query;
+    let userId = user || req.userId;
     const attendenceRequests = await findAttendanceRequests({
       user: new mongoose.Types.ObjectId(userId),
       startDate: startDate,
       endDate: endDate,
-      companyId : companyId
+      companyId: companyId
     });
 
     res.status(200).send({

@@ -224,7 +224,7 @@ export async function findAttendanceRequests(data: any) {
                   {
                     $subtract: [
                       {
-                        $add: [
+                        $subtract: [
                           "$officeEndTimeUTC",
                           { $multiply: ["$gracePeriodMinutesEarly", 60000] },
                         ],
@@ -291,7 +291,7 @@ export async function findAttendanceRequests(data: any) {
 
     const attendanceRequests = await AttendanceRequest.aggregate(
       pipeline
-    ).exec();
+    );
     return attendanceRequests;
   } catch (error: any) {
     console.error(
