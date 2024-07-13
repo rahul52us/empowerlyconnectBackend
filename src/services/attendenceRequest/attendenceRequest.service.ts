@@ -68,14 +68,6 @@ export const createAttendenceRequestService = async (
       ) <= predefinedLocation.radius;
 
     if (!attendance) {
-
-      function createOfficeTime(hours : number, minutes : number) {
-        const date = new Date();
-        date.setUTCHours(hours, minutes, 0, 0);
-        return date;
-      }
-
-
       const { statusCode, status, data, message } =
         await createAttendenceRequest({
           user: userId,
@@ -86,12 +78,12 @@ export const createAttendenceRequestService = async (
               latitude,
               longitude,
               deviceInfo,
-              isActive,
+              isActive: true,
             },
           ],
           date: new Date(),
-           officeStartTime: "08:00",
-           officeEndTime: "12:00"
+          officeStartTime: "08:00",
+          officeEndTime: "12:00",
         });
 
       res.status(statusCode).send({
@@ -131,13 +123,14 @@ export const getAttendenceRequestsService = async (
   next: NextFunction
 ) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, companyId } = req.query;
     const userId = req.userId;
 
     const attendenceRequests = await findAttendanceRequests({
       user: new mongoose.Types.ObjectId(userId),
       startDate: startDate,
-      endDate: endDate
+      endDate: endDate,
+      companyId : companyId
     });
 
     res.status(200).send({

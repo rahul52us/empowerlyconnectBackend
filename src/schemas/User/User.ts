@@ -47,7 +47,7 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
   role: {
     type: String,
     enum: ["user", "admin", "superadmin", "manager", "customer", "support"],
-    default: "user",
+    default: "user"
   },
   permissions : {
     type : mongoose.Schema.Types.Mixed,

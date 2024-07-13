@@ -1,5 +1,5 @@
 import AttendanceRequest from "../../schemas/AttendenceRequest/attendenceRequest.schema";
-
+import mongoose from "mongoose";
 // Find one request by the query
 export async function findOneAttendenceRequest(query: any) {
   try {
@@ -34,23 +34,89 @@ export async function createAttendenceRequest(data: any): Promise<any> {
 
 export async function findAttendanceRequests(data: any) {
   try {
-    const { startDate, endDate, user } = data;
-
-    const startUTC = new Date(startDate);
-    const endUTC = new Date(endDate);
+    const { startDate, endDate, user, companyId } = data;
 
     const pipeline: any[] = [
       {
         $match: {
-          // user : user,
+          user: new mongoose.Types.ObjectId(user),
           date: {
-            $gte: startUTC,
-            $lte: endUTC,
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
           },
         },
       },
       {
+        $lookup: {
+          from: "requests",
+          let: {
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            user: new mongoose.Types.ObjectId(user),
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$user", "$$user"] },
+                    { $lte: ["$startDate", "$$endDate"] },
+                    { $gte: ["$endDate", "$$startDate"] },
+                    { $eq: ["$status", "approved"] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "leaveRequests",
+        },
+      },
+      {
+        $lookup: {
+          from: "companypolicies",
+          let: {
+            date: "$date",
+            companyId: new mongoose.Types.ObjectId(companyId),
+          },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$company", "$$companyId"] } } },
+            { $unwind: "$holidays" },
+            {
+              $addFields: {
+                holidaysDateConverted: {
+                  $dateFromString: {
+                    dateString: {
+                      $dateToString: {
+                        format: "%Y-%m-%d",
+                        date: "$holidays.date",
+                      },
+                    },
+                  },
+                },
+                lookupDate: {
+                  $dateFromString: {
+                    dateString: {
+                      $dateToString: { format: "%Y-%m-%d", date: "$$date" },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$holidaysDateConverted", "$lookupDate"],
+                },
+              },
+            },
+            { $project: { holiday: "$holidays" } }
+          ],
+          as: "holidayInfo",
+        },
+      },
+      {
         $addFields: {
+          isHoliday: { $gt: [{ $size: "$holidayInfo" }, 0] },
           officeStartTimeUTC: {
             $dateAdd: {
               startDate: {
@@ -66,7 +132,7 @@ export async function findAttendanceRequests(data: any) {
                 },
               },
               unit: "minute",
-              amount: -330, // Convert IST to UTC (5 hours 30 minutes difference)
+              amount: -330,
             },
           },
           officeEndTimeUTC: {
@@ -84,7 +150,7 @@ export async function findAttendanceRequests(data: any) {
                 },
               },
               unit: "minute",
-              amount: -330, // Convert IST to UTC (5 hours 30 minutes difference)
+              amount: -330,
             },
           },
           activePunches: {
@@ -106,6 +172,9 @@ export async function findAttendanceRequests(data: any) {
           date: 1,
           gracePeriodMinutesLate: 1,
           gracePeriodMinutesEarly: 1,
+          isHoliday: 1,
+          holidayInfo: 1,
+          leaveRequests: 1,
         },
       },
       {
@@ -115,7 +184,7 @@ export async function findAttendanceRequests(data: any) {
               {
                 $gt: [
                   { $subtract: ["$punchInTime", "$officeStartTimeUTC"] },
-                  { $multiply: ["$gracePeriodMinutesLate", 60000] }, // Convert minutes to milliseconds
+                  { $multiply: ["$gracePeriodMinutesLate", 60000] },
                 ],
               },
               {
@@ -123,20 +192,30 @@ export async function findAttendanceRequests(data: any) {
                   {
                     $subtract: [
                       "$punchInTime",
-                      { $add: ["$officeStartTimeUTC", { $multiply: ["$gracePeriodMinutesLate", 60000] }] },
+                      {
+                        $add: [
+                          "$officeStartTimeUTC",
+                          { $multiply: ["$gracePeriodMinutesLate", 60000] },
+                        ],
+                      },
                     ],
                   },
-                  60000, // Convert milliseconds to minutes
+                  60000,
                 ],
               },
-              0, // Default value if condition is false
+              0,
             ],
           },
           earlyGoingMinutes: {
             $cond: [
               {
                 $gt: [
-                  { $subtract: ["$officeEndTimeUTC", { $multiply: ["$gracePeriodMinutesEarly", 60000] }] },
+                  {
+                    $subtract: [
+                      "$officeEndTimeUTC",
+                      { $multiply: ["$gracePeriodMinutesEarly", 60000] },
+                    ],
+                  },
                   "$punchOutTime",
                 ],
               },
@@ -144,31 +223,75 @@ export async function findAttendanceRequests(data: any) {
                 $divide: [
                   {
                     $subtract: [
-                      { $add: ["$officeEndTimeUTC", { $multiply: ["$gracePeriodMinutesEarly", 60000] }] },
+                      {
+                        $add: [
+                          "$officeEndTimeUTC",
+                          { $multiply: ["$gracePeriodMinutesEarly", 60000] },
+                        ],
+                      },
                       "$punchOutTime",
                     ],
                   },
-                  60000, // Convert milliseconds to minutes
+                  60000,
                 ],
               },
-              0, // Default value if condition is false
+              0,
             ],
           },
-        },
-      },
-      {
-        $project: {
-          punchInTime: 1,
-          punchOutTime: 1,
-          lateComingMinutes: 1,
-          earlyGoingMinutes: 1,
-          punchRecords: 1,
-          date: 1,
+          status: {
+            $cond: {
+              if: "$isHoliday",
+              then: "Holiday",
+              else: {
+                $cond: {
+                  if: { $gt: [{ $size: "$leaveRequests" }, 0] },
+                  then: { $arrayElemAt: ["$leaveRequests.leaveType", 0] },
+                  else: {
+                    $cond: {
+                      if: {
+                        $or: [
+                          { $eq: ["$punchInTime", null] },
+                          { $eq: ["$punchOutTime", null] },
+                        ],
+                      },
+                      then: "Absent",
+                      else: {
+                        $cond: {
+                          if: {
+                            $and: [
+                              { $lte: ["$lateComingMinutes", 0] },
+                              { $lte: ["$earlyGoingMinutes", 0] },
+                            ],
+                          },
+                          then: "Present",
+                          else: {
+                            $cond: {
+                              if: { $gt: ["$lateComingMinutes", 0] },
+                              then: "Late",
+                              else: {
+                                $cond: {
+                                  if: { $gt: ["$earlyGoingMinutes", 0] },
+                                  then: "Early",
+                                  else: "On Time",
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     ];
 
-    const attendanceRequests = await AttendanceRequest.aggregate(pipeline);
+    const attendanceRequests = await AttendanceRequest.aggregate(
+      pipeline
+    ).exec();
     return attendanceRequests;
   } catch (error: any) {
     console.error(
@@ -179,10 +302,3 @@ export async function findAttendanceRequests(data: any) {
     );
   }
 }
-
-
-
-
-
-
-
