@@ -8,7 +8,7 @@ import {
   quizQuestionValidation,
 } from "./utils/validation";
 import Question from "../../schemas/Quiz/Question";
-import { Answer } from "../../schemas/Quiz/Question";
+// import { Answer } from "../../schemas/Quiz/Question";
 import { uploadFile } from "../../repository/uploadDoc.repository";
 import { processCategories } from "../../config/helper/logics";
 
@@ -135,47 +135,47 @@ export const createQuestion = async (
       throw generateError("Category does not exists", 422);
     }
 
-    const questionsData: any = req.body.questions;
-    const insertedQuestions: any = [];
+    // const questionsData: any = req.body.questions;
+    // const insertedQuestions: any = [];
 
-    for (const questionData of questionsData) {
-      const answersData = questionData.answers;
+    // for (const questionData of questionsData) {
+    //   const answersData = questionData.answers;
 
-      const question = new Question({
-        company: req.bodyData.company,
-        category: category._id,
-        questionType: questionData.questionType,
-        question: questionData.question,
-        createdBy: req.userId,
-      });
+    //   const question = new Question({
+    //     company: req.bodyData.company,
+    //     category: category._id,
+    //     questionType: questionData.questionType,
+    //     question: questionData.question,
+    //     createdBy: req.userId,
+    //   });
 
-      const savedQuestion: any = await question.save();
-      const questionWithAnswers: any = savedQuestion.toObject();
+    //   const savedQuestion: any = await question.save();
+    //   const questionWithAnswers: any = savedQuestion.toObject();
 
-      const savedAnswers = [];
+    //   const savedAnswers = [];
 
-      for (const answerData of answersData) {
-        const answer = new Answer({
-          answerType: answerData.answerType,
-          answer: answerData.answer,
-          description: answerData.description,
-          correct: answerData.correct,
-        });
-        const savedAnswer = await answer.save();
-        savedAnswers.push(savedAnswer);
-      }
+    //   for (const answerData of answersData) {
+    //     const answer = new Answer({
+    //       answerType: answerData.answerType,
+    //       answer: answerData.answer,
+    //       description: answerData.description,
+    //       correct: answerData.correct,
+    //     });
+    //     const savedAnswer = await answer.save();
+    //     savedAnswers.push(savedAnswer);
+    //   }
 
-      questionWithAnswers.answers = savedAnswers;
-      savedQuestion.answers = savedAnswers.map((item) => item._id);
-      await savedQuestion.save();
-      insertedQuestions.push(questionWithAnswers);
-    }
+    //   questionWithAnswers.answers = savedAnswers;
+    //   savedQuestion.answers = savedAnswers.map((item) => item._id);
+    //   await savedQuestion.save();
+    //   insertedQuestions.push(questionWithAnswers);
+    // }
 
-    return res.status(200).json({
-      message: "Quiz created successfully",
-      data: insertedQuestions,
-      success: true,
-    });
+    // return res.status(200).json({
+    //   message: "Quiz created successfully",
+    //   data: insertedQuestions,
+    //   success: true,
+    // });
   } catch (err) {
     next(err);
   }

@@ -1,51 +1,70 @@
 import mongoose from "mongoose";
 
-const QuizSchema = new mongoose.Schema({
-  company: {
+const QuizQuestionSchema = new mongoose.Schema({
+  quiz: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Company",
+    ref: "Quiz"
+  },
+  question: {
+    type: String,
+    trim: true,
     required: true,
   },
-  class: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Class",
+  questionType: {
+    type: String,
+    enum: ["text", "image", "video"],
+    default: "text",
   },
-  section: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Section",
+  answers: [{
+    answer: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    correct: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+  }],
+  explanation: {
+    type: String,
+    trim: true,
+  },
+  difficultyLevel: {
+    type: String,
+    enum: ["Easy", "Medium", "Hard"],
+    default: "Medium",
+  },
+  tags: [{
+    type: String,
+    trim: true,
+  }],
+  analytics: {
+    attempts: {
+      type: Number,
+      default: 0,
+    },
+    correctAttempts: {
+      type: Number,
+      default: 0,
+    },
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  title: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  thumbnail: {
-    name : {
-      type : String
-    },
-    url : {
-      type : String
-    },
-    type : {
-      type : String
-    }
-  },
-  description: {
-    type: String,
-    trim: true,
-  },
   createdAt: {
     type: Date,
-    default: new Date(),
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
   },
 });
 
-export default mongoose.model("Quiz", QuizSchema);
+// Indexes for optimized querying
+QuizQuestionSchema.index({ question: "text", tags: "text" });
+
+export default mongoose.model("QuizQuestion", QuizQuestionSchema);

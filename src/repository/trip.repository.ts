@@ -1,4 +1,3 @@
-import { generateError } from "../config/Error/functions";
 import { TripModel as Trip } from "../schemas/trip/trip.schema";
 import { deleteFile, uploadFile } from "./uploadDoc.repository";
 

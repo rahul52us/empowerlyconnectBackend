@@ -1,58 +1,74 @@
 import mongoose from "mongoose";
 
-export const AnswerSchema = new mongoose.Schema({
-  answerType: {
-    type: String,
-    enum: ["text", "img", "video"],
+const QuizQuestionSchema = new mongoose.Schema({
+  quiz: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Quiz"
   },
-  answer: {
+  question: {
+    type: String,
+    trim: true,
+    required: true
+  },
+  questionType: {
+    type: String,
+    enum: ["text", "image", "video"],
+    default: "text",
+  },
+  answers: [{
+    answerType: {
+      type: String,
+      enum: ["text", "image", "video"],
+      required: true,
+    },
+    answer: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    correct: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+  }],
+  explanation: {
     type: String,
     trim: true,
   },
-  description: {
+  difficultyLevel: {
+    type: String,
+    enum: ["Easy", "Medium", "Hard"],
+    default: "Medium",
+  },
+  tags: [{
     type: String,
     trim: true,
+  }],
+  analytics: {
+    attempts: {
+      type: Number,
+      default: 0,
+    },
+    correctAttempts: {
+      type: Number,
+      default: 0,
+    },
   },
-  correct: {
-    type: Boolean,
-    default:false,
-    required : true
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
   },
 });
 
-export const Answer = mongoose.model("Answer", AnswerSchema);
+QuizQuestionSchema.index({ question: "text", tags: "text" });
 
-export const QuestionSchema = new mongoose.Schema(
-  {
-    company: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Company",
-      required: true,
-    },
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "QuizCategory",
-    },
-    questionType: {
-      type: String,
-      enum: ["text", "img", "video"],
-      default: "text",
-    },
-    question: {
-      type: String,
-      trim: true,
-    },
-    answers: [{
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'Answer'
-    }],
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
-
-export default mongoose.model("Question", QuestionSchema);
+export default mongoose.model("QuizQuestion", QuizQuestionSchema);
