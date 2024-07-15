@@ -106,6 +106,35 @@ export const getWorkTiming = async (data: any) => {
   }
 };
 
+export const updateHolidayByExcel = async (data: any) => {
+  try {
+    const policy: any = await CompanyPolicy.findOne({
+      company: new mongoose.Types.ObjectId(data.company),
+    });
+    if (policy) {
+      const updatedHolidays: any = await CompanyPolicy.findByIdAndUpdate(
+        policy._id,
+        { holidays: data.holidays }
+      );
+      return {
+        status: "success",
+        data: updatedHolidays.holidays || [],
+        message: "Successfully retrieved Timings",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: "Policy not found",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
 export const updateHolidays = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
@@ -179,9 +208,8 @@ export const updateHolidays = async (data: any) => {
   }
 };
 
-export const updateWorkTiming = async(data : any) => {
-  try
-  {
+export const updateWorkTiming = async (data: any) => {
+  try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
 
     if (!policy) {
@@ -193,8 +221,8 @@ export const updateWorkTiming = async(data : any) => {
       };
     }
 
-    policy.workTiming = data.workTiming?.workTiming || []
-    const savedPolicy = await policy.save()
+    policy.workTiming = data.workTiming?.workTiming || [];
+    const savedPolicy = await policy.save();
 
     return {
       status: "success",
@@ -202,12 +230,10 @@ export const updateWorkTiming = async(data : any) => {
       message: "WorkTiming updated successfully",
       statusCode: statusCode.success,
     };
-  }
-  catch(err : any)
-  {
+  } catch (err: any) {
     throw new Error(err);
   }
-}
+};
 
 export const updateWorkLocations = async (data: any) => {
   try {
