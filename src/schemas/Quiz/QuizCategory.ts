@@ -6,13 +6,18 @@ const QuizCategorySchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required : true
+  },
   thumbnail: {
     name: String,
     url: String,
     type: String,
   },
   description: {
-    type: String,
+    type: mongoose.Schema.Types.Mixed,
     trim: true,
   },
   createdBy: {

@@ -109,7 +109,7 @@ export async function findAttendanceRequests(data: any) {
                 },
               },
             },
-            { $project: { holiday: "$holidays" } }
+            { $project: { holiday: "$holidays" } },
           ],
           as: "holidayInfo",
         },
@@ -289,9 +289,7 @@ export async function findAttendanceRequests(data: any) {
       },
     ];
 
-    const attendanceRequests = await AttendanceRequest.aggregate(
-      pipeline
-    );
+    const attendanceRequests = await AttendanceRequest.aggregate(pipeline);
     return attendanceRequests;
   } catch (error: any) {
     console.error(
