@@ -231,6 +231,7 @@ export const updateWorkLocationExcelService = async (
       status: status,
     });
   } catch (err: any) {
+    console.log(err?.message)
     next(err);
   }
 };

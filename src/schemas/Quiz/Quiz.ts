@@ -1,32 +1,10 @@
 import mongoose from "mongoose";
 
 const QuizQuestionSchema = new mongoose.Schema({
-  quiz: {
+  category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Quiz"
+    ref: "QuizCategory"
   },
-  question: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  questionType: {
-    type: String,
-    enum: ["text", "image", "video"],
-    default: "text",
-  },
-  answers: [{
-    answer: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    correct: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
-  }],
   explanation: {
     type: String,
     trim: true,
@@ -40,16 +18,6 @@ const QuizQuestionSchema = new mongoose.Schema({
     type: String,
     trim: true,
   }],
-  analytics: {
-    attempts: {
-      type: Number,
-      default: 0,
-    },
-    correctAttempts: {
-      type: Number,
-      default: 0,
-    },
-  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -62,9 +30,11 @@ const QuizQuestionSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
   },
+  deletedAt:{
+    type : Date
+  }
 });
 
-// Indexes for optimized querying
 QuizQuestionSchema.index({ question: "text", tags: "text" });
 
-export default mongoose.model("QuizQuestion", QuizQuestionSchema);
+export default mongoose.model("Quiz", QuizQuestionSchema);

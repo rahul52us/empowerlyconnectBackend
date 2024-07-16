@@ -119,4 +119,25 @@ export const getAllCategory = async (data: any) => {
   }
 };
 
-export const deleteCategory = () => {};
+export const createQuiz = async(data : any) => {
+  try
+  {
+     if(data.category){
+        const category = await QuizCategory.findById(data.category)
+        if(!category){
+          return {
+            statusCode : 300,
+            data : 'Category does not exists',
+            message : 'Category does not exists',
+            status : 'error'
+          }
+        }
+     }
+
+     Quiz
+  }
+  catch(err)
+  {
+
+  }
+};
