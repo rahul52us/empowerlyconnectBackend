@@ -9,6 +9,7 @@ import {
   updateHolidays,
   updateWorkLocations,
   updateWorkTiming,
+  uploadWorkLocationsByExcel,
 } from "../../repository/company/company.respository";
 import { generateError } from "../../config/Error/functions";
 import ExcelJS from "exceljs";
@@ -140,17 +141,16 @@ export const updateHolidayExcelService = async (
     });
 
     const { status, data, statusCode, message } = await updateHolidayByExcel({
-        holidays:datas,
-        company: new mongoose.Types.ObjectId(req.body.company),
-      });
-      return res.status(statusCode).send({
-        message: message,
-        data: data,
-        status: status,
-      });
-
+      holidays: datas,
+      company: new mongoose.Types.ObjectId(req.body.company),
+    });
+    return res.status(statusCode).send({
+      message: message,
+      data: data,
+      status: status,
+    });
   } catch (error) {
-    res.status(500).send({status : 'error', data : "An error occurred while processing the file."});
+    next(error);
   }
 };
 
@@ -184,6 +184,47 @@ export const updateWorkLocationService = async (
       workLocation: { ...req.body },
       company: new mongoose.Types.ObjectId(req.body.company),
     });
+    return res.status(statusCode).send({
+      message: message,
+      data: data,
+      status: status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const updateWorkLocationExcelService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const base64String = req.body.file;
+    const buffer = Buffer.from(base64String, "base64");
+
+    const workbook: any = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    const worksheet = workbook.getWorksheet(1);
+    let datas: any = [];
+
+    worksheet.eachRow((row: any, rowNumber: number) => {
+      if (rowNumber > 1) {
+        let rowData: any = {};
+        row.eachCell((cell: any, colNumber: number) => {
+          if (colNumber === 1) rowData.date = cell.value;
+          if (colNumber === 2) rowData.title = cell.value;
+          if (colNumber === 3) rowData.description = cell.value;
+        });
+        datas.push(rowData);
+      }
+    });
+
+    const { status, data, statusCode, message } =
+      await uploadWorkLocationsByExcel({
+        workLocations: datas,
+        company: new mongoose.Types.ObjectId(req.body.company),
+      });
     return res.status(statusCode).send({
       message: message,
       data: data,

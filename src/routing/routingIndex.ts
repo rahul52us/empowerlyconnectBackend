@@ -1,5 +1,5 @@
 import userRouting from "./User";
-import companyOrganisation from "./company";
+import companyOrganisation from "./company.routing";
 import projectRouting from "./project";
 import testimonialRouting from "./testimonial";
 import videosRouting from "./video";

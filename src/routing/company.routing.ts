@@ -17,5 +17,6 @@ router.put('/policy/holidays',authenticate,updateHolidayService)
 router.put('/policy/holidays/excel',authenticate,updateHolidayExcelService)
 router.put('/policy/workTiming',authenticate,updateWorkTimingService)
 router.put('/policy/workLocation',authenticate,updateWorkLocationService)
+router.put('/policy/workLocations/excel',authenticate,updateWorkLocationService)
 
 export default router;

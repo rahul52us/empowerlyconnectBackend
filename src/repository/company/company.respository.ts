@@ -307,3 +307,33 @@ export const updateWorkLocations = async (data: any) => {
     throw new Error(err);
   }
 };
+
+export const uploadWorkLocationsByExcel = async(data : any) => {
+  try
+  {
+    const policy: any = await CompanyPolicy.findOne({ company: data.company });
+
+    if (!policy) {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: null,
+        statusCode: statusCode.info,
+      };
+    }
+
+    policy.workLocations = data?.workLocations
+
+    const savedPolicy = await policy.save()
+    return {
+      status: "success",
+      data: savedPolicy.workLocations,
+      message: "Locations updated successfully",
+      statusCode: statusCode.success,
+    };
+  }
+  catch(err : any)
+  {
+    throw new Error(err);
+  }
+}
