@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express";
-import Project from "../../schemas/Project";
+import Project from "../../schemas/project/Project.schema";
 import { ProjectCreateValidation } from "./utils/validation";
 import { generateError } from "../config/function";
 

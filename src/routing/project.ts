@@ -1,8 +1,13 @@
 import express from "express";
 import authenticate from "../modules/config/authenticate";
-import { createProject, getProject } from "../modules/project/project";
+import { updateProjectService , createProjectService, getAllProjectsService, getSingleProjectService, createTaskService, updateTaskService } from "../services/project/project.service";
 const router = express.Router();
 
-router.post("/create", authenticate, createProject);
-router.get('/get',authenticate,getProject)
+router.post("/", authenticate, createProjectService);
+router.put('/:id',authenticate,updateProjectService);
+router.post('/get',authenticate,getAllProjectsService)
+router.get('/single/:id',authenticate,getSingleProjectService)
+router.post('/task/:projectId',authenticate,createTaskService)
+router.put('/task/:taskId',authenticate,updateTaskService)
+
 export default router;

@@ -7,12 +7,12 @@ interface ProjectI extends Document {
   logo?: string;
   is_active?: boolean;
   createdBy: mongoose.Schema.Types.ObjectId;
-  due_date?: string;
+  dueDate?: Date;
   company: mongoose.Schema.Types.ObjectId;
   priority?: string;
   project_manager?: mongoose.Schema.Types.ObjectId[];
-  start_date?: string;
-  end_date?: string;
+  startDate?: Date;
+  endDate?: Date;
   status?: string;
   customers?: mongoose.Schema.Types.ObjectId[];
   followers?: mongoose.Schema.Types.ObjectId[];
@@ -35,15 +35,21 @@ const AttachFiles = new mongoose.Schema(
       trim: true,
     },
     description: {
-      type: String,
+      type: mongoose.Schema.Types.Mixed,
       trim: true,
     },
     file: {
       type: String,
-      trim: true,
+      trim: true
     },
-  },
-  { timestamps: true }
+    createdAt:{
+      type :Date,
+      default : new Date()
+    },
+    updatedAt:{
+      type : Date
+    }
+  }
 );
 
 const ProjectSchema = new mongoose.Schema<ProjectI>({
@@ -57,12 +63,19 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     trim: true,
   },
   description: {
-    type: String,
+    type: mongoose.Schema.Types.Mixed,
     trim: true,
   },
   logo: {
-    type: String,
-    trim: true,
+    name: {
+      type: String,
+    },
+    url: {
+      type: String,
+    },
+    type: {
+      type: String,
+    },
   },
   priority: {
     type: String,
@@ -97,13 +110,13 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     enum: ["BackLog", "Todo", "In Progress", "Done", "Completed"],
     default: "BackLog",
   },
-  start_date: {
+  startDate: {
     type: Date,
   },
-  end_date: {
+  endDate: {
     type: Date,
   },
-  due_date: {
+  dueDate: {
     type: Date,
   },
   customers: {
@@ -128,7 +141,6 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     enum: ["Satisfactory", "Unsatisfactory"],
   },
   attach_files: [AttachFiles],
-
   deletedAt: {
     type: Date,
   },
