@@ -11,7 +11,7 @@ import blogRouting from "./blog/blog";
 import StudentRouting from "./userTypes/student";
 import expenseRouting from "./expense.routing";
 import TripRouting from "./trip.routing";
-import employeRouting from "./employe.routing";
+import UserRouting from "./users.routing";
 import departmentRouting from "./department.routing";
 import requestRouting from "./request.routing";
 import attendencRequestRouting from "./attendenceRequest.routing";
@@ -19,7 +19,7 @@ import attendencRequestRouting from "./attendenceRequest.routing";
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
   app.use("/api/company", companyOrganisation);
-  app.use("/api/employe", employeRouting);
+  app.use("/api/User", UserRouting);
   app.use("/api/project", projectRouting);
   app.use("/api/testimonial", testimonialRouting);
   app.use("/api/videos", videosRouting);

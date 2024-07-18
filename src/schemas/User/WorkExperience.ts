@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface WorkExperienceDetails {
-    pastEmployer?: string;
+    pastUserr?: string;
     startDate?: Date;
     endDate?: Date;
     relevantExperience?: string;
@@ -34,7 +34,7 @@ const WorkExperienceSchema: Schema<WorkExperienceI> = new Schema<WorkExperienceI
         },
         experienceDetails: [
             {
-                pastEmployer: { type: String, trim: true },
+                pastUserr: { type: String, trim: true },
                 startDate: { type: Date, trim: true },
                 endDate: { type: Date },
                 relevantExperience: { type: String, trim: true },

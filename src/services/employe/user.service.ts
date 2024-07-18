@@ -1,42 +1,42 @@
 import { NextFunction, Response } from "express";
-import { createEmployeValidation } from "./utils/validation";
+import { createUserValidation } from "./utils/validation";
 import { generateError } from "../../config/Error/functions";
 import {
   updateBankDetails,
-  createEmploye,
   getCountDesignationStatus,
-  getEmployeById,
-  getEmployes,
-  getTotalEmployes,
-  updateEmployeProfileDetails,
+  getUserById,
+  getUsers,
+  getTotalUsers,
+  updateUserProfileDetails,
   updateFamilyDetails,
   updateWorkExperienceDetails,
   updateDocumentDetails,
   updateCompanyDetails,
-  getManagerEmployes,
-  getManagerEmployesCounts,
+  getManagerUsers,
+  getManagerUsersCounts,
   getUserInfoWithManagers,
   getUserInfoWithManagersAction,
   updatePermissions,
   getManagersOfUser,
-} from "../../repository/employe/employe.repository";
+  createUser,
+} from "../../repository/employe/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
 import { PaginationLimit } from "../../config/helper/constant";
 
 
-// create the new employe of the particular employe
-const createEmployeService = async (
+// create the new User of the particular User
+const createUserservice = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { error, value } = createEmployeValidation.validate(req.body);
+    const { error, value } = createUserValidation.validate(req.body);
     if (error) {
       throw generateError(error.details, 422);
     }
-    const { status, data } = await createEmploye({
+    const { status, data } = await createUser({
       ...value,
       company: req.body.company,
       companyOrg: req.bodyData.companyOrg,
@@ -45,7 +45,7 @@ const createEmployeService = async (
 
     if (status === "success") {
       res.status(200).send({
-        message: "CREATE Employe SUCCESSFULLY",
+        message: "CREATE User SUCCESSFULLY",
         statusCode: 201,
         data: data,
         success: true,
@@ -58,14 +58,14 @@ const createEmployeService = async (
   }
 };
 
-// update the employe profile by the user id
-const updateEmployeProfileService = async (
+// update the User profile by the user id
+const updateUserProfileService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { data, status } = await updateEmployeProfileDetails({
+    const { data, status } = await updateUserProfileDetails({
       userId: new mongoose.Types.ObjectId(req.params.id),
       ...req.body,
     });
@@ -86,7 +86,7 @@ const updateEmployeProfileService = async (
 };
 
 
-// Get the employes of the particular company
+// Get the Users of the particular company
 const getAllEmploysService = async (
   req: any,
   res: Response,
@@ -96,7 +96,7 @@ const getAllEmploysService = async (
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const search = req.query.search || undefined;
-    const { data, status, totalPages } = await getEmployes({
+    const { data, status, totalPages } = await getUsers({
       id: req.userId,
       search: search,
       company: new mongoose.Types.ObjectId(req.query.company),
@@ -120,15 +120,15 @@ const getAllEmploysService = async (
 };
 
 // get the user details by the particular id
-const getEmployeByIdService = async (
+const getUserByIdService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { status, data } = await getEmployeById({
+    const { status, data } = await getUserById({
       company: req.bodyData.company,
-      employeId: new mongoose.Types.ObjectId(req.params._id),
+      UserId: new mongoose.Types.ObjectId(req.params._id),
     });
     if (status === "success") {
       res.status(200).send({
@@ -168,13 +168,13 @@ const getCountDesignationStatusService = async (
 };
 
 // get the total numbers of users of the specific company
-const getTotalEmployesService = async (
+const getTotalUsersService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { status, data } = await getTotalEmployes({
+    const { status, data } = await getTotalUsers({
       companyOrg: new mongoose.Types.ObjectId(req.bodyData.companyOrg),
     });
     if (status === "success") {
@@ -341,7 +341,7 @@ const updatePermissionsService = async (
   }
 };
 
-export const getUserRoleEmploye = async (
+export const getUserRoleUser = async (
   req: any,
   res: Response,
   next: NextFunction
@@ -373,7 +373,7 @@ const getManagersEmploysService = async (
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const search = req.query.search?.trim() || undefined;
-    const { data, status, totalPages } = await getManagerEmployes({
+    const { data, status, totalPages } = await getManagerUsers({
       id: req.userId,
       managers: [new mongoose.Types.ObjectId(req.params.id)],
       search: search,
@@ -469,13 +469,13 @@ const getUserInfoWithManagerActionService = async (
   }
 };
 
-const getManagerEmployesCountsService = async (
+const getManagerUsersCountsService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { data, status } = await getManagerEmployesCounts({
+    const { data, status } = await getManagerUsersCounts({
       id: req.userId,
       company: new mongoose.Types.ObjectId(req.query.company),
     });
@@ -523,19 +523,19 @@ const getManagersOfUserService = async (req : any , res : Response) => {
   }
 }
 export {
-  createEmployeService,
-  updateEmployeProfileService,
+  createUserservice,
+  updateUserProfileService,
   getAllEmploysService,
-  getEmployeByIdService,
+  getUserByIdService,
   getCountDesignationStatusService,
-  getTotalEmployesService,
+  getTotalUsersService,
   updateBankDetialsService,
   updateWorkExperienceService,
   updateDocumentService,
   updatePermissionsService,
   updateCompanyDetailsService,
   getManagersEmploysService,
-  getManagerEmployesCountsService,
+  getManagerUsersCountsService,
   getUserInfoWithManagerService,
   getUserInfoWithManagerActionService,
   getManagersOfUserService

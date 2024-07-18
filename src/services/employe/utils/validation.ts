@@ -13,7 +13,7 @@ const customMessages = {
     "array.min": "{#label} should have at least {#limit} items",
 };
 
-export const createEmployeValidation = Joi.object({
+export const createUserValidation = Joi.object({
     title: Joi.string().required().messages(customMessages),
     name : Joi.string().min(5).max(80).trim().required().messages(customMessages),
     company : Joi.string().min(5).max(80).trim().required().messages(customMessages),

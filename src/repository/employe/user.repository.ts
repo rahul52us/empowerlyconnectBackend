@@ -1,4 +1,3 @@
-import User from "../../schemas/User/User";
 import ProfileDetails from "../../schemas/User/ProfileDetails";
 import BankDetails from "../../schemas/User/BankDetails";
 import DocumentDetails from "../../schemas/User/Document";
@@ -10,8 +9,9 @@ import Documents from "../../schemas/User/Document";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
 import { updateUserRoleService } from "../../services/auth/auth.service";
 import mongoose from "mongoose";
+import User from "../../schemas/User/User";
 
-const createEmploye = async (data: any) => {
+const createUser = async (data: any) => {
   try {
     const user = await User.findOne({ username: data.username });
     if (user) {
@@ -131,14 +131,14 @@ const createEmploye = async (data: any) => {
   }
 };
 
-const updateEmployeProfileDetails = async (data: any) => {
+const updateUserProfileDetails = async (data: any) => {
   try {
-    const user = await User.findByIdAndUpdate(data.userId, { $set: data });
-    const employe = await ProfileDetails.findOneAndUpdate(
+    const users = await User.findByIdAndUpdate(data.userId, { $set: data });
+    const Users = await ProfileDetails.findOneAndUpdate(
       { user: data.userId },
       { $set: data }
     );
-    if (!employe && !user) {
+    if (!User && !users) {
       return {
         status: "error",
         data: "User does not exists",
@@ -156,7 +156,7 @@ const updateEmployeProfileDetails = async (data: any) => {
   }
 };
 
-const getEmployes = async (data: any) => {
+const getUsers = async (data: any) => {
   try {
     let matchConditions: any = {
       is_active: true,
@@ -238,12 +238,12 @@ const getEmployes = async (data: any) => {
   }
 };
 
-const getEmployeById = async (data: any) => {
+const getUserById = async (data: any) => {
   try {
     const pipeline: any = [
       {
         $match: {
-          _id: data.employeId,
+          _id: data.UserId,
           company: data.company,
           deletedAt: { $exists: false },
         },
@@ -298,11 +298,11 @@ const getEmployeById = async (data: any) => {
       },
     ];
 
-    const employeData = await User.aggregate(pipeline);
-    if (employeData.length === 1) {
+    const UserData = await User.aggregate(pipeline);
+    if (UserData.length === 1) {
       return {
         status: "success",
-        data: employeData[0],
+        data: UserData[0],
       };
     } else {
       return {
@@ -356,7 +356,7 @@ const getCountDesignationStatus = async (data: any) => {
   }
 };
 
-const getTotalEmployes = async (data: any) => {
+const getTotalUsers = async (data: any) => {
   try {
     const result = await CompanyDetails.aggregate([
       {
@@ -386,7 +386,7 @@ const getTotalEmployes = async (data: any) => {
   }
 };
 
-// UPDATE BANK DETAILS OF THE EMPLOYE
+// UPDATE BANK DETAILS OF THE User
 
 const updateBankDetails = async (data: any) => {
   try {
@@ -646,7 +646,7 @@ async function updateCompanyDetails(data: any) {
   }
 }
 
-export const getManagerEmployes = async (data: any) => {
+export const getManagerUsers = async (data: any) => {
   try {
     let matchConditions: any = {
       is_active: true,
@@ -736,7 +736,7 @@ export const getManagerEmployes = async (data: any) => {
   }
 };
 
-const getManagerEmployesCounts = async (data: any) => {
+const getManagerUsersCounts = async (data: any) => {
   try {
     let matchConditions: any = {
       is_active: true,
@@ -1153,18 +1153,18 @@ const getManagersOfUser = async (data: any) => {
 
 
 export {
-  createEmploye,
-  updateEmployeProfileDetails,
-  getEmployes,
-  getEmployeById,
+  createUser,
+  updateUserProfileDetails,
+  getUsers,
+  getUserById,
   getCountDesignationStatus,
-  getTotalEmployes,
+  getTotalUsers,
   updateBankDetails,
   updateFamilyDetails,
   updateWorkExperienceDetails,
   updateDocumentDetails,
   updateCompanyDetails,
   updatePermissions,
-  getManagerEmployesCounts,
+  getManagerUsersCounts,
   getManagersOfUser
 };

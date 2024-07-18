@@ -111,7 +111,7 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     default: "backlog",
   },
   startDate: {
-    type: Date,
+    type: Date
   },
   endDate: {
     type: Date,
