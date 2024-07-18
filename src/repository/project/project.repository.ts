@@ -91,7 +91,7 @@ const getAllProjects = async(data  : any) => {
   try {
     const { page = 1, limit = 10, company } = data;
 
-    const pipeline = [];
+    const pipeline : any = [];
 
     const matchConditions = {
       company: company,
@@ -101,6 +101,12 @@ const getAllProjects = async(data  : any) => {
     pipeline.push({
       $match: matchConditions
     });
+
+    pipeline.push({
+      $sort : {
+        createdAt : -1
+      }
+    })
 
     const skip = (page - 1) * limit;
     pipeline.push({ $skip: skip });

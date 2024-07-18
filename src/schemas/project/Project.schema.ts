@@ -79,8 +79,8 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
   },
   priority: {
     type: String,
-    enum: ["Low", "Medium", "High"],
-    default: "Medium",
+    enum: ["low", "medium", "high"],
+    default: "medium",
   },
   is_active: {
     type: Boolean,
@@ -107,8 +107,8 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
   },
   status: {
     type: String,
-    enum: ["BackLog", "Todo", "In Progress", "Done", "Completed"],
-    default: "BackLog",
+    enum: ["backlog", "todo", "in-progress", "done", "complete"],
+    default: "backlog",
   },
   startDate: {
     type: Date,
@@ -138,7 +138,7 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
   },
   approval: {
     type: String,
-    enum: ["Satisfactory", "Unsatisfactory"],
+    enum: ["satisfactory", "unSatisfactory"],
   },
   attach_files: [AttachFiles],
   deletedAt: {
