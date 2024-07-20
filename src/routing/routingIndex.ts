@@ -15,6 +15,8 @@ import UserRouting from "./users.routing";
 import departmentRouting from "./department.routing";
 import requestRouting from "./request.routing";
 import attendencRequestRouting from "./attendenceRequest.routing";
+import bookCategoryRouting from './liberary/liberary.routing'
+
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
@@ -34,6 +36,7 @@ const importRoutings = (app: any) => {
   app.use("/api/department", departmentRouting);
   app.use("/api/request", requestRouting);
   app.use("/api/attendenceRequest", attendencRequestRouting);
+  app.use('/api/liberary/book',bookCategoryRouting)
 };
 
 export default importRoutings;

@@ -1,17 +1,30 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface BookCategoryI extends Document {
-  name: string;
-  description?: string;
+  title: string;
+  company?:mongoose.Schema.Types.ObjectId;
+  description?: mongoose.Schema.Types.Mixed;
+  user?:mongoose.Schema.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt : Date
 }
 
 const BookCategorySchema: Schema<BookCategoryI> = new Schema<BookCategoryI>({
-  name: {
+  title: {
     type: String,
     required: true,
     trim: true
+  },
+  company: {
+    type: String,
+    ref: "Company",
+    required: true,
+  },
+  user : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'User',
+    required : true
   },
   description: {
     type: mongoose.Schema.Types.Mixed,
@@ -23,6 +36,9 @@ const BookCategorySchema: Schema<BookCategoryI> = new Schema<BookCategoryI>({
   },
   updatedAt: {
     type: Date
+  },
+  deletedAt : {
+    type : Date
   }
 });
 

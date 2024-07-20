@@ -1,12 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-// Interface defining the structure of a library book
 export interface LibraryBookI extends Document {
   title: string;
+  user:mongoose.Schema.Types.ObjectId,
+  company: mongoose.Schema.Types.ObjectId,
   author: string;
   isbn: string;
   publishedDate?: Date;
-  categories: Schema.Types.ObjectId[]; // Reference to BookCategory
+  categories: Schema.Types.ObjectId[];
   language: string;
   numberOfPages?: number;
   availableCopies: number;
@@ -40,10 +41,19 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
     type: String,
     trim: true
   },
+  user : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'User',
+    required:true
+  },
+  company : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'Company',
+    required:true
+  },
   isbn: {
     type: String,
     required: true,
-    unique: true,
     trim: true
   },
   publishedDate: {
@@ -67,7 +77,7 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
   },
   totalCopies: {
     type: Number,
-    required: true
+    default:1
   },
   shelfLocation: {
     type: String,
