@@ -1168,3 +1168,119 @@ export {
   getManagerUsersCounts,
   getManagersOfUser
 };
+/*
+[
+  {
+    $match: {
+      _id: ObjectId("669a72a554c27a0ba1768aa5"),
+      deletedAt : {$exists : false}
+    }
+  },
+  {
+    $lookup: {
+      from: "profiledetails",
+      localField: "_id",
+      foreignField: "user",
+      as: "profiledetails"
+    }
+  },
+  {
+    $lookup: {
+      from: "bankdetails",
+      localField: "_id",
+      foreignField: "user",
+      as: "bankDetails"
+    }
+  },
+  {
+    $lookup: {
+      from: "companydetails",
+      localField: "companyDetail",
+      foreignField: "_id",
+      as: "companydetails"
+    }
+  },
+  {
+    $unwind: {
+      path: "$companydetails",
+      preserveNullAndEmptyArrays: true
+    }
+  },
+  {
+    $unwind: {
+      path: "$companydetails.details",
+      preserveNullAndEmptyArrays: true
+    }
+  },
+  {
+    $lookup: {
+      from: "departments",
+      localField: "companydetails.details.designation",
+      foreignField: "_id",
+      as: "designationDetails"
+    }
+  },
+  {
+    $lookup: {
+      from: "departmentcategories",
+      localField: "companydetails.details.department",
+      foreignField: "_id",
+      as: "departmentDetails"
+    }
+  },
+  {
+    $lookup: {
+      from: "users",
+      localField: "companydetails.details.managers",
+      foreignField: "_id",
+      as: "managerDetails"
+    }
+  },
+  {
+    $addFields: {
+      "companydetails.details.designationDetails": {
+        $arrayElemAt: ["$designationDetails", 0]
+      },
+      "companydetails.details.departmentDetails": {
+        $arrayElemAt: ["$departmentDetails", 0]
+      },
+      "companydetails.details.managerDetails": "$managerDetails"
+    }
+  },
+  {
+    $group: {
+      _id: {
+        userId: "$_id",
+        detailId: "$companydetails.details._id"
+      },
+      profileDetails: { $first: "$profiledetails" },
+      companydetails: { $first: "$companydetails" },
+      bankDetails: { $first: "$bankDetails" },
+      details: {
+        $push: {
+          _id: "$companydetails.details._id",
+          doj: "$companydetails.details.doj",
+          confirmationDate: "$companydetails.details.confirmationDate",
+          managers: "$companydetails.details.managerDetails",
+          department: "$companydetails.details.departmentDetails",
+          designation: "$companydetails.details.designationDetails",
+          workingLocation: "$companydetails.details.workingLocation",
+          eType: "$companydetails.details.eType",
+          description: "$companydetails.details.description",
+          createdAt: "$companydetails.details.createdAt"
+        }
+      }
+    }
+  },
+  {
+    $group: {
+      _id: "$_id.userId",
+      profileDetails: { $first: "$profileDetails" },
+      companydetails: { $first: "$companydetails" },
+      bankDetails: { $first: "$bankDetails" },
+      details: { $first: "$details" }
+    }
+  }
+]
+
+*/
