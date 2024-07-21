@@ -15,7 +15,6 @@ interface UploadedFile {
 
 async function uploadFile(file: any): Promise<string> {
   try {
-    console.log(file.filename)
     const result = await cloudinary.uploader.upload(file.buffer, {
       folder: process.env.bucketFolder_Name,
       public_id: file.filename.replace(/\.[^/.]+$/, ""),

@@ -107,7 +107,7 @@ const getRoleUsers = async (data : any) => {
       {
         $match: {
           'companyDetails.company': data.company,
-          role: { $in: ['manager', 'admin'] },
+          role: { $in: ['manager', 'admin','superadmin'] },
           deletedAt: { $exists: false },
         },
       },

@@ -1154,7 +1154,7 @@ const getManagersOfUser = async (data: any) => {
 
 export const getRoleCountOfCompany = async(data:any) => {
   try {
-    const { company } = data; // Assuming companyId is passed in the data
+    const { company } = data;
 
     const pipeline: any = [];
 
