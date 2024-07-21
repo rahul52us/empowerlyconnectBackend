@@ -192,6 +192,12 @@ const getUsers = async (data: any) => {
       },
     ];
 
+    pipeline.push({
+      $sort: {
+        createdAt: -1,
+      },
+    });
+
     if (data.search) {
       const searchRegex = new RegExp(data.search.trim(), "i");
       pipeline.push({
@@ -206,7 +212,6 @@ const getUsers = async (data: any) => {
 
     let documentPipeline: any = [
       ...pipeline,
-      { $sort: { createdAt: -1 } },
       { $skip: (data.page - 1) * data.limit },
       { $limit: Number(data.limit) },
     ];
@@ -238,6 +243,7 @@ const getUsers = async (data: any) => {
     };
   }
 };
+
 
 const getUserById = async (data: any) => {
   try {

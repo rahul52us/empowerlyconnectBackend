@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import {
   getCompanyDetailsByName,
   getHolidays,
+  getOrganisationCompanies,
   getWorkLocations,
   getWorkTiming,
   updateHolidayByExcel,
@@ -13,6 +14,23 @@ import {
 } from "../../repository/company/company.respository";
 import { generateError } from "../../config/Error/functions";
 import ExcelJS from "exceljs";
+
+
+export const getOrganisationsCompanyService = async (req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    const {status, statusCode, data, message} = await getOrganisationCompanies(req.body)
+    res.status(statusCode).send({
+      message,
+      data,
+      status
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
 
 export const getCompanyDetailsByNameService = async (
   req: any,

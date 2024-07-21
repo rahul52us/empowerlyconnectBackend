@@ -2,6 +2,32 @@ import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 import Company from "../../schemas/company/Company";
 import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
+import { createCatchError } from "../../config/helper/function";
+
+export const getOrganisationCompanies  = async(data : any) => {
+  try
+  {
+    const pipeline : any = []
+
+    pipeline.push({
+      $match : {
+        company : data.company,
+        deletedAt : {$exists : false}
+      }
+    })
+    const companies = await Company.aggregate(pipeline)
+    return {
+      data : companies,
+      message : 'Retrieved Company successfully',
+      statusCode : statusCode.success,
+      status : 'success'
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}
 
 export const getCompanyDetailsByName = async (data: any) => {
   try {

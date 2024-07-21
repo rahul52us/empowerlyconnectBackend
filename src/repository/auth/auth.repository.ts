@@ -1,8 +1,6 @@
 import generateToken from "../../config/helper/generateToken";
 import { generateError } from "../../config/Error/functions";
 import User from "../../schemas/User/User";
-import mongoose from "mongoose";
-import { GetRoleUsersParams } from "./utils/interface";
 
 const findUserByUserName = async (data: any) => {
   try {
