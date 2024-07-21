@@ -10,6 +10,7 @@ import CompanyDetails from "../../schemas/User/CompanyDetails";
 import { updateUserRoleService } from "../../services/auth/auth.service";
 import mongoose from "mongoose";
 import User from "../../schemas/User/User";
+import { createCatchError } from "../../config/helper/function";
 
 const createUser = async (data: any) => {
   try {
@@ -1151,6 +1152,66 @@ const getManagersOfUser = async (data: any) => {
   }
 };
 
+export const getRoleCountOfCompany = async(data:any) => {
+  try {
+    const { company } = data; // Assuming companyId is passed in the data
+
+    const pipeline: any = [];
+
+    pipeline.push({
+      $match: {
+        deletedAt: { $exists: false }
+      }
+    });
+
+    pipeline.push({
+      $lookup: {
+        from: "companydetails",
+        localField: "companyDetail",
+        foreignField: "_id",
+        as: "companydetail",
+      },
+    });
+
+    pipeline.push({
+      $unwind: "$companydetail",
+    });
+
+    pipeline.push({
+      $match: {
+        "companydetail.company": company
+      }
+    });
+
+    pipeline.push({
+      $project: {
+        lastDetail: {
+          $arrayElemAt: ["$companydetail.details", -1],
+        },
+      },
+    });
+
+    pipeline.push({
+      $group: {
+        _id: "$lastDetail.eType",
+        count: { $sum: 1 }
+      }
+    });
+
+    const result = await User.aggregate(pipeline);
+    return {
+      status: 'success',
+      data: result,
+      message: 'Retrieved Role Counts Successfully',
+      statusCode: 200
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+}
+;
+
+
 
 export {
   createUser,
@@ -1172,8 +1233,8 @@ export {
 [
   {
     $match: {
-      _id: ObjectId("669a72a554c27a0ba1768aa5"),
-      deletedAt : {$exists : false}
+      _id: ObjectId("6625148891c8094c277f4d83"),
+      deletedAt: { $exists: false }
     }
   },
   {
@@ -1195,8 +1256,8 @@ export {
   {
     $lookup: {
       from: "companydetails",
-      localField: "companyDetail",
-      foreignField: "_id",
+      localField: "_id",
+      foreignField: "user",
       as: "companydetails"
     }
   },
@@ -1231,9 +1292,26 @@ export {
   {
     $lookup: {
       from: "users",
-      localField: "companydetails.details.managers",
-      foreignField: "_id",
+      let: { managerIds: "$companydetails.details.managers" },
+      pipeline: [
+        { $match: { $expr: { $in: ["$_id", "$$managerIds"] } } },
+        { $project: { username: 1, code: 1, _id: 1 } }
+      ],
       as: "managerDetails"
+    }
+  },
+  {
+    $lookup: {
+      from: "companypolicies",
+      localField: "companydetails.company",
+      foreignField: "company",
+      as: "companyPolicy"
+    }
+  },
+  {
+    $unwind: {
+      path: "$companyPolicy",
+      preserveNullAndEmptyArrays: true
     }
   },
   {
@@ -1244,7 +1322,43 @@ export {
       "companydetails.details.departmentDetails": {
         $arrayElemAt: ["$departmentDetails", 0]
       },
-      "companydetails.details.managerDetails": "$managerDetails"
+      "companydetails.details.managerDetails": "$managerDetails",
+      "companydetails.details.workLocationDetails": {
+        $map: {
+          input: "$companydetails.details.workingLocation",
+          as: "locId",
+          in: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: "$companyPolicy.workLocations",
+                  as: "workLoc",
+                  cond: { $eq: ["$$workLoc._id", "$$locId"] }
+                }
+              },
+              0
+            ]
+          }
+        }
+      },
+      "companydetails.details.workTimingDetails": {
+        $map: {
+          input: "$companydetails.details.workTiming",
+          as: "timeId",
+          in: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: "$companyPolicy.workTiming",
+                  as: "workTime",
+                  cond: { $eq: ["$$workTime._id", "$$timeId"] }
+                }
+              },
+              0
+            ]
+          }
+        }
+      }
     }
   },
   {
@@ -1264,9 +1378,10 @@ export {
           managers: "$companydetails.details.managerDetails",
           department: "$companydetails.details.departmentDetails",
           designation: "$companydetails.details.designationDetails",
-          workingLocation: "$companydetails.details.workingLocation",
+          workingLocation: "$companydetails.details.workLocationDetails",
           eType: "$companydetails.details.eType",
           description: "$companydetails.details.description",
+          workTiming: "$companydetails.details.workTimingDetails",
           createdAt: "$companydetails.details.createdAt"
         }
       }
@@ -1280,7 +1395,29 @@ export {
       bankDetails: { $first: "$bankDetails" },
       details: { $first: "$details" }
     }
+  },
+  {
+    $unwind: "$details"
+  },
+  {
+    $replaceRoot: {
+      newRoot: {
+        _id: "$_id",
+        profileDetails: "$profileDetails",
+        companydetails: "$companydetails",
+        bankDetails: "$bankDetails",
+        details: "$details"
+      }
+    }
+  },
+  {
+    $group: {
+      _id: "$_id",
+      profileDetails: { $first: "$profileDetails" },
+      companydetails: { $first: "$companydetails" },
+      bankDetails: { $first: "$bankDetails" },
+      details: { $push: "$details" }
+    }
   }
 ]
-
 */

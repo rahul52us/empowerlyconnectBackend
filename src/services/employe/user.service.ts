@@ -19,6 +19,7 @@ import {
   updatePermissions,
   getManagersOfUser,
   createUser,
+  getRoleCountOfCompany,
 } from "../../repository/employe/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -499,7 +500,7 @@ const getManagerUsersCountsService = async (
 };
 
 
-const getManagersOfUserService = async (req : any , res : Response) => {
+const getManagersOfUserService = async (req : any , res : Response, next : NextFunction) => {
   try
   {
     const user = new mongoose.Types.ObjectId(req.params.userId)
@@ -519,9 +520,28 @@ const getManagersOfUserService = async (req : any , res : Response) => {
   }
   catch(err)
   {
-
+    next(err)
   }
 }
+
+const getRoleCountOfCompanyService = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    req.body.company = new mongoose.Types.ObjectId(req.query.company)
+    const {data, status, statusCode, message} = await getRoleCountOfCompany(req.body)
+    return res.status(statusCode).send({
+      data,
+      status,
+      message
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
+
 export {
   createUserservice,
   updateUserProfileService,
@@ -538,5 +558,6 @@ export {
   getManagerUsersCountsService,
   getUserInfoWithManagerService,
   getUserInfoWithManagerActionService,
-  getManagersOfUserService
+  getManagersOfUserService,
+  getRoleCountOfCompanyService
 };
