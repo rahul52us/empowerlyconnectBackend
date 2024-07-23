@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createCompany,
+  createOrganisationCompany,
   filterCompany,
 } from "../modules/organisation/Company";
 import { getCompanyDetailsByNameService, getHolidayService, getOrganisationsCompanyService, getWorkLocationservice, getWorkTimingService, updateHolidayExcelService, updateHolidayService, updateWorkLocationExcelService, updateWorkLocationService, updateWorkTimingService } from "../services/company/company.service";
@@ -8,6 +9,7 @@ import authenticate from "../modules/config/authenticate";
 const router = express.Router();
 
 router.post("/create", createCompany);
+router.post('/single/create',authenticate,createOrganisationCompany)
 router.get('/companies',authenticate,getOrganisationsCompanyService)
 router.get("/search", filterCompany);
 router.get('/details', getCompanyDetailsByNameService)

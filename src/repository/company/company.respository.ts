@@ -12,9 +12,16 @@ export const getOrganisationCompanies  = async(data : any) => {
     pipeline.push({
       $match : {
         company : data.company,
-        deletedAt : {$exists : false}
+        deletedAt : {$exists : false},
+        is_active : true
+      },
+    },
+    {
+      $sort : {
+        createdAt : -1
       }
     })
+
     const companies = await Company.aggregate(pipeline)
     return {
       data : companies,

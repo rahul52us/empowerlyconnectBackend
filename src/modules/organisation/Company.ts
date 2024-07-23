@@ -13,6 +13,7 @@ import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
 import { uploadFile } from "../../repository/uploadDoc.repository";
+import { statusCode } from "../../config/helper/statusCode";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -149,6 +150,58 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
+const createOrganisationCompany = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    const userId = req.userId
+    const companyOrg = req.bodyData.companyOrg
+
+    const comp : any = new Company({
+      company_name: req.body.companyDetails?.company_name?.trim(),
+      companyType : 'company',
+      is_active:true,
+      ...req.body.companyDetails,
+      companyOrg:companyOrg
+    });
+
+    const createdComp : any = await comp.save();
+
+    const compPolicy = new CompanyPolicy({
+      company: createdComp._id,
+      createdBy:userId
+    });
+
+    const createdCompPolicy : any = await compPolicy.save();
+
+    createdComp.policy = createdCompPolicy._id
+    await createdComp.save()
+
+    if (req.body.companyDetails.logo && req.body.companyDetails.logo !== "") {
+      let url = await uploadFile(req.body.companyDetails.logo);
+      comp.logo = {
+        name: req.body.companyDetails.logo.filename,
+        url: url,
+        type: req.body.companyDetails.logo.type,
+      };
+      await comp.save();
+    }
+
+    res.status(statusCode.success).send({
+      status : 'success',
+      data : `${createdComp.company_name} company has been created successfully`,
+      message : `${createdComp.company_name} company has been created successfully`
+    })
+  }
+  catch(err : any)
+  {
+    return res.status(statusCode.serverError).send({
+      status : 'error',
+      message : err?.message,
+      data : err?.message
+    })
+  }
+}
+
 const filterCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
     const result = await Company.findOne({
@@ -172,4 +225,4 @@ const filterCompany = async (req: any, res: Response, next: NextFunction) => {
 };
 
 
-export { createCompany, filterCompany };
+export { createCompany, filterCompany, createOrganisationCompany };
