@@ -19,6 +19,7 @@ import ExcelJS from "exceljs";
 export const getOrganisationsCompanyService = async (req : any , res : Response, next : NextFunction) => {
   try
   {
+    req.body.companyOrg = req.bodyData.companyOrg
     const {status, statusCode, data, message} = await getOrganisationCompanies(req.body)
     res.status(statusCode).send({
       message,
