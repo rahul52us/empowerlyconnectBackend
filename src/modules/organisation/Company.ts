@@ -14,6 +14,7 @@ import CompanyDetails from "../../schemas/User/CompanyDetails";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
 import { uploadFile } from "../../repository/uploadDoc.repository";
 import { statusCode } from "../../config/helper/statusCode";
+import mongoose from "mongoose";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -202,6 +203,39 @@ const createOrganisationCompany = async(req : any , res : Response, next : NextF
   }
 }
 
+const updateOrganisationCompany = async (req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    const _id = new mongoose.Types.ObjectId(req.params.id)
+    const comp = await Company.findOne({_id : _id , deletedAt : {$exists : false}})
+    if(comp)
+    {
+      const updatedCompany = await Company.findByIdAndUpdate(_id,{$set : req.body.companyDetails}, {new : true})
+      res.status(statusCode.success).send({
+        message : 'Company has been Successfully',
+        data : updatedCompany,
+        status : 'success'
+      })
+    }
+    else
+    {
+      res.status(statusCode.info).send({
+        message : 'Record does not exists',
+        data : 'Record does not exists',
+        status : 'error'
+      })
+    }
+  }
+  catch(err : any)
+  {
+    return res.status(statusCode.serverError).send({
+      status : 'error',
+      message : err?.message,
+      data : err?.message
+    })
+  }
+}
+
 const filterCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
     const result = await Company.findOne({
@@ -225,4 +259,4 @@ const filterCompany = async (req: any, res: Response, next: NextFunction) => {
 };
 
 
-export { createCompany, filterCompany, createOrganisationCompany };
+export { createCompany, filterCompany, createOrganisationCompany, updateOrganisationCompany };
