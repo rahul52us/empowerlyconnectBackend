@@ -242,7 +242,7 @@ export const updateHolidays = async (data: any) => {
 
 export const updateWorkTiming = async (data: any) => {
   try {
-    const policy: any = await CompanyPolicy.findOne({ company: data.company });
+    const policy = await CompanyPolicy.findOne({ company: data.company });
 
     if (!policy) {
       return {
@@ -253,7 +253,22 @@ export const updateWorkTiming = async (data: any) => {
       };
     }
 
-    policy.workTiming = data.workTiming?.workTiming || [];
+    const updatedWorkTiming = data.workTiming?.workTiming.map((newTiming: any) => {
+      const existingTiming = policy.workTiming.find(
+        (timing: any) => timing._id.toString() === newTiming._id
+      );
+      if (existingTiming) {
+        existingTiming.startTime = newTiming.startTime;
+        existingTiming.endTime = newTiming.endTime;
+        existingTiming.daysOfWeek = newTiming.daysOfWeek;
+        return existingTiming;
+      } else {
+        return newTiming;
+      }
+    });
+
+    policy.workTiming = updatedWorkTiming;
+
     const savedPolicy = await policy.save();
 
     return {
@@ -263,10 +278,9 @@ export const updateWorkTiming = async (data: any) => {
       statusCode: statusCode.success,
     };
   } catch (err: any) {
-    throw new Error(err);
+    return createCatchError(err)
   }
 };
-
 export const updateWorkLocations = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
