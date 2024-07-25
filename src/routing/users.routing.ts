@@ -20,12 +20,14 @@ import {
   updatePermissionsService,
   getManagersOfUserService,
   getRoleCountOfCompanyService,
+  getCompanyDetailsByIdService,
 } from "../services/employe/user.service";
 
 const router = express.Router();
 
 router.post("/create", authenticate, createUserservice);
 router.put("/profile/:id", authenticate, updateUserProfileService);
+router.get('/details/:id',authenticate,getCompanyDetailsByIdService)
 router.get("/:_id", authenticate, getUserByIdService);
 router.get("/", authenticate, getAllEmploysService);
 router.get("/managers/:id", authenticate, getManagersEmploysService);

@@ -1214,14 +1214,212 @@ export const getRoleCountOfCompany = async(data:any) => {
   } catch (err: any) {
     return createCatchError(err);
   }
+};
+
+const getCompanyDetailsById = async (data : any) => {
+  try
+  {
+    const pipeline : any = [
+      {
+        $match: {
+          _id: data.id,
+          deletedAt: { $exists: false }
+        }
+      },
+      {
+        $lookup: {
+          from: "companydetails",
+          localField: "_id",
+          foreignField: "user",
+          as: "companydetails"
+        }
+      },
+      {
+        $unwind: {
+          path: "$companydetails",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $unwind: {
+          path: "$companydetails.details",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "companydetails.details.designation",
+          foreignField: "_id",
+          as: "designationDetails"
+        }
+      },
+      {
+        $lookup: {
+          from: "departmentcategories",
+          localField: "companydetails.details.department",
+          foreignField: "_id",
+          as: "departmentDetails"
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { managerIds: "$companydetails.details.managers" },
+          pipeline: [
+            { $match: { $expr: { $in: ["$_id", "$$managerIds"] } } },
+            { $project: { username: 1, code: 1, _id: 1 } }
+          ],
+          as: "managerDetails"
+        }
+      },
+      {
+        $lookup: {
+          from: "companypolicies",
+          localField: "companydetails.company",
+          foreignField: "company",
+          as: "companyPolicy"
+        }
+      },
+      {
+        $unwind: {
+          path: "$companyPolicy",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $addFields: {
+          "companydetails.details.designationDetails": {
+            $arrayElemAt: ["$designationDetails", 0]
+          },
+          "companydetails.details.departmentDetails": {
+            $arrayElemAt: ["$departmentDetails", 0]
+          },
+          "companydetails.details.managerDetails": "$managerDetails",
+          "companydetails.details.workLocationDetails": {
+            $map: {
+              input: "$companydetails.details.workingLocation",
+              as: "locId",
+              in: {
+                $arrayElemAt: [
+                  {
+                    $filter: {
+                      input: "$companyPolicy.workLocations",
+                      as: "workLoc",
+                      cond: { $eq: ["$$workLoc._id", "$$locId"] }
+                    }
+                  },
+                  0
+                ]
+              }
+            }
+          },
+          "companydetails.details.workTimingDetails": {
+            $map: {
+              input: "$companydetails.details.workTiming",
+              as: "timeId",
+              in: {
+                $arrayElemAt: [
+                  {
+                    $filter: {
+                      input: "$companyPolicy.workTiming",
+                      as: "workTime",
+                      cond: { $eq: ["$$workTime._id", "$$timeId"] }
+                    }
+                  },
+                  0
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            userId: "$_id",
+            detailId: "$companydetails.details._id"
+          },
+          profileDetails: { $first: "$profiledetails" },
+          companydetails: { $first: "$companydetails" },
+          bankDetails: { $first: "$bankDetails" },
+          details: {
+            $push: {
+              _id: "$companydetails.details._id",
+              doj: "$companydetails.details.doj",
+              confirmationDate: "$companydetails.details.confirmationDate",
+              managers: "$companydetails.details.managerDetails",
+              department: "$companydetails.details.departmentDetails",
+              designation: "$companydetails.details.designationDetails",
+              workingLocation: "$companydetails.details.workLocationDetails",
+              eType: "$companydetails.details.eType",
+              description: "$companydetails.details.description",
+              workTiming: "$companydetails.details.workTimingDetails",
+              createdAt: "$companydetails.details.createdAt"
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.userId",
+          companydetails: { $first: "$companydetails" },
+          details: { $first: "$details" }
+        }
+      },
+      {
+        $unwind: "$details"
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            _id: "$_id",
+            profileDetails: "$profileDetails",
+            companydetails: "$companydetails",
+            bankDetails: "$bankDetails",
+            details: "$details"
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",
+          details: { $push: "$details" }
+        }
+      }
+    ]
+
+    const result = await User.aggregate(pipeline)
+    if(result.length){
+      return {
+        data : result[0],
+        message : 'Retrived User Details',
+        statusCode : 200,
+        status : 'success'
+      }
+    }
+    else
+    {
+      return {
+        data : 'User does not exists',
+        message : 'User does not exists',
+        statusCode : 300,
+        status: 'error'
+      }
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
 }
-;
 
 
 
 export {
   createUser,
   updateUserProfileDetails,
+  getCompanyDetailsById,
   getUsers,
   getUserById,
   getCountDesignationStatus,
@@ -1235,195 +1433,3 @@ export {
   getManagerUsersCounts,
   getManagersOfUser
 };
-/*
-[
-  {
-    $match: {
-      _id: ObjectId("6625148891c8094c277f4d83"),
-      deletedAt: { $exists: false }
-    }
-  },
-  {
-    $lookup: {
-      from: "profiledetails",
-      localField: "_id",
-      foreignField: "user",
-      as: "profiledetails"
-    }
-  },
-  {
-    $lookup: {
-      from: "bankdetails",
-      localField: "_id",
-      foreignField: "user",
-      as: "bankDetails"
-    }
-  },
-  {
-    $lookup: {
-      from: "companydetails",
-      localField: "_id",
-      foreignField: "user",
-      as: "companydetails"
-    }
-  },
-  {
-    $unwind: {
-      path: "$companydetails",
-      preserveNullAndEmptyArrays: true
-    }
-  },
-  {
-    $unwind: {
-      path: "$companydetails.details",
-      preserveNullAndEmptyArrays: true
-    }
-  },
-  {
-    $lookup: {
-      from: "departments",
-      localField: "companydetails.details.designation",
-      foreignField: "_id",
-      as: "designationDetails"
-    }
-  },
-  {
-    $lookup: {
-      from: "departmentcategories",
-      localField: "companydetails.details.department",
-      foreignField: "_id",
-      as: "departmentDetails"
-    }
-  },
-  {
-    $lookup: {
-      from: "users",
-      let: { managerIds: "$companydetails.details.managers" },
-      pipeline: [
-        { $match: { $expr: { $in: ["$_id", "$$managerIds"] } } },
-        { $project: { username: 1, code: 1, _id: 1 } }
-      ],
-      as: "managerDetails"
-    }
-  },
-  {
-    $lookup: {
-      from: "companypolicies",
-      localField: "companydetails.company",
-      foreignField: "company",
-      as: "companyPolicy"
-    }
-  },
-  {
-    $unwind: {
-      path: "$companyPolicy",
-      preserveNullAndEmptyArrays: true
-    }
-  },
-  {
-    $addFields: {
-      "companydetails.details.designationDetails": {
-        $arrayElemAt: ["$designationDetails", 0]
-      },
-      "companydetails.details.departmentDetails": {
-        $arrayElemAt: ["$departmentDetails", 0]
-      },
-      "companydetails.details.managerDetails": "$managerDetails",
-      "companydetails.details.workLocationDetails": {
-        $map: {
-          input: "$companydetails.details.workingLocation",
-          as: "locId",
-          in: {
-            $arrayElemAt: [
-              {
-                $filter: {
-                  input: "$companyPolicy.workLocations",
-                  as: "workLoc",
-                  cond: { $eq: ["$$workLoc._id", "$$locId"] }
-                }
-              },
-              0
-            ]
-          }
-        }
-      },
-      "companydetails.details.workTimingDetails": {
-        $map: {
-          input: "$companydetails.details.workTiming",
-          as: "timeId",
-          in: {
-            $arrayElemAt: [
-              {
-                $filter: {
-                  input: "$companyPolicy.workTiming",
-                  as: "workTime",
-                  cond: { $eq: ["$$workTime._id", "$$timeId"] }
-                }
-              },
-              0
-            ]
-          }
-        }
-      }
-    }
-  },
-  {
-    $group: {
-      _id: {
-        userId: "$_id",
-        detailId: "$companydetails.details._id"
-      },
-      profileDetails: { $first: "$profiledetails" },
-      companydetails: { $first: "$companydetails" },
-      bankDetails: { $first: "$bankDetails" },
-      details: {
-        $push: {
-          _id: "$companydetails.details._id",
-          doj: "$companydetails.details.doj",
-          confirmationDate: "$companydetails.details.confirmationDate",
-          managers: "$companydetails.details.managerDetails",
-          department: "$companydetails.details.departmentDetails",
-          designation: "$companydetails.details.designationDetails",
-          workingLocation: "$companydetails.details.workLocationDetails",
-          eType: "$companydetails.details.eType",
-          description: "$companydetails.details.description",
-          workTiming: "$companydetails.details.workTimingDetails",
-          createdAt: "$companydetails.details.createdAt"
-        }
-      }
-    }
-  },
-  {
-    $group: {
-      _id: "$_id.userId",
-      profileDetails: { $first: "$profileDetails" },
-      companydetails: { $first: "$companydetails" },
-      bankDetails: { $first: "$bankDetails" },
-      details: { $first: "$details" }
-    }
-  },
-  {
-    $unwind: "$details"
-  },
-  {
-    $replaceRoot: {
-      newRoot: {
-        _id: "$_id",
-        profileDetails: "$profileDetails",
-        companydetails: "$companydetails",
-        bankDetails: "$bankDetails",
-        details: "$details"
-      }
-    }
-  },
-  {
-    $group: {
-      _id: "$_id",
-      profileDetails: { $first: "$profileDetails" },
-      companydetails: { $first: "$companydetails" },
-      bankDetails: { $first: "$bankDetails" },
-      details: { $push: "$details" }
-    }
-  }
-]
-*/

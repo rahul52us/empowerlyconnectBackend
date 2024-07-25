@@ -20,6 +20,7 @@ import {
   getManagersOfUser,
   createUser,
   getRoleCountOfCompany,
+  getCompanyDetailsById,
 } from "../../repository/employe/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -541,10 +542,29 @@ const getRoleCountOfCompanyService = async(req : any , res : Response, next : Ne
   }
 }
 
+const getCompanyDetailsByIdService = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id)
+    const {data, status, statusCode, message} = await getCompanyDetailsById(req.body)
+    return res.status(statusCode).send({
+      data,
+      status,
+      message
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
+
 
 export {
   createUserservice,
   updateUserProfileService,
+  getCompanyDetailsByIdService,
   getAllEmploysService,
   getUserByIdService,
   getCountDesignationStatusService,

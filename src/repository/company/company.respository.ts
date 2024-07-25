@@ -8,7 +8,6 @@ export const getOrganisationCompanies  = async(data : any) => {
   try
   {
     const pipeline : any = []
-    console.log(data)
     pipeline.push({
       $match : {
         companyOrg : data.companyOrg,
