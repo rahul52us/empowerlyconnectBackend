@@ -107,7 +107,7 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
   },
   status: {
     type: String,
-    enum: ["backlog", "todo", "in-progress", "done", "complete"],
+    enum: ["backlog", "todo", "inProgress", "done", "complete"],
     default: "backlog",
   },
   startDate: {

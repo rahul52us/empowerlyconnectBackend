@@ -1,11 +1,24 @@
 import Task from "../../schemas/task/Task.schema";
 import { statusCode } from "../../config/helper/statusCode";
 import Project from "../../schemas/project/Project.schema";
+import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 const createProject = async (data: any) => {
   try {
     const projectData = new Project(data);
-    const savedProject = await projectData.save();
+    const savedProject : any = await projectData.save();
+
+    // upload the file
+    if (data.logo && data.logo !== "") {
+      let url = await uploadFile(data.logo);
+      savedProject.logo = {
+        name: data.logo.filename,
+        url: url,
+        type: data.logo.type
+      };
+      await savedProject.save();
+    }
+
     return {
       statusCode: 201,
       status: "success",
@@ -13,6 +26,7 @@ const createProject = async (data: any) => {
       message: `${savedProject.project_name} project has been created successfully`,
     };
   } catch (err: any) {
+    console.log(err?.message)
     return {
       status: "error",
       data: err?.message,
@@ -26,11 +40,43 @@ const updateProject = async (data: any) => {
   try {
     const projectData = await Project.findById(data.id);
     if (projectData) {
+      const  {logo, ...rest} = data
       const updatedProject: any = await Project.findByIdAndUpdate(
         data.id,
-        { $set: data },
+        { $set: rest },
         { new: true }
       );
+
+      if (
+        data?.logo?.isDeleted === 1 &&
+        updatedProject.logo?.name
+      ) {
+        await deleteFile(updatedProject.logo.name);
+        updatedProject.logo = {
+          name: undefined,
+          url: undefined,
+          type: undefined,
+        };
+        await updatedProject.save();
+      }
+
+      if (
+        data.logo &&
+        data.logo?.isAdd === 1 &&
+        data.logo?.filename &&
+        data.logo?.buffer
+      ) {
+        const { filename, type } = data.logo;
+        const url = await uploadFile(data.logo);
+        updatedProject.logo = {
+          name: filename,
+          url,
+          type,
+        };
+        await updatedProject.save();
+      }
+
+
       return {
         statusCode: 200,
         message: `${updatedProject.project_name} project has been updated successfully`,
