@@ -75,8 +75,8 @@ const SubtaskSchema = new Schema<SubtaskI>(
     },
     status: {
       type: String,
-      enum: ["Backlog", "To Do", "In Progress", "Done"],
-      default: "Backlog",
+      enum: ["backlog", "toDo", "inProgress", "done"],
+      default: "backlog",
     },
     duedate: {
       type: Date,
@@ -183,13 +183,13 @@ const TaskSchema = new Schema<TaskI>(
     reminders: [Date],
     status: {
       type: String,
-      enum: ["Backlog", "To Do", "In Progress", "Done"],
-      default: "Backlog",
+      enum: ["backlog", "toDo", "inProgress", "done"],
+      default: "backlog",
     },
     priority: {
       type: String,
-      enum: ["Low", "Medium", "High"],
-      default: "Medium",
+      enum: ["low", "medium", "high"],
+      default: "medium",
     },
     duedate: {
       type: Date,
@@ -210,7 +210,7 @@ const TaskSchema = new Schema<TaskI>(
     }],
     approval: {
       type: String,
-      enum: ["Satisfactory", "Unsatisfactory"],
+      enum: ["satisfactory", "unSatisfactory"],
     },
     attach_files: [{
       project: {

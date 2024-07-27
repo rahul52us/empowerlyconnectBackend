@@ -332,7 +332,7 @@ const createTask = async (datas: any) => {
     const projects = await Project.findOne({
       _id: datas.projectId,
       company: datas.company,
-      deletedAt: { $exists: true },
+      deletedAt: { $exists: false },
     });
     if (projects) {
       const newTask = new Task(datas);
