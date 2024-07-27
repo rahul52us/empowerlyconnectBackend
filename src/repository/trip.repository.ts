@@ -1,3 +1,5 @@
+import { createCatchError } from "../config/helper/function";
+import { statusCode } from "../config/helper/statusCode";
 import { TripModel as Trip } from "../schemas/trip/trip.schema";
 import { deleteFile, uploadFile } from "./uploadDoc.repository";
 
@@ -6,7 +8,7 @@ export const createTrip = async (data: any) => {
     const trip = new Trip(data);
     const savedTrip = await trip.save();
 
-    if (data.thumbnail && data.thumbnail?.trim !== "") {
+    if (data.thumbnail && data?.thumbnail?.buffer && data.thumbnail?.trim !== "") {
       let url = await uploadFile(data.thumbnail);
       data.thumbnail = {
         name: data.thumbnail.filename,
@@ -20,48 +22,61 @@ export const createTrip = async (data: any) => {
     return {
       status: "success",
       data: savedTrip,
+      statusCode : statusCode.success,
+      message : `${data.title} trip has been created successfully`
     };
   } catch (err: any) {
-    throw new Error(err);
+    return createCatchError(err)
   }
 };
 
 export const updateTrip = async (data: any) => {
   try {
-    const updatedData: any = await Trip.findByIdAndUpdate(data._id, data, {
-      new: true,
-    });
+    const trip = await Trip.findById(data._id)
+    if(trip)
+    {
+      const updatedData: any = await Trip.findByIdAndUpdate(data._id, data, {
+        new: true,
+      });
 
-    if (!updatedData) {
+      if (data.isFileDeleted === 1 && updatedData.thumbnail?.url && updatedData.thumbnail?.name) {
+        await deleteFile(updatedData.thumbnail.name);
+        updatedData.thumbnail = {
+          name : undefined,
+          url : undefined,
+          type : undefined
+        };
+        await updatedData.save();
+      }
+
+      if (data.thumbnail?.filename && data.thumbnail?.buffer && data.thumbnail) {
+        const { filename, type } = data.thumbnail;
+        const url = await uploadFile(data.thumbnail);
+        updatedData.thumbnail = {
+          name: filename,
+          url,
+          type,
+        };
+        await updatedData.save();
+      }
+
       return {
-        status: "error",
-        data: "Trip does not exist",
+        status: "success",
+        data: updatedData,
+        statusCode : statusCode.success,
+        message : 'Trip Update Successfully'
       };
     }
-
-    if (data.isFileDeleted === 1 && updatedData.thumbnail) {
-      await deleteFile(updatedData.thumbnail.name);
-      updatedData.thumbnail = null;
-      await updatedData.save();
+    else {
+      return {
+        status : "error",
+        data : 'Trip does not exists',
+        statusCode:statusCode.info,
+        message : 'Trip does not exists'
+      }
     }
-
-    if (data.thumbnail?.filename && data.thumbnail?.buffer) {
-      const { filename, type } = data.thumbnail;
-      const url = await uploadFile(data.thumbnail);
-      updatedData.thumbnail = {
-        name: filename,
-        url,
-        type,
-      };
-      await updatedData.save();
-    }
-
-    return {
-      status: "success",
-      data: updatedData,
-    };
   } catch (err) {
-    throw new Error("Failed to update trip");
+    return createCatchError(err)
   }
 };
 
