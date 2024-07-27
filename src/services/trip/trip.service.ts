@@ -2,6 +2,7 @@ import { NextFunction, Response } from "express";
 import {
   createTrip,
   getAllDayTripCount,
+  getSingleTrips,
   getTripCounts,
   getTrips,
   updateTrip,
@@ -30,6 +31,24 @@ export const createTripService = async (
     next(err);
   }
 };
+
+
+export const getSingleTripService = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const _id = new mongoose.Types.ObjectId(req.params.id)
+    const {status, statusCode, data, message} =  await getSingleTrips({_id})
+    return res.status(statusCode).send({
+      status,
+      message,
+      data
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
 
 export const getTripsService = async (
   req: any,
