@@ -2,11 +2,38 @@ import Task from "../../schemas/task/Task.schema";
 import { statusCode } from "../../config/helper/statusCode";
 import Project from "../../schemas/project/Project.schema";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
+import { createCatchError } from "../../config/helper/function";
+
+const getProjectCounts = async (data: any) => {
+  try {
+    let pipeline = [
+      {
+        $match: {
+          company: data.company,
+          deletedAt : {$exists : false}
+        },
+      },
+      {
+        $count: "totalProjects",
+      },
+    ];
+
+    const result = await Project.aggregate(pipeline);
+    return {
+      data: result[0] ? result[0].totalProjects : 0,
+      message: "Retrieved Project Counts",
+      statusCode: statusCode.success,
+      status: "success",
+    };
+  } catch (err) {
+    return createCatchError(err);
+  }
+};
 
 const createProject = async (data: any) => {
   try {
     const projectData = new Project(data);
-    const savedProject : any = await projectData.save();
+    const savedProject: any = await projectData.save();
 
     // upload the file
     if (data.logo && data.logo !== "") {
@@ -14,7 +41,7 @@ const createProject = async (data: any) => {
       savedProject.logo = {
         name: data.logo.filename,
         url: url,
-        type: data.logo.type
+        type: data.logo.type,
       };
       await savedProject.save();
     }
@@ -26,13 +53,7 @@ const createProject = async (data: any) => {
       message: `${savedProject.project_name} project has been created successfully`,
     };
   } catch (err: any) {
-    console.log(err?.message)
-    return {
-      status: "error",
-      data: err?.message,
-      message: "Internal Server Error",
-      statusCode: statusCode.serverError,
-    };
+    return createCatchError(err);
   }
 };
 
@@ -40,17 +61,14 @@ const updateProject = async (data: any) => {
   try {
     const projectData = await Project.findById(data.id);
     if (projectData) {
-      const  {logo, ...rest} = data
+      const { logo, ...rest } = data;
       const updatedProject: any = await Project.findByIdAndUpdate(
         data.id,
         { $set: rest },
         { new: true }
       );
 
-      if (
-        data?.logo?.isDeleted === 1 &&
-        updatedProject.logo?.name
-      ) {
+      if (data?.logo?.isDeleted === 1 && updatedProject.logo?.name) {
         await deleteFile(updatedProject.logo.name);
         updatedProject.logo = {
           name: undefined,
@@ -76,7 +94,6 @@ const updateProject = async (data: any) => {
         await updatedProject.save();
       }
 
-
       return {
         statusCode: 200,
         message: `${updatedProject.project_name} project has been updated successfully`,
@@ -92,12 +109,7 @@ const updateProject = async (data: any) => {
       };
     }
   } catch (err: any) {
-    return {
-      status: "error",
-      data: `${err?.message}`,
-      message: "Internal Server Error",
-      statusCode: statusCode.serverError,
-    };
+    return createCatchError(err);
   }
 };
 
@@ -113,80 +125,80 @@ const getSingleProject = async (data: any) => {
       },
       {
         $lookup: {
-          from: 'users',
-          let: { userId: '$createdBy' },
+          from: "users",
+          let: { userId: "$createdBy" },
           pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: 'createdBy',
+          as: "createdBy",
         },
       },
       {
         $unwind: {
-          path: '$createdBy',
+          path: "$createdBy",
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
-          from: 'companies',
-          let: { companyId: '$company' },
+          from: "companies",
+          let: { companyId: "$company" },
           pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$companyId'] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$companyId"] } } },
             { $project: { companyName: 1, _id: 1 } },
           ],
-          as: 'company',
+          as: "company",
         },
       },
       {
         $unwind: {
-          path: '$company',
+          path: "$company",
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
-          from: 'users',
-          let: { projectManagerIds: '$project_manager' },
+          from: "users",
+          let: { projectManagerIds: "$project_manager" },
           pipeline: [
-            { $match: { $expr: { $in: ['$_id', '$$projectManagerIds'] } } },
+            { $match: { $expr: { $in: ["$_id", "$$projectManagerIds"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: 'project_manager',
+          as: "project_manager",
         },
       },
       {
         $lookup: {
-          from: 'users',
-          let: { teamMemberIds: '$team_members' },
+          from: "users",
+          let: { teamMemberIds: "$team_members" },
           pipeline: [
-            { $match: { $expr: { $in: ['$_id', '$$teamMemberIds'] } } },
+            { $match: { $expr: { $in: ["$_id", "$$teamMemberIds"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: 'team_members',
+          as: "team_members",
         },
       },
       {
         $lookup: {
-          from: 'users',
-          let: { followerIds: '$followers' },
+          from: "users",
+          let: { followerIds: "$followers" },
           pipeline: [
-            { $match: { $expr: { $in: ['$_id', '$$followerIds'] } } },
+            { $match: { $expr: { $in: ["$_id", "$$followerIds"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: 'followers',
+          as: "followers",
         },
       },
       {
         $lookup: {
-          from: 'users',
-          let: { customerIds: '$customers' },
+          from: "users",
+          let: { customerIds: "$customers" },
           pipeline: [
-            { $match: { $expr: { $in: ['$_id', '$$customerIds'] } } },
+            { $match: { $expr: { $in: ["$_id", "$$customerIds"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: 'customers',
+          as: "customers",
         },
       },
       {
@@ -234,16 +246,9 @@ const getSingleProject = async (data: any) => {
       };
     }
   } catch (err: any) {
-    return {
-      status: "error",
-      data: err?.message,
-      message: "Internal Server Error",
-      statusCode: statusCode.info,
-    };
+    return createCatchError(err);
   }
 };
-
-
 
 const getAllProjects = async (data: any) => {
   try {
@@ -291,12 +296,7 @@ const getAllProjects = async (data: any) => {
       statusCode: statusCode.success,
     };
   } catch (err: any) {
-    return {
-      status: "error",
-      data: err?.message,
-      message: "Internal Server Error",
-      statusCode: statusCode.serverError,
-    };
+    return createCatchError(err);
   }
 };
 
@@ -323,12 +323,7 @@ const findSingleTask = async (datas: any) => {
       };
     }
   } catch (err: any) {
-    return {
-      status: "error",
-      data: err?.message,
-      message: err?.message,
-      statusCode: statusCode.info,
-    };
+    return createCatchError(err);
   }
 };
 
@@ -357,12 +352,7 @@ const createTask = async (datas: any) => {
       };
     }
   } catch (err: any) {
-    return {
-      status: "error",
-      data: err?.message,
-      message: "Internal Server Error",
-      statusCode: statusCode.serverError,
-    };
+    return createCatchError(err);
   }
 };
 
@@ -371,7 +361,7 @@ const updateTask = async (datas: any) => {
     const projects = await Project.findOne({
       _id: datas.projectId,
       company: datas.company,
-      deletedAt : {$exists : true}
+      deletedAt: { $exists: true },
     });
     if (projects) {
       const { status: taskStatus } = await findSingleTask({ id: datas.taskId });
@@ -404,16 +394,12 @@ const updateTask = async (datas: any) => {
       };
     }
   } catch (err: any) {
-    return {
-      status: "error",
-      data: err?.message,
-      message: "Internal Server Error",
-      statusCode: statusCode.serverError,
-    };
+    return createCatchError(err);
   }
 };
 
 export {
+  getProjectCounts,
   createProject,
   updateProject,
   getAllProjects,

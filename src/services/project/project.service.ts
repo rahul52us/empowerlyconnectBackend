@@ -3,6 +3,7 @@ import {
   createProject,
   createTask,
   getAllProjects,
+  getProjectCounts,
   getSingleProject,
   updateProject,
   updateTask,
@@ -11,6 +12,24 @@ import mongoose from "mongoose";
 import { PaginationLimit } from "../../config/helper/constant";
 
 // CREATE PROJECT SERVICE
+
+export const getProjectCountsService = async (req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    const company = new mongoose.Types.ObjectId(req.query.company)
+    const {statusCode, status, data, message} = await getProjectCounts({company})
+    res.status(statusCode).send({
+      message,
+      data,
+      status
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
 export const createProjectService = async (
   req: any,
   res: Response,
