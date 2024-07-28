@@ -9,7 +9,7 @@ const getProjectCounts = async (data: any) => {
     let pipeline = [
       {
         $match: {
-          company: data.company,
+          company: {$in : data.company},
           deletedAt : {$exists : false}
         },
       },
@@ -257,7 +257,7 @@ const getAllProjects = async (data: any) => {
     const pipeline: any = [];
 
     const matchConditions = {
-      company: company,
+      company: {$in : company},
       deletedAt: { $exists: false },
     };
 

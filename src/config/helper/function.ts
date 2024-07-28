@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { statusCode } from "./statusCode";
 
 export const createCatchError = (err: any) => {
@@ -8,3 +9,14 @@ export const createCatchError = (err: any) => {
     message: err?.message,
   };
 };
+
+export const convertIdsToObjects = async(data : any) => {
+  try
+  {
+    data = data.map((item : string) => new mongoose.Types.ObjectId(item))
+    return data || []
+  }
+  catch{
+    return []
+  }
+}

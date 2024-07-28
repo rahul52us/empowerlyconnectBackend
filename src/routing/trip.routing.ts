@@ -5,10 +5,10 @@ import { createTripService, getAllDayTripCountService, getSingleTripService, get
 const router = express.Router();
 
 router.post("/create", authenticate, createTripService);
-router.get("/", authenticate, getTripsService);
-router.get('/:id',authenticate,getSingleTripService)
+router.post("/", authenticate, getTripsService);
+router.get('/single/:id',authenticate,getSingleTripService)
 router.put('/:id',authenticate,updateTripService)
-router.get('/tripcounts',authenticate,getAllDayTripCountService)
-router.get('/total/count',authenticate,getTripCountService)
+router.post('/tripcounts',authenticate,getAllDayTripCountService)
+router.post('/total/count',authenticate,getTripCountService)
 
 export default router;

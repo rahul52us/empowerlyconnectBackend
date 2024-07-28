@@ -142,7 +142,7 @@ export const getTrips = async (data: any) => {
     const pipeline: any = [];
 
     let matchConditions: any = {
-      company: data.company,
+      company: {$in : data.company},
       companyOrg: data.companyOrg,
       deletedAt: { $exists: false },
     };
@@ -194,7 +194,7 @@ export const getAllDayTripCount = async (data: any) => {
     const pipeline = [
       {
         $match: {
-          company: data.company,
+          company: {$in : data.company},
           companyOrg: data.companyOrg,
           createdAt: { $gte: data.startDate, $lte: data.endDate },
           deletedAt: { $exists: false },
@@ -235,6 +235,7 @@ export const getTripCounts = async (data: any) => {
       {
         $match: {
           ...data,
+          company : {$in : data.company},
           deletedAt: { $exists: false },
         },
       },

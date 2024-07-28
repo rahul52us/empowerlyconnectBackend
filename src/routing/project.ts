@@ -4,7 +4,7 @@ import { updateProjectService , createProjectService, getAllProjectsService, get
 const router = express.Router();
 
 router.post("/", authenticate, createProjectService);
-router.get('/total/count',authenticate,getProjectCountsService)
+router.post('/total/count',authenticate,getProjectCountsService)
 router.put('/:id',authenticate,updateProjectService);
 router.post('/get',authenticate,getAllProjectsService)
 router.get('/single/:id',authenticate,getSingleProjectService)

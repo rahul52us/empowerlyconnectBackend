@@ -10,13 +10,14 @@ import {
 } from "../../repository/project/project.repository";
 import mongoose from "mongoose";
 import { PaginationLimit } from "../../config/helper/constant";
+import { convertIdsToObjects } from "../../config/helper/function";
 
 // CREATE PROJECT SERVICE
 
 export const getProjectCountsService = async (req : any , res : Response, next : NextFunction) => {
   try
   {
-    const company = new mongoose.Types.ObjectId(req.query.company)
+    const company = await convertIdsToObjects(req.body.company)
     const {statusCode, status, data, message} = await getProjectCounts({company})
     res.status(statusCode).send({
       message,
@@ -72,11 +73,9 @@ export const updateProjectService = async (
 export const getAllProjectsService = async(req : any, res : Response, next : NextFunction) => {
   try
   {
-    req.body.company = new mongoose.Types.ObjectId(req.query.company);
-
+    req.body.company = await convertIdsToObjects(req.body.company)
     req.body.page = req.query.page ? Number(req.query.page) : 1
     req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit
-
     const {status, statusCode, message, data} = await getAllProjects(req.body)
     res.status(statusCode).send({
       status,

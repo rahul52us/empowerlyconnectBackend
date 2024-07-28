@@ -9,6 +9,7 @@ import {
 } from "../../repository/trip.repository";
 import { generateError } from "../../config/Error/functions";
 import mongoose from "mongoose";
+import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
 
 export const createTripService = async (
   req: any,
@@ -62,7 +63,7 @@ export const getTripsService = async (
 
     const { data, status, totalPages } = await getTrips({
       search: search,
-      company: new mongoose.Types.ObjectId(req.query.company),
+      company: await convertIdsToObjects(req.body.company),
       companyOrg: req.bodyData.companyOrg,
       page: Number(page),
       limit: Number(limit),
@@ -107,7 +108,7 @@ export const getAllDayTripCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = req.bodyData.company;
+    req.body.company = await convertIdsToObjects(req.body.company)
     req.body.companyOrg = req.bodyData.companyOrg;
     const endDate = new Date();
     const startDate = new Date(endDate);
@@ -141,9 +142,8 @@ export const getTripCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = new mongoose.Types.ObjectId(req.query.company);
+    req.body.company = await convertIdsToObjects(req.body.company)
     req.body.companyOrg = req.bodyData.companyOrg;
-
     const { status, data } = await getTripCounts(req.body);
     if (status === "success") {
       res.status(200).send({
@@ -154,7 +154,7 @@ export const getTripCountService = async (
     } else {
       throw generateError(data, 400);
     }
-  } catch (err) {
-    next(err);
+  } catch (err : any) {
+    return createCatchError(err)
   }
 };
