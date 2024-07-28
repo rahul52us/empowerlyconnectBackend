@@ -11,6 +11,7 @@ import { updateUserRoleService } from "../../services/auth/auth.service";
 import mongoose from "mongoose";
 import User from "../../schemas/User/User";
 import { createCatchError } from "../../config/helper/function";
+import { statusCode } from "../../config/helper/statusCode";
 
 const createUser = async (data: any) => {
   try {
@@ -162,7 +163,7 @@ const getUsers = async (data: any) => {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      company: data.company,
+      company: {$in : data.company},
     };
 
     const pipeline: any = [
@@ -251,7 +252,6 @@ const getUserById = async (data: any) => {
       {
         $match: {
           _id: data.UserId,
-          company: data.company,
           deletedAt: { $exists: false },
         },
       },
@@ -369,6 +369,7 @@ const getTotalUsers = async (data: any) => {
       {
         $match: {
           ...data,
+          company : {$in : data.company},
           is_active: true,
           deletedAt: { $exists: false },
         },
@@ -384,12 +385,11 @@ const getTotalUsers = async (data: any) => {
     return {
       status: "success",
       data: result.length > 0 ? result[0].count : 0,
+      message : 'Retrieved Users Counts Successfully',
+      statusCode : statusCode.success
     };
   } catch (err) {
-    return {
-      status: "error",
-      data: err,
-    };
+    return createCatchError(err)
   }
 };
 

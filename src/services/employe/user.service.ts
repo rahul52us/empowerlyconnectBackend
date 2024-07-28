@@ -25,6 +25,7 @@ import {
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
 import { PaginationLimit } from "../../config/helper/constant";
+import { convertIdsToObjects } from "../../config/helper/function";
 
 
 // create the new User of the particular User
@@ -101,7 +102,7 @@ const getAllEmploysService = async (
     const { data, status, totalPages } = await getUsers({
       id: req.userId,
       search: search,
-      company: new mongoose.Types.ObjectId(req.query.company),
+      company: await convertIdsToObjects(req.body.company),
       page: Number(page),
       limit: Number(limit),
     });
@@ -129,7 +130,6 @@ const getUserByIdService = async (
 ) => {
   try {
     const { status, data } = await getUserById({
-      company: req.bodyData.company,
       UserId: new mongoose.Types.ObjectId(req.params._id),
     });
     if (status === "success") {
@@ -178,6 +178,7 @@ const getTotalUsersService = async (
   try {
     const { status, data } = await getTotalUsers({
       companyOrg: new mongoose.Types.ObjectId(req.bodyData.companyOrg),
+      company : await convertIdsToObjects(req.body.company)
     });
     if (status === "success") {
       res.status(200).send({

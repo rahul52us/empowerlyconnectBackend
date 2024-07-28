@@ -29,9 +29,9 @@ router.post("/create", authenticate, createUserservice);
 router.put("/profile/:id", authenticate, updateUserProfileService);
 router.get('/details/:id',authenticate,getCompanyDetailsByIdService)
 router.get("/:_id", authenticate, getUserByIdService);
-router.get("/", authenticate, getAllEmploysService);
+router.post("/", authenticate, getAllEmploysService);
 router.get("/managers/:id", authenticate, getManagersEmploysService);
-router.get("/total/count", authenticate, getTotalUsersService);
+router.post("/total/count", authenticate, getTotalUsersService);
 router.get("/designation/count", authenticate, getCountDesignationStatusService);
 router.put("/bankDetails/:id",authenticate,updateBankDetialsService)
 router.put('/companyDetails/:id',authenticate,updateCompanyDetailsService)
