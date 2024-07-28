@@ -748,7 +748,7 @@ const getManagerUsersCounts = async (data: any) => {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      company: data.company,
+      company: {$in : data.company},
     };
 
     const pipeline: any = [

@@ -25,7 +25,7 @@ import {
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
 import { PaginationLimit } from "../../config/helper/constant";
-import { convertIdsToObjects } from "../../config/helper/function";
+import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
 
 
 // create the new User of the particular User
@@ -359,10 +359,7 @@ export const getUserRoleUser = async (
       data,
     });
   } catch (err: any) {
-    res.status(500).send({
-      status: "error",
-      data: err?.message,
-    });
+    return createCatchError(err)
   }
 };
 
@@ -429,11 +426,7 @@ const getUserInfoWithManagerService = async (
       });
     }
   } catch (err: any) {
-    res.status(400).send({
-      status: "error",
-      data: err?.message,
-      message: err?.message,
-    });
+    return createCatchError(err)
   }
 };
 
@@ -464,11 +457,7 @@ const getUserInfoWithManagerActionService = async (
       });
     }
   } catch (err: any) {
-    res.status(400).send({
-      status: "error",
-      data: err?.message,
-      message: err?.message,
-    });
+    return createCatchError(err)
   }
 };
 
@@ -480,7 +469,7 @@ const getManagerUsersCountsService = async (
   try {
     const { data, status } = await getManagerUsersCounts({
       id: req.userId,
-      company: new mongoose.Types.ObjectId(req.query.company),
+      company: await convertIdsToObjects(req.body.company),
     });
     if (status === "success") {
       res.status(200).send({
@@ -494,10 +483,7 @@ const getManagerUsersCountsService = async (
       });
     }
   } catch (err: any) {
-    res.status(400).send({
-      status: "error",
-      data: err?.message,
-    });
+    return createCatchError(err)
   }
 };
 
@@ -559,8 +545,6 @@ const getCompanyDetailsByIdService = async(req : any , res : Response, next : Ne
     next(err)
   }
 }
-
-
 
 export {
   createUserservice,

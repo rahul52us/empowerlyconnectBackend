@@ -39,7 +39,6 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
       type: String,
     },
   },
-  designation: { type: Array },
   companyDetail: { type: Schema.Types.ObjectId, ref: "CompanyDetail" },
   bio: { type: String, trim: true },
   profile_details: { type: Schema.Types.ObjectId, ref: "ProfileDetails" },

@@ -10,6 +10,7 @@ interface addressInfo  {
 
 interface CompanyI extends Document {
   company_name: string;
+  companyCode:string;
   companyOrg:mongoose.Schema.Types.ObjectId,
   companyType:string;
   verified_email_allowed:boolean;
@@ -52,6 +53,10 @@ const companySchema = new mongoose.Schema<CompanyI>({
   policy:{
     type : mongoose.Schema.Types.ObjectId,
     ref : 'CompanyPolicy'
+  },
+  companyCode : {
+    type : String,
+    required : true
   },
   companyType:{
     type : String,
