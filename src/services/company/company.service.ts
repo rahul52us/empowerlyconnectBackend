@@ -231,14 +231,14 @@ export const updateWorkLocationExcelService = async (
       if (rowNumber > 1) {
         let rowData: any = {};
         row.eachCell((cell: any, colNumber: number) => {
-          if (colNumber === 1) rowData.date = cell.value;
-          if (colNumber === 2) rowData.title = cell.value;
-          if (colNumber === 3) rowData.description = cell.value;
+          if (colNumber === 1) rowData.ipAddress = cell.value;
+          if (colNumber === 2) rowData.locationName = cell.value;
         });
         datas.push(rowData);
       }
     });
 
+    console.log(datas)
     const { status, data, statusCode, message } =
       await uploadWorkLocationsByExcel({
         workLocations: datas,

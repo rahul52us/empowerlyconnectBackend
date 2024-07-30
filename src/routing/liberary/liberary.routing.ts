@@ -9,7 +9,7 @@ router.put('/:id',authenticate,updateBookService)
 router.get('/',authenticate,getAllBookService)
 // book
 // category
-router.get('/category',authenticate, getAllBookCategoryService)
+router.post('/category/get',authenticate, getAllBookCategoryService)
 router.post('/category',authenticate,createBookCategoryService)
 router.put('/category/:id',authenticate,updateBookCategoryService)
 

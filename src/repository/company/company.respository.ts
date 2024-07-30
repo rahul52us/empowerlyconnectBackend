@@ -16,10 +16,49 @@ export const getOrganisationCompanies  = async(data : any) => {
       },
     },
     {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+        pipeline: [
+          {
+            $project: {
+              username: 1,
+              code: 1,
+              role: 1,
+              _id: 1,
+              name: 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "activeUser",
+        foreignField: "_id",
+        as: "activeUser",
+        pipeline: [
+          {
+            $project: {
+              username: 1,
+              code: 1,
+              role: 1,
+              _id: 1,
+              name: 1
+            }
+          }
+        ]
+      }
+    },
+    {
       $sort : {
         createdAt : -1
       }
-    })
+    }
+  )
 
     const companies = await Company.aggregate(pipeline)
     return {

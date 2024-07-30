@@ -83,7 +83,7 @@ export const getAllBookCategory = async (data: any) => {
     pipeline.push({
       $match: {
         deletedAt: { $exists: false },
-        company: company
+        company: {$in : company}
       }
     });
 

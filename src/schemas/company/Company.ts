@@ -15,6 +15,8 @@ interface CompanyI extends Document {
   companyType:string;
   verified_email_allowed:boolean;
   policy:mongoose.Schema.Types.ObjectId;
+  createdBy : mongoose.Schema.Types.ObjectId;
+  activeUser:mongoose.Schema.Types.ObjectId;
   is_active?: boolean;
   logo?: string;
   bio?: string;
@@ -119,6 +121,14 @@ const companySchema = new mongoose.Schema<CompanyI>({
       city: String,
       pinCode: String
     }]
+  },
+  activeUser : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : 'User'
+  },
+  createdBy : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'User'
   },
   deletedAt: {
     type: Date,
