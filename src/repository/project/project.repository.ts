@@ -265,15 +265,16 @@ const getAllProjects = async (data: any) => {
       $match: matchConditions,
     });
 
+
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
     pipeline.push({
       $sort: {
         createdAt: -1,
       },
     });
-
-    const skip = (page - 1) * limit;
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: limit });
 
     const totalProjectsPipeline = [
       { $match: matchConditions },
