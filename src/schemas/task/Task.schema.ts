@@ -1,40 +1,46 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema } from 'mongoose';
+
+interface AssigneeI {
+  user: mongoose.Schema.Types.ObjectId;
+  isActive: boolean;
+}
 
 interface SubtaskI extends Document {
   title: string;
   description?: mongoose.Schema.Types.Mixed;
   status: string;
-  createdBy : mongoose.Schema.Types.ObjectId;
+  createdBy: mongoose.Schema.Types.ObjectId;
   duedate?: Date;
   startDate?: Date;
   endDate?: Date;
-  assignee?: mongoose.Schema.Types.ObjectId[];
+  assignee?: AssigneeI[];
   createdAt: Date;
-  updatedAt:Date;
+  updatedAt: Date;
 }
 
 interface CommentI extends Document {
   user: mongoose.Schema.Types.ObjectId;
   comment: string;
   createdAt: Date;
-  updatedAt:Date;
-  deletedAt:Date
+  updatedAt: Date;
+  deletedAt: Date;
 }
 
 interface ActivityLogI extends Document {
   user: mongoose.Schema.Types.ObjectId;
   action: string;
   createdAt: Date;
-  updatedAt:Date;
-  deletedAt:Date
+  updatedAt: Date;
+  deletedAt: Date;
 }
 
 interface TaskI extends Document {
   projectId: mongoose.Schema.Types.ObjectId;
   title: string;
+  isActive:boolean;
   createdBy?: mongoose.Schema.Types.ObjectId;
   description?: mongoose.Schema.Types.Mixed;
-  assignee?: mongoose.Schema.Types.ObjectId[];
+  assignee?: AssigneeI[];
   assigner: mongoose.Schema.Types.ObjectId;
   status: string;
   priority?: string;
@@ -52,11 +58,27 @@ interface TaskI extends Document {
   progress?: number;
   customFields?: Record<string, any>;
   createdAt: Date;
-  updatedAt:Date;
-  deletedAt:Date
+  updatedAt: Date;
+  deletedAt: Date;
 }
 
-// Schemas for Subtask, Comment, and Activity Log
+// Schema for Assignee
+const AssigneeSchema = new Schema<AssigneeI>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { _id: false }
+);
+
+// Schema for Subtask
 const SubtaskSchema = new Schema<SubtaskI>(
   {
     title: {
@@ -64,10 +86,10 @@ const SubtaskSchema = new Schema<SubtaskI>(
       required: true,
       trim: true,
     },
-    createdBy : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'User',
-      required : true
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     description: {
       type: mongoose.Schema.Types.Mixed,
@@ -75,8 +97,8 @@ const SubtaskSchema = new Schema<SubtaskI>(
     },
     status: {
       type: String,
-      enum: ["backlog", "toDo", "inProgress", "done"],
-      default: "backlog",
+      enum: ['backlog', 'toDo', 'inProgress', 'done'],
+      default: 'backlog',
     },
     duedate: {
       type: Date,
@@ -87,66 +109,65 @@ const SubtaskSchema = new Schema<SubtaskI>(
     endDate: {
       type: Date,
     },
-    assignee: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
-    createdAt : {
-      type : Date,
-      default : new Date()
+    assignee: [AssigneeSchema],
+    createdAt: {
+      type: Date,
+      default: new Date(),
     },
-    updatedAt : {
-      type : Date
-    }
-  },
+    updatedAt: {
+      type: Date,
+    },
+  }
 );
 
+// Schema for Comment
 const CommentSchema = new Schema<CommentI>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     comment: {
       type: String,
       required: true,
     },
-    createdAt :{
-      type : Date,
-      default : new Date()
+    createdAt: {
+      type: Date,
+      default: new Date(),
     },
-    updatedAt:{
-      type : Date
+    updatedAt: {
+      type: Date,
     },
-    deletedAt:{
-      type : Date
-    }
-  },
+    deletedAt: {
+      type: Date,
+    },
+  }
 );
 
+// Schema for Activity Log
 const ActivityLogSchema = new Schema<ActivityLogI>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     action: {
       type: String,
       required: true,
     },
-    createdAt :{
-      type : Date,
-      default : new Date()
+    createdAt: {
+      type: Date,
+      default: new Date(),
     },
-    updatedAt:{
-      type : Date
+    updatedAt: {
+      type: Date,
     },
-    deletedAt:{
-      type : Date
-    }
-  },
+    deletedAt: {
+      type: Date,
+    },
+  }
 );
 
 // Main Task Schema
@@ -154,13 +175,17 @@ const TaskSchema = new Schema<TaskI>(
   {
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
+      ref: 'Project',
       required: true,
     },
-    createdBy : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'User',
-      required : true
+    isActive : {
+      type : Boolean,
+      default : true
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     title: {
       type: String,
@@ -171,25 +196,22 @@ const TaskSchema = new Schema<TaskI>(
       type: mongoose.Schema.Types.Mixed,
       trim: true,
     },
-    assignee: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
+    assignee: [AssigneeSchema],
     assigner: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: 'User',
     },
     reminders: [Date],
     status: {
       type: String,
-      enum: ["backlog", "toDo", "inProgress", "done"],
-      default: "backlog",
+      enum: ['backlog', 'toDo', 'inProgress', 'done'],
+      default: 'backlog',
     },
     priority: {
       type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
+      enum: ['low', 'medium', 'high'],
+      default: 'medium',
     },
     duedate: {
       type: Date,
@@ -204,62 +226,66 @@ const TaskSchema = new Schema<TaskI>(
     comments: [CommentSchema],
     activityLog: [ActivityLogSchema],
     labels: [String],
-    dependencies: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
-    }],
+    dependencies: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+    ],
     approval: {
       type: String,
-      enum: ["satisfactory", "unSatisfactory"],
+      enum: ['satisfactory', 'unSatisfactory'],
     },
-    attach_files: [{
-      project: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Project",
-      },
-      title: {
-        type: String,
-        trim: true,
-      },
-      description: {
-        type: mongoose.Schema.Types.Mixed,
-        trim: true,
-      },
-      file: {
-        name: {
-          type: String,
+    attach_files: [
+      {
+        project: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Project',
         },
-        url: {
+        title: {
           type: String,
+          trim: true,
         },
-        type: {
-          type: String,
+        description: {
+          type: mongoose.Schema.Types.Mixed,
+          trim: true,
+        },
+        file: {
+          name: {
+            type: String,
+          },
+          url: {
+            type: String,
+          },
+          type: {
+            type: String,
+          },
         },
       },
-    }],
+    ],
     progress: {
       type: Number,
       default: 0,
       min: 0,
-      max: 100
+      max: 100,
     },
     customFields: {
       type: Map,
       of: Schema.Types.Mixed,
     },
-    createdAt :{
-      type : Date,
-      default : new Date()
+    createdAt: {
+      type: Date,
+      default: new Date(),
     },
-    updatedAt:{
-      type : Date
+    updatedAt: {
+      type: Date,
     },
-    deletedAt:{
-      type : Date
-    }
+    deletedAt: {
+      type: Date,
+    },
   }
 );
 
 TaskSchema.index({ projectId: 1, title: 1 });
 
-export default mongoose.model<TaskI>("Task", TaskSchema);
+export default mongoose.model<TaskI>('Task', TaskSchema);

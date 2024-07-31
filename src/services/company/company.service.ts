@@ -238,7 +238,6 @@ export const updateWorkLocationExcelService = async (
       }
     });
 
-    console.log(datas)
     const { status, data, statusCode, message } =
       await uploadWorkLocationsByExcel({
         workLocations: datas,

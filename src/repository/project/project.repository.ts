@@ -300,6 +300,57 @@ const getAllProjects = async (data: any) => {
   }
 };
 
+const getAllTask = async (data: any) => {
+  try {
+    const { page = 1, limit = 10, company } = data;
+
+    const pipeline: any = [];
+
+    const matchConditions = {
+      company: {$in : company},
+      projectId : data.projectId,
+      deletedAt: { $exists: false },
+    };
+
+    pipeline.push({
+      $match: matchConditions,
+    });
+
+    pipeline.push({
+      $sort: {
+        createdAt: -1,
+      },
+    });
+
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    const totalProjectsPipeline = [
+      { $match: matchConditions },
+      { $count: "total" },
+    ];
+
+    const [result, totalProjects] = await Promise.all([
+      Task.aggregate(pipeline),
+      Task.aggregate(totalProjectsPipeline),
+    ]);
+
+    const total = totalProjects.length > 0 ? totalProjects[0].total : 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      status: "success",
+      data: { data: result, totalPages: totalPages },
+      page,
+      message: "Projects retrieved successfully",
+      statusCode: statusCode.success,
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
 // CREATE TASK FUNCTION
 const findSingleTask = async (datas: any) => {
   try {
@@ -404,6 +455,7 @@ export {
   updateProject,
   getAllProjects,
   getSingleProject,
+  getAllTask,
   createTask,
   updateTask,
 };
