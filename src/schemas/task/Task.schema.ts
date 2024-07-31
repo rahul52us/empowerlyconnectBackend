@@ -42,6 +42,7 @@ interface TaskI extends Document {
   description?: mongoose.Schema.Types.Mixed;
   assignee?: AssigneeI[];
   assigner: mongoose.Schema.Types.ObjectId;
+  company:mongoose.Schema.Types.ObjectId;
   status: string;
   priority?: string;
   duedate?: Date;
@@ -181,6 +182,10 @@ const TaskSchema = new Schema<TaskI>(
     isActive : {
       type : Boolean,
       default : true
+    },
+    company : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : 'Company'
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

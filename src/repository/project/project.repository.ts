@@ -316,15 +316,15 @@ const getAllTask = async (data: any) => {
       $match: matchConditions,
     });
 
+    const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
     pipeline.push({
       $sort: {
         createdAt: -1,
       },
     });
-
-    const skip = (page - 1) * limit;
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: limit });
 
     const totalProjectsPipeline = [
       { $match: matchConditions },
@@ -343,7 +343,7 @@ const getAllTask = async (data: any) => {
       status: "success",
       data: { data: result, totalPages: totalPages },
       page,
-      message: "Projects retrieved successfully",
+      message: "Task retrieved successfully",
       statusCode: statusCode.success,
     };
   } catch (err: any) {
