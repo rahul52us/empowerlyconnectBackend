@@ -78,9 +78,6 @@ export const getAllProjectsService = async(req : any, res : Response, next : Nex
     req.body.page = req.query.page ? Number(req.query.page) : 1
     req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit
 
-    console.log(req.body)
-
-
     const {status, statusCode, message, data} = await getAllProjects(req.body)
     res.status(statusCode).send({
       status,
@@ -129,7 +126,6 @@ export const getAllTaskService = async(req : any , res : Response) => {
     req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit
     req.body.projectId = new mongoose.Types.ObjectId(req.params.projectId)
 
-    console.log(req.body)
     const {status, statusCode, message, data} = await getAllTask(req.body)
     res.status(statusCode).send({
       status,
