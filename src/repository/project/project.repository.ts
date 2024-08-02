@@ -329,7 +329,7 @@ const getAllTask = async (data: any) => {
 
     pipeline.push({
       $sort: {
-        createdAt: -1,
+        createdAt: -1
       },
     });
 

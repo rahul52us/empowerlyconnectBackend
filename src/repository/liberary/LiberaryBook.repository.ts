@@ -63,7 +63,7 @@ export const getAllBooks = async (data: any) => {
 
     pipeline.push({
       $match: {
-        company: company,
+        company: {$in : company},
         deletedAt: { $exists: false }
       }
     });
@@ -82,6 +82,12 @@ export const getAllBooks = async (data: any) => {
       $limit: limit
     });
 
+    pipeline.push({
+      $sort : {
+        createdAt : -1
+      }
+    })
+
     const result = await LibraryBook.aggregate(pipeline);
     return {
       status: 'success',
@@ -93,8 +99,6 @@ export const getAllBooks = async (data: any) => {
     return createCatchError(err);
   }
 };
-
-
 
 export const updateBook = async (data: any) => {
   try {
@@ -146,3 +150,32 @@ export const updateBook = async (data: any) => {
     return createCatchError(err);
   }
 };
+
+export const getAllBookCounts = async (data : any) => {
+  try
+  {
+     const pipeline : any = []
+     pipeline.push({
+      $match : {
+        company : {$in : data.company},
+        deletedAt : {$exists : false}
+      }
+     })
+
+     pipeline.push({
+      $count : 'totalBooks'
+     })
+
+     const result = await LibraryBook.aggregate(pipeline)
+     return {
+      data: result[0] ? result[0].totalBooks : 0,
+      message : 'Retrived Books Counts',
+      statusCode : statusCode.success,
+      status : 'success'
+     }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}

@@ -39,7 +39,7 @@ export const createProjectService = async (
 ) => {
   try {
     req.body.createdBy = req.userId;
-    const { statusCode, status, data, message } = await createProject(req.body);
+    const { statusCode, status, data, message } : any = await createProject(req.body);
     res.status(statusCode).send({
       message,
       data,
