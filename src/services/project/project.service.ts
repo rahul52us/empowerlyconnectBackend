@@ -6,6 +6,7 @@ import {
   getAllTask,
   getProjectCounts,
   getSingleProject,
+  getSingleTask,
   updateProject,
   updateTask,
 } from "../../repository/project/project.repository";
@@ -15,22 +16,25 @@ import { convertIdsToObjects } from "../../config/helper/function";
 
 // CREATE PROJECT SERVICE
 
-export const getProjectCountsService = async (req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    const company = await convertIdsToObjects(req.body.company)
-    const {statusCode, status, data, message} = await getProjectCounts({company})
+export const getProjectCountsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const company = await convertIdsToObjects(req.body.company);
+    const { statusCode, status, data, message } = await getProjectCounts({
+      company,
+    });
     res.status(statusCode).send({
       message,
       data,
-      status
-    })
+      status,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
 export const createProjectService = async (
   req: any,
@@ -39,7 +43,9 @@ export const createProjectService = async (
 ) => {
   try {
     req.body.createdBy = req.userId;
-    const { statusCode, status, data, message } : any = await createProject(req.body);
+    const { statusCode, status, data, message }: any = await createProject(
+      req.body
+    );
     res.status(statusCode).send({
       message,
       data,
@@ -66,125 +72,153 @@ export const updateProjectService = async (
       data,
     });
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
 // GET ALL PROJECT SERVICE
-export const getAllProjectsService = async(req : any, res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.company = await convertIdsToObjects(req.body.company)
-    req.body.page = req.query.page ? Number(req.query.page) : 1
-    req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit
+export const getAllProjectsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company);
+    req.body.page = req.query.page ? Number(req.query.page) : 1;
+    req.body.limit = req.query.limit
+      ? Number(req.query.limit)
+      : PaginationLimit;
 
-    const {status, statusCode, message, data} = await getAllProjects(req.body)
+    const { status, statusCode, message, data } = await getAllProjects(
+      req.body
+    );
     res.status(statusCode).send({
       status,
       message,
-      data
-    })
-  }
-  catch(err : any)
-  {
+      data,
+    });
+  } catch (err: any) {
     res.status(500).send({
-      data : err?.message,
-      message : 'Internal Server Error',
-      status : 'error'
-    })
+      data: err?.message,
+      message: "Internal Server Error",
+      status: "error",
+    });
   }
-}
+};
 
 // GET SINGLE PROJECT
-export const getSingleProjectService = async(req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.company = new mongoose.Types.ObjectId(req.query.company)
-    req.body.id = new mongoose.Types.ObjectId(req.params.id)
-    const {status, statusCode, data, message} = await getSingleProject(req.body)
+export const getSingleProjectService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = new mongoose.Types.ObjectId(req.query.company);
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, statusCode, data, message } = await getSingleProject(
+      req.body
+    );
     res.status(statusCode).send({
       status,
       message,
-      data
-    })}
-  catch(err : any)
-  {
+      data,
+    });
+  } catch (err: any) {
     res.status(500).send({
-      data : err?.message,
-      message : 'Internal Server Error',
-      status : 'error'
-    })
+      data: err?.message,
+      message: "Internal Server Error",
+      status: "error",
+    });
   }
-}
+};
 // CREATE TASK SERVICE
+export const getSingleTaskService = async (req: any, res: Response) => {
+  try {
+    const { status, statusCode, data, message } = await getSingleTask({
+      _id: new mongoose.Types.ObjectId(req.params.id),
+    });
+    res.status(statusCode).send({
+      message,
+      status,
+      data,
+    });
+  } catch (err: any) {
+    res.status(500).send({
+      data: err?.message,
+      message: "Internal Server Error",
+      status: "error",
+    });
+  }
+};
 
-export const getAllTaskService = async(req : any , res : Response) => {
-  try
-  {
-    req.body.company = await convertIdsToObjects(req.body.company)
-    req.body.page = req.query.page ? Number(req.query.page) : 1
-    req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit
-    req.body.projectId = new mongoose.Types.ObjectId(req.params.projectId)
+export const getAllTaskService = async (req: any, res: Response) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company);
+    req.body.page = req.query.page ? Number(req.query.page) : 1;
+    req.body.limit = req.query.limit
+      ? Number(req.query.limit)
+      : PaginationLimit;
+    req.body.projectId = new mongoose.Types.ObjectId(req.params.projectId);
 
-    const {status, statusCode, message, data} = await getAllTask(req.body)
+    const { status, statusCode, message, data } = await getAllTask(req.body);
     res.status(statusCode).send({
       status,
       message,
-      data
-    })
-  }
-  catch(err : any)
-  {
+      data,
+    });
+  } catch (err: any) {
     res.status(500).send({
-      data : err?.message,
-      message : 'Internal Server Error',
-      status : 'error'
-    })
+      data: err?.message,
+      message: "Internal Server Error",
+      status: "error",
+    });
   }
-}
+};
 
-export const createTaskService = async(req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.projectId = new mongoose.Types.ObjectId(req.params.projectId)
-    req.body.company = new mongoose.Types.ObjectId(req.body.company)
-    req.body.createdBy = req.userId
-    const {status, statusCode, data, message} = await createTask(req.body)
+export const createTaskService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.projectId = new mongoose.Types.ObjectId(req.params.projectId);
+    req.body.company = new mongoose.Types.ObjectId(req.body.company);
+    req.body.createdBy = req.userId;
+    const { status, statusCode, data, message } = await createTask(req.body);
     return res.status(statusCode).send({
       status,
       message,
-      data
-    })
-  }
-  catch(err : any)
-  {
+      data,
+    });
+  } catch (err: any) {
     res.status(500).send({
-      data : err?.message,
-      message : 'Internal Server Error',
-      status : 'error'
-    })
+      data: err?.message,
+      message: "Internal Server Error",
+      status: "error",
+    });
   }
-}
+};
 
-export const updateTaskService = async (req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.projectId = new mongoose.Types.ObjectId(req.body.projectId)
-    req.body.taskId = new mongoose.Types.ObjectId(req.params.taskId)
-    req.body.company = new mongoose.Types.ObjectId(req.body.company)
-    const {status, statusCode, data, message} = await updateTask(req.body)
+export const updateTaskService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.projectId = new mongoose.Types.ObjectId(req.body.projectId);
+    req.body.taskId = new mongoose.Types.ObjectId(req.params.taskId);
+    req.body.company = new mongoose.Types.ObjectId(req.body.company);
+    const { status, statusCode, data, message } = await updateTask(req.body);
     return res.status(statusCode).send({
       status,
       message,
-      data
-    })
-  }
-  catch(err : any)
-  {
+      data,
+    });
+  } catch (err: any) {
     res.status(500).send({
-      data : err?.message,
-      message : 'Internal Server Error',
-      status : 'error'
-    })
+      data: err?.message,
+      message: "Internal Server Error",
+      status: "error",
+    });
   }
-}
+};

@@ -16,10 +16,10 @@ const BookCategorySchema: Schema<BookCategoryI> = new Schema<BookCategoryI>({
     required: true,
     trim: true
   },
-  company: {
-    type: String,
-    ref: "Company",
-    required: true,
+  company : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'Company',
+    required:true
   },
   user : {
     type : mongoose.Schema.Types.ObjectId,

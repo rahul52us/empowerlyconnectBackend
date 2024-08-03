@@ -305,6 +305,8 @@ const getAllProjects = async (data: any) => {
   }
 };
 
+// Task Repository
+
 const getAllTask = async (data: any) => {
   try {
     const { page = 1, limit = 10, company } = data;
@@ -352,6 +354,63 @@ const getAllTask = async (data: any) => {
       statusCode: statusCode.success,
     };
   } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
+const getSingleTask = async (datas: any) => {
+  try {
+    const pipeline: any = [];
+
+    pipeline.push(
+      {
+        $match: {
+          _id: datas._id,
+          deletedAt: { $exists: false },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { assigneeIds: "$dependencies" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $in: ["$_id", "$$dependencies.user"] },
+                    { $eq: ["$$dependencies.isActive", true] }
+                  ]
+                }
+              }
+            },
+            { $project: { username: 1, _id: 1, code: 1 } },
+          ],
+          as: "dependencies",
+        },
+      },
+      {
+        $limit: 1
+      }
+    );
+
+    const result = await Task.aggregate(pipeline);
+    if (result.length === 1) {
+      return {
+        status: "success",
+        data: result[0],
+        message: "Retrieved task successfully",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "error",
+        data: "Task does not exist",
+        message: "Task does not exist",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err) {
     return createCatchError(err);
   }
 };
@@ -484,6 +543,7 @@ export {
   updateProject,
   getAllProjects,
   getSingleProject,
+  getSingleTask,
   getAllTask,
   createTask,
   updateTask,

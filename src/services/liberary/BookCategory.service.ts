@@ -2,6 +2,8 @@ import { NextFunction, Response } from "express";
 import {
   createBookCategory,
   getAllBookCategory,
+  getAllBookCategoryCounts,
+  getAllBookCategoryTitleCounts,
   updateBookCategory,
 } from "../../repository/liberary/BookCategory.repository";
 import mongoose from "mongoose";
@@ -73,3 +75,37 @@ export const getAllBookCategoryService = async (
     next(err);
   }
 };
+
+export const getBookCategoryCountService = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+      req.body.company = await convertIdsToObjects(req.body.company)
+      const {status, statusCode, data, message} = await getAllBookCategoryCounts(req.body)
+      res.status(statusCode).send({
+          message,
+          data,
+          status
+      })
+  }
+  catch(err : any)
+  {
+      next(err)
+  }
+}
+
+export const getBookCategoryTitleCountService = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+      req.body.company = await convertIdsToObjects(req.body.company)
+      const {status, statusCode, data, message} = await getAllBookCategoryTitleCounts(req.body)
+      res.status(statusCode).send({
+          message,
+          data,
+          status
+      })
+  }
+  catch(err : any)
+  {
+      next(err)
+  }
+}

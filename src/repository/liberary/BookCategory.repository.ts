@@ -113,3 +113,70 @@ export const getAllBookCategory = async (data: any) => {
   }
 };
 
+export const getAllBookCategoryCounts = async (data : any) => {
+  try
+  {
+     const pipeline : any = []
+     pipeline.push({
+      $match : {
+        company : {$in : data.company},
+        deletedAt : {$exists : false}
+      }
+     })
+
+     pipeline.push({
+      $count : 'totalBooksCategory'
+     })
+
+     const result = await BookCategory.aggregate(pipeline)
+     return {
+      data: result[0] ? result[0].totalBooksCategory : 0,
+      message : 'Retrived Books Category Counts',
+      statusCode : statusCode.success,
+      status : 'success'
+     }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}
+
+export const getAllBookCategoryTitleCounts = async (data: any) => {
+  try {
+    const pipeline: any = [];
+
+    pipeline.push({
+      $match: {
+        company: { $in: data.company },
+        deletedAt: { $exists: false }
+      }
+    });
+
+    pipeline.push({
+      $group: {
+        _id: '$title',
+        count: { $sum: 1 }
+      }
+    });
+
+    pipeline.push({
+      $project: {
+        _id: 0,
+        title: '$_id',
+        count: 1
+      }
+    });
+
+    const result = await BookCategory.aggregate(pipeline);
+
+    return {
+      data: result,
+      message: 'Retrieved Book Category Counts by Title',
+      statusCode: statusCode.success,
+      status: 'success'
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};

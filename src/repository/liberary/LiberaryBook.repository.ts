@@ -179,3 +179,42 @@ export const getAllBookCounts = async (data : any) => {
     return createCatchError(err)
   }
 }
+
+export const getAllBookTitleCounts = async (data: any) => {
+  try {
+    const pipeline: any = [];
+
+    pipeline.push({
+      $match: {
+        company: { $in: data.company },
+        deletedAt: { $exists: false }
+      }
+    });
+
+    pipeline.push({
+      $group: {
+        _id: '$title',
+        count: { $sum: 1 }
+      }
+    });
+
+    pipeline.push({
+      $project: {
+        _id: 0,
+        title: '$_id',
+        count: 1
+      }
+    });
+
+    const result = await LibraryBook.aggregate(pipeline);
+
+    return {
+      data: result,
+      message: 'Retrieved Book Counts by Title',
+      statusCode: statusCode.success,
+      status: 'success'
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};

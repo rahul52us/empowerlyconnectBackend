@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express"
 import mongoose from "mongoose"
 import { PaginationLimit } from "../../config/helper/constant"
-import { createBook, getAllBookCounts, getAllBooks, updateBook } from "../../repository/liberary/LiberaryBook.repository"
+import { createBook, getAllBookCounts, getAllBooks, getAllBookTitleCounts, updateBook } from "../../repository/liberary/LiberaryBook.repository"
 import { convertIdsToObjects } from "../../config/helper/function"
 
 export const createBookService = async(req : any , res : Response , next : NextFunction) => {
@@ -64,6 +64,23 @@ export const getBookCountService = async(req : any , res : Response, next : Next
     {
         req.body.company = await convertIdsToObjects(req.body.company)
         const {status, statusCode, data, message} = await getAllBookCounts(req.body)
+        res.status(statusCode).send({
+            message,
+            data,
+            status
+        })
+    }
+    catch(err : any)
+    {
+        next(err)
+    }
+}
+
+export const getBookTitleCountService = async(req : any , res : Response, next : NextFunction) => {
+    try
+    {
+        req.body.company = await convertIdsToObjects(req.body.company)
+        const {status, statusCode, data, message} = await getAllBookTitleCounts(req.body)
         res.status(statusCode).send({
             message,
             data,

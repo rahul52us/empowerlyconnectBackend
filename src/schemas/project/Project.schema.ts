@@ -52,6 +52,21 @@ const AttachFiles = new mongoose.Schema(
   }
 );
 
+const UserSchema = new Schema<any>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { _id: false }
+);
+
 const ProjectSchema = new mongoose.Schema<ProjectI>({
   project_name: {
     type: String,
@@ -97,13 +112,8 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     ref: "Company",
   },
   project_manager: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    default: [],
+    type: [UserSchema],
+    default: []
   },
   status: {
     type: String,
@@ -120,21 +130,16 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     type: Date,
   },
   customers: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    default: [],
+    type: [UserSchema],
+    default: []
   },
   team_members: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    default: [],
+    type: [UserSchema],
+    default: []
   },
   followers: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    default: [],
+    type: [UserSchema],
+    default: []
   },
   approval: {
     type: String,

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 interface AssigneeI {
   user: mongoose.Schema.Types.ObjectId;
@@ -73,11 +73,11 @@ interface TaskI extends Document {
 }
 
 // Schema for Assignee
-const AssigneeSchema = new Schema<AssigneeI>(
+const UserSchema = new Schema<AssigneeI>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     isActive: {
@@ -89,217 +89,213 @@ const AssigneeSchema = new Schema<AssigneeI>(
 );
 
 // Schema for Subtask
-const SubtaskSchema = new Schema<SubtaskI>(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    description: {
-      type: mongoose.Schema.Types.Mixed,
-      trim: true,
-    },
-    status: {
-      type: String,
-      enum: ['backlog', 'toDo', 'inProgress', 'done'],
-      default: 'backlog',
-    },
-    duedate: {
-      type: Date,
-    },
-    startDate: {
-      type: Date,
-    },
-    endDate: {
-      type: Date,
-    },
-    assignee: [AssigneeSchema],
-    createdAt: {
-      type: Date,
-      default: new Date(),
-    },
-    updatedAt: {
-      type: Date,
-    },
-  }
-);
+const SubtaskSchema = new Schema<SubtaskI>({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  description: {
+    type: mongoose.Schema.Types.Mixed,
+    trim: true,
+  },
+  status: {
+    type: String,
+    enum: ["backlog", "toDo", "inProgress", "done"],
+    default: "backlog",
+  },
+  duedate: {
+    type: Date,
+  },
+  startDate: {
+    type: Date,
+  },
+  endDate: {
+    type: Date,
+  },
+  assignee: {
+    type: [UserSchema],
+    default: [],
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  updatedAt: {
+    type: Date,
+  },
+});
 
 // Schema for Comment
-const CommentSchema = new Schema<CommentI>(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    comment: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: new Date(),
-    },
-    updatedAt: {
-      type: Date,
-    },
-    deletedAt: {
-      type: Date,
-    },
-  }
-);
+const CommentSchema = new Schema<CommentI>({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  updatedAt: {
+    type: Date,
+  },
+  deletedAt: {
+    type: Date,
+  },
+});
 
 // Schema for Activity Log
-const ActivityLogSchema = new Schema<ActivityLogI>(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    action: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: new Date(),
-    },
-    updatedAt: {
-      type: Date,
-    },
-    deletedAt: {
-      type: Date,
-    },
-  }
-);
+const ActivityLogSchema = new Schema<ActivityLogI>({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  action: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  updatedAt: {
+    type: Date,
+  },
+  deletedAt: {
+    type: Date,
+  },
+});
 
 // Main Task Schema
-const TaskSchema = new Schema<TaskI>(
-  {
-    projectId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Project',
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    company: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Company',
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: mongoose.Schema.Types.Mixed,
-      trim: true,
-    },
-    assignee: [AssigneeSchema],
-    assigner: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'User',
-    },
-    reminders: [Date],
-    status: {
-      type: String,
-      enum: ['backlog', 'toDo', 'inProgress', 'done'],
-      default: 'backlog',
-    },
-    priority: {
-      type: String,
-      enum: ['low', 'medium', 'high'],
-      default: 'medium',
-    },
-    duedate: {
-      type: Date,
-    },
-    startDate: {
-      type: Date,
-    },
-    endDate: {
-      type: Date,
-    },
-    subtasks: [SubtaskSchema],
-    comments: [CommentSchema],
-    activityLog: [ActivityLogSchema],
-    labels: [String],
-    dependencies: [
-      {
+const TaskSchema = new Schema<TaskI>({
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Project",
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: mongoose.Schema.Types.Mixed,
+    trim: true,
+  },
+  assignee: {
+    type: [UserSchema],
+    default: [],
+  },
+  assigner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  reminders: [Date],
+  status: {
+    type: String,
+    enum: ["backlog", "toDo", "inProgress", "done"],
+    default: "backlog",
+  },
+  priority: {
+    type: String,
+    enum: ["low", "medium", "high"],
+    default: "medium",
+  },
+  duedate: {
+    type: Date,
+  },
+  startDate: {
+    type: Date,
+  },
+  endDate: {
+    type: Date,
+  },
+  subtasks: [SubtaskSchema],
+  comments: [CommentSchema],
+  activityLog: [ActivityLogSchema],
+  labels: [String],
+  dependencies: {
+    type: [UserSchema],
+    default: [],
+  },
+  approval: {
+    type: String,
+    enum: ["satisfactory", "unsatisfactory"],
+  },
+  attach_files: [
+    {
+      project: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: "Project",
       },
-    ],
-    approval: {
-      type: String,
-      enum: ['satisfactory', 'unsatisfactory'],
-    },
-    attach_files: [
-      {
-        project: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Project',
-        },
-        title: {
+      title: {
+        type: String,
+        trim: true,
+      },
+      description: {
+        type: mongoose.Schema.Types.Mixed,
+        trim: true,
+      },
+      file: {
+        name: {
           type: String,
-          trim: true,
         },
-        description: {
-          type: mongoose.Schema.Types.Mixed,
-          trim: true,
+        url: {
+          type: String,
         },
-        file: {
-          name: {
-            type: String,
-          },
-          url: {
-            type: String,
-          },
-          type: {
-            type: String,
-          },
+        type: {
+          type: String,
         },
       },
-    ],
-    progress: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
     },
-    customFields: {
-      type: Map,
-      of: Schema.Types.Mixed,
-    },
-    createdAt: {
-      type: Date,
-      default: new Date(),
-    },
-    updatedAt: {
-      type: Date,
-    },
-    deletedAt: {
-      type: Date,
-    },
-  }
-);
+  ],
+  progress: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100,
+  },
+  customFields: {
+    type: Map,
+    of: Schema.Types.Mixed,
+  },
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
+  updatedAt: {
+    type: Date,
+  },
+  deletedAt: {
+    type: Date,
+  },
+});
 
 TaskSchema.index({ projectId: 1, title: 1 });
 
-export default mongoose.model<TaskI>('Task', TaskSchema);
+export default mongoose.model<TaskI>("Task", TaskSchema);
