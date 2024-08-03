@@ -37,12 +37,12 @@ interface ActivityLogI extends Document {
 interface TaskI extends Document {
   projectId: mongoose.Schema.Types.ObjectId;
   title: string;
-  isActive:boolean;
+  isActive: boolean;
   createdBy?: mongoose.Schema.Types.ObjectId;
   description?: mongoose.Schema.Types.Mixed;
   assignee?: AssigneeI[];
   assigner: mongoose.Schema.Types.ObjectId;
-  company:mongoose.Schema.Types.ObjectId;
+  company: mongoose.Schema.Types.ObjectId;
   status: string;
   priority?: string;
   duedate?: Date;
@@ -54,7 +54,16 @@ interface TaskI extends Document {
   labels?: string[];
   dependencies?: mongoose.Schema.Types.ObjectId[];
   reminders?: Date[];
-  attach_files?: any[];
+  attach_files?: {
+    project?: mongoose.Schema.Types.ObjectId;
+    title?: string;
+    description?: mongoose.Schema.Types.Mixed;
+    file: {
+      name: string;
+      url: string;
+      type: string;
+    };
+  }[];
   approval?: string;
   progress?: number;
   customFields?: Record<string, any>;
@@ -179,13 +188,13 @@ const TaskSchema = new Schema<TaskI>(
       ref: 'Project',
       required: true,
     },
-    isActive : {
-      type : Boolean,
-      default : true
+    isActive: {
+      type: Boolean,
+      default: true,
     },
-    company : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'Company'
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -234,12 +243,12 @@ const TaskSchema = new Schema<TaskI>(
     dependencies: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
       },
     ],
     approval: {
       type: String,
-      enum: ['satisfactory', 'unSatisfactory'],
+      enum: ['satisfactory', 'unsatisfactory'],
     },
     attach_files: [
       {

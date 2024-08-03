@@ -9,8 +9,8 @@ const getProjectCounts = async (data: any) => {
     let pipeline = [
       {
         $match: {
-          company: {$in : data.company},
-          deletedAt : {$exists : false}
+          company: { $in: data.company },
+          deletedAt: { $exists: false },
         },
       },
       {
@@ -305,8 +305,6 @@ const getAllProjects = async (data: any) => {
   }
 };
 
-
-
 const getAllTask = async (data: any) => {
   try {
     const { page = 1, limit = 10, company } = data;
@@ -314,8 +312,8 @@ const getAllTask = async (data: any) => {
     const pipeline: any = [];
 
     const matchConditions = {
-      company: {$in : company},
-      projectId : data.projectId,
+      company: { $in: company },
+      projectId: data.projectId,
       deletedAt: { $exists: false },
     };
 
@@ -329,7 +327,7 @@ const getAllTask = async (data: any) => {
 
     pipeline.push({
       $sort: {
-        createdAt: -1
+        createdAt: -1,
       },
     });
 
@@ -392,9 +390,33 @@ const createTask = async (datas: any) => {
       company: datas.company,
       deletedAt: { $exists: false },
     });
+
     if (projects) {
       const newTask = new Task(datas);
       const savedTask = await newTask.save();
+
+      const attach_files: any[] = [];
+
+      for (const file of datas.attach_files) {
+        try {
+          const documentInfo = await uploadFile(file.file);
+          attach_files.push({
+            project : datas.projectId,
+            ...file,
+            file : {
+            url: documentInfo,
+            name: file.file.filename,
+            type: file.file.type
+            }
+          });
+        } catch (err: any) {
+          console.error('Error uploading file:', err);
+        }
+      }
+
+      savedTask.attach_files = attach_files;
+      await savedTask.save(); // Save the updated task with attach_files
+
       return {
         status: "success",
         data: savedTask,
@@ -404,8 +426,8 @@ const createTask = async (datas: any) => {
     } else {
       return {
         status: "error",
-        data: "Project does not exists",
-        message: `Project does not exists`,
+        data: "Project does not exist",
+        message: `Project does not exist`,
         statusCode: statusCode.info,
       };
     }

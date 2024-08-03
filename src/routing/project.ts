@@ -9,7 +9,7 @@ router.put('/:id',authenticate,updateProjectService);
 router.post('/get',authenticate,getAllProjectsService)
 router.get('/single/:id',authenticate,getSingleProjectService)
 router.post('/task/:projectId/get',authenticate,getAllTaskService)
-router.post('/task/:projectId',authenticate,createTaskService)
+router.post('/task/:projectId/create',authenticate,createTaskService)
 router.put('/task/:taskId',authenticate,updateTaskService)
 
 export default router;
