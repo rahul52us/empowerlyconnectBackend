@@ -46,6 +46,27 @@ const createProject = async (data: any) => {
       await savedProject.save();
     }
 
+    const attach_files: any[] = [];
+
+    for (const file of data.attach_files) {
+      try {
+        const documentInfo = await uploadFile(file.file);
+        attach_files.push({
+          ...file,
+          file : {
+          url: documentInfo,
+          name: file.file.filename,
+          type: file.file.type
+          }
+        });
+      } catch (err: any) {
+        console.error('Error uploading file:', err);
+      }
+    }
+
+    savedProject.attach_files = attach_files;
+    await savedProject.save();
+
     return {
       statusCode: 201,
       status: "success",

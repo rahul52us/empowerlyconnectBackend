@@ -25,34 +25,6 @@ interface ProjectI extends Document {
   tags:any
 }
 
-const AttachFiles = new mongoose.Schema(
-  {
-    project: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
-    },
-    title: {
-      type: String,
-      trim: true,
-    },
-    description: {
-      type: mongoose.Schema.Types.Mixed,
-      trim: true,
-    },
-    file: {
-      type: String,
-      trim: true
-    },
-    createdAt:{
-      type :Date,
-      default : new Date()
-    },
-    updatedAt:{
-      type : Date
-    }
-  }
-);
-
 const UserSchema = new Schema<any>(
   {
     user: {
@@ -118,7 +90,7 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
   },
   status: {
     type: String,
-    enum: ["backlog", "todo", "inProgress", "done", "complete"],
+    enum: ["backlog", "toDo", "inProgress", "done", "complete"],
     default: "backlog",
   },
   startDate: {
@@ -150,7 +122,29 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
     type: String,
     enum: ["satisfactory", "unSatisfactory"],
   },
-  attach_files: [AttachFiles],
+  attach_files: [
+    {
+      title: {
+        type: String,
+        trim: true,
+      },
+      description: {
+        type: mongoose.Schema.Types.Mixed,
+        trim: true,
+      },
+      file: {
+        name: {
+          type: String,
+        },
+        url: {
+          type: String,
+        },
+        type: {
+          type: String,
+        },
+      },
+    },
+  ],
   deletedAt: {
     type: Date,
   },

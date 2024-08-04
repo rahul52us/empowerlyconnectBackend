@@ -40,7 +40,7 @@ interface TaskI extends Document {
   isActive: boolean;
   createdBy?: mongoose.Schema.Types.ObjectId;
   description?: mongoose.Schema.Types.Mixed;
-  assignee?: AssigneeI[];
+  team_members?: AssigneeI[];
   assigner: mongoose.Schema.Types.ObjectId;
   company: mongoose.Schema.Types.ObjectId;
   status: string;
@@ -206,7 +206,7 @@ const TaskSchema = new Schema<TaskI>({
     type: mongoose.Schema.Types.Mixed,
     trim: true,
   },
-  assignee: {
+  team_members: {
     type: [UserSchema],
     default: [],
   },
@@ -238,7 +238,6 @@ const TaskSchema = new Schema<TaskI>({
   subtasks: [SubtaskSchema],
   comments: [CommentSchema],
   activityLog: [ActivityLogSchema],
-  labels: [String],
   dependencies: {
     type: [UserSchema],
     default: [],
