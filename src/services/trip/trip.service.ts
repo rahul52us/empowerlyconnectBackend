@@ -10,6 +10,7 @@ import {
 import { generateError } from "../../config/Error/functions";
 import mongoose from "mongoose";
 import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
+import { PaginationLimit } from "../../config/helper/constant";
 
 export const createTripService = async (
   req: any,
@@ -57,8 +58,8 @@ export const getTripsService = async (
   next: NextFunction
 ) => {
   try {
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ?  Number(req.query.limit) : PaginationLimit;
     const search = req.query.search || undefined;
 
     const { data, status, totalPages } = await getTrips({

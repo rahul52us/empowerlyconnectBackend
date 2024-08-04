@@ -158,7 +158,7 @@ export const getTrips = async (data: any) => {
       ...pipeline,
       { $sort: { createdAt: -1 } },
       { $skip: (data.page - 1) * data.limit },
-      { $limit: Number(data.limit) },
+      { $limit: data.limit },
     ];
 
     const [resultData, countDocuments]: any = await Promise.all([
