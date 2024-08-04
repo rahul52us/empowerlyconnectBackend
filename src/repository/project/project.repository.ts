@@ -119,7 +119,7 @@ const getSingleProject = async (data: any) => {
       {
         $match: {
           _id: data.id,
-          company: data.company,
+          // company: mongoose.Types.ObjectId(data.company),
           deletedAt: { $exists: false },
         },
       },
@@ -158,47 +158,171 @@ const getSingleProject = async (data: any) => {
         },
       },
       {
-        $lookup: {
-          from: "users",
-          let: { projectManagerIds: "$project_manager" },
-          pipeline: [
-            { $match: { $expr: { $in: ["$_id", "$$projectManagerIds"] } } },
-            { $project: { username: 1, _id: 1, code: 1 } },
-          ],
-          as: "project_manager",
+        $unwind: {
+          path: "$project_manager",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
           from: "users",
-          let: { teamMemberIds: "$team_members" },
+          let: { projectManagerId: "$project_manager.user" },
           pipeline: [
-            { $match: { $expr: { $in: ["$_id", "$$teamMemberIds"] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$projectManagerId"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: "team_members",
+          as: "project_manager.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$project_manager.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          project_manager: {
+            $push: {
+              user: "$project_manager.user",
+              isActive: "$project_manager.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { project_manager: "$project_manager" }],
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$team_members",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
           from: "users",
-          let: { followerIds: "$followers" },
+          let: { teamMemberId: "$team_members.user" },
           pipeline: [
-            { $match: { $expr: { $in: ["$_id", "$$followerIds"] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: "followers",
+          as: "team_members.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$team_members.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          team_members: {
+            $push: {
+              user: "$team_members.user",
+              isActive: "$team_members.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { team_members: "$team_members" }],
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$followers",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
           from: "users",
-          let: { customerIds: "$customers" },
+          let: { followerId: "$followers.user" },
           pipeline: [
-            { $match: { $expr: { $in: ["$_id", "$$customerIds"] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$followerId"] } } },
             { $project: { username: 1, _id: 1, code: 1 } },
           ],
-          as: "customers",
+          as: "followers.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$followers.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          followers: {
+            $push: {
+              user: "$followers.user",
+              isActive: "$followers.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { followers: "$followers" }],
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$customers",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { customerId: "$customers.user" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$customerId"] } } },
+            { $project: { username: 1, _id: 1, code: 1 } },
+          ],
+          as: "customers.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$customers.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          customers: {
+            $push: {
+              user: "$customers.user",
+              isActive: "$customers.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { customers: "$customers" }],
+          },
         },
       },
       {
@@ -224,6 +348,7 @@ const getSingleProject = async (data: any) => {
           deletedAt: 1,
           createdAt: 1,
           updatedAt: 1,
+          tags:1
         },
       },
     ];
@@ -249,6 +374,8 @@ const getSingleProject = async (data: any) => {
     return createCatchError(err);
   }
 };
+
+
 
 const getAllProjects = async (data: any) => {
   try {

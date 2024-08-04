@@ -22,6 +22,7 @@ interface ProjectI extends Document {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
+  tags:any
 }
 
 const AttachFiles = new mongoose.Schema(
@@ -128,6 +129,10 @@ const ProjectSchema = new mongoose.Schema<ProjectI>({
   },
   dueDate: {
     type: Date,
+  },
+  tags : {
+    type : Array,
+    default : []
   },
   customers: {
     type: [UserSchema],
