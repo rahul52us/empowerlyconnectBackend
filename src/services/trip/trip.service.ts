@@ -5,6 +5,8 @@ import {
   getSingleTrips,
   getTripCounts,
   getTrips,
+  totalTripTypeCount,
+  totalTripUserTypeCount,
   updateTrip,
 } from "../../repository/trip.repository";
 import { generateError } from "../../config/Error/functions";
@@ -159,3 +161,46 @@ export const getTripCountService = async (
     return createCatchError(err)
   }
 };
+
+
+export const totalTripTypeCountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.companyOrg = req.bodyData.companyOrg;
+    const { status, message , statusCode, data } = await totalTripTypeCount(req.body);
+      res.status(statusCode).send({
+        data: data,
+        message: message,
+        status: status,
+      });
+  } catch (err : any) {
+    return createCatchError(err)
+  }
+};
+
+export const totalTripUserTypeCountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.companyOrg = req.bodyData.companyOrg;
+    req.body.users = await convertIdsToObjects(req.body.users)
+    const { status, message , statusCode, data } = await totalTripUserTypeCount(req.body);
+      res.status(statusCode).send({
+        data: data,
+        message: message,
+        status: status,
+      });
+  } catch (err : any) {
+    return createCatchError(err)
+  }
+};
+
+
+

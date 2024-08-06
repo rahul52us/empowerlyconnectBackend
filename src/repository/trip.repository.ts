@@ -260,3 +260,87 @@ export const getTripCounts = async (data: any) => {
     };
   }
 };
+
+export const totalTripTypeCount = async (data: any) => {
+  try {
+    const pipeline: any = [];
+
+    pipeline.push({
+      $match: {
+        company: { $in: data.company },
+        deletedAt: { $exists: false }
+      }
+    });
+
+    pipeline.push({
+      $group: {
+        _id: "$type",
+        count: { $sum: 1 }
+      }
+    });
+
+    pipeline.push({
+      $project : {
+        _id : 0,
+        count : 1,
+        title : '$_id'
+      }
+    })
+
+    const result = await Trip.aggregate(pipeline);
+
+    return {
+      status: "success",
+      data: result,
+      statusCode: statusCode.success,
+      message: 'Get Trip type counts'
+    };
+
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+}
+
+export const totalTripUserTypeCount = async (data: any) => {
+  try {
+    const pipeline: any = [];
+
+    pipeline.push({
+      $match: {
+        company: { $in: data.company },
+        deletedAt: { $exists: false },
+        participants: { $in: data.users},
+      },
+    });
+
+    pipeline.push({
+      $group: {
+        _id: "$type",
+        count: { $sum: 1 },
+      },
+    });
+
+    pipeline.push({
+      $project: {
+        _id: 0,
+        count: 1,
+        title: "$_id",
+      },
+    });
+
+    const result = await Trip.aggregate(pipeline);
+
+    return {
+      status: "success",
+      data: result,
+      statusCode: 200,
+      message: "Get Trip type counts",
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message,
+      statusCode: 500,
+    };
+  }
+};

@@ -4,6 +4,7 @@ import { createBookCategoryService, getAllBookCategoryService, getBookCategoryCo
 import { createBookService, getAllBookService, getBookCountService, getBookTitleCountService, updateBookService } from "../../services/liberary/Book.service";
 
 const router = express();
+
 // book
 router.post('/create',authenticate, createBookService)
 router.put('/:id',authenticate,updateBookService)
@@ -17,4 +18,5 @@ router.post('/category',authenticate,createBookCategoryService)
 router.put('/category/:id',authenticate,updateBookCategoryService)
 router.post('/category/total/counts',authenticate,getBookCategoryCountService)
 router.post('/category/total/title/counts',authenticate,getBookCategoryTitleCountService)
+
 export default router;
