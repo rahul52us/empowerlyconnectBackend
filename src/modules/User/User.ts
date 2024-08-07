@@ -21,6 +21,8 @@ import {
 } from "../config/sendMail/utils";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
 import {baseURL} from '../../config/helper/urls'
+import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
+import { statusCode } from "../../config/helper/statusCode";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
@@ -317,32 +319,52 @@ const getUsersByCompany = async (
   next: NextFunction
 ) => {
   try {
-    const { is_active, designation } = req.body;
+    const { is_active, designation, company } = req.body;
+    try {
+      const users = await User.aggregate([
+        {
+          $lookup: {
+            from: "companydetails",
+            localField: "companyDetail",
+            foreignField: "_id",
+            as: "companyDetails"
+          }
+        },
+        { $unwind: "$companyDetails" },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "companyDetails.company",
+            foreignField: "_id",
+            as: "company"
+          }
+        },
+        { $unwind: "$company" },
+        {
+          $match: {
+            "company._id": {$in : await convertIdsToObjects(company)},
+            "companyOrg" : new mongoose.Types.ObjectId(req.bodyData.companyOrg)
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            username: 1,
+            code: 1
+          }
+        }
+      ]);
 
-    const query: any = {
-      company: req.bodyData.company,
-    };
-
-    if (is_active !== undefined) {
-      query.is_active = is_active;
+      res.status(statusCode.success).send({
+        message: "Fetch Users Successfully",
+        data: users,
+        status : 'success'
+      });
     }
-
-    if (designation && designation.length !== 0) {
-      query.designation = { $in: designation };
+    catch(err)
+    {
+      return createCatchError(err)
     }
-
-    const users = await User.find(query).select("-password");
-
-    if (!users) {
-      throw generateError("Something went wrong while fetching the users", 400);
-    }
-
-    res.status(200).send({
-      message: "Fetch Users Successfully",
-      data: users,
-      statusCode: 200,
-      success: true,
-    });
   } catch (err) {
     next(err);
   }

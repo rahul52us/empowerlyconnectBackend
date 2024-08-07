@@ -12,6 +12,6 @@ router.put('/',authenticate,updateUserProfile)
 router.post('/reset-password',resetPassword)
 router.post('/change-password',authenticate,changePasswordService)
 router.get('/verify-email/:token',VerifyEmailToken)
-router.get('/get/users',authenticate,getUsersByCompany)
+router.post('/get/users',authenticate,getUsersByCompany)
 
 export default router;
