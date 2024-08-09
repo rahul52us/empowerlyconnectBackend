@@ -103,6 +103,17 @@ export const getSingleTrips = async (data: any) => {
       },
       {
         $lookup: {
+          from: "users",
+          let: { userId: "$createdBy" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
+            { $project: { username: 1, _id: 1, code: 1 } },
+          ],
+          as: "createdBy",
+        },
+      },
+      {
+        $lookup: {
           from: 'users',
           let: { participantIds: '$participants' },
           pipeline: [

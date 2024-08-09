@@ -25,7 +25,6 @@ export const createBook = async (data: any) => {
       statusCode: statusCode.success,
     };
   } catch (err :any) {
-    console.log(err?.message)
     return createCatchError(err);
   }
 };
