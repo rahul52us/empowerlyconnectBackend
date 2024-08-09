@@ -33,8 +33,6 @@ const createUser = async (data: any) => {
       companyOrg: data.companyOrg,
       name: data.name,
       code: data.code,
-      pic: data.pic,
-      designation: data.designation,
       password: data.password,
       bio: data.bio,
       is_active: true,
@@ -46,6 +44,7 @@ const createUser = async (data: any) => {
     if (!savedUser) {
       throw generateError(`cannot create the user`, 400);
     }
+
 
     const comDetails = new CompanyDetails({
       user: savedUser._id,
@@ -113,6 +112,16 @@ const createUser = async (data: any) => {
 
     const { password, ...restUser } = savedUser.toObject();
 
+    if (data.pic && data.pic !== "") {
+      let url = await uploadFile(data.pic);
+      savedUser.pic = {
+        name: data.pic.filename,
+        url: url,
+        type: data.pic.type,
+      };
+      await savedUser.save();
+    }
+
     return {
       status: "success",
       data: {
@@ -135,17 +144,46 @@ const createUser = async (data: any) => {
 
 const updateUserProfileDetails = async (data: any) => {
   try {
-    const users = await User.findByIdAndUpdate(data.userId, { $set: data });
-    const Users = await ProfileDetails.findOneAndUpdate(
+    const {pic, ...rest} = data
+    const users : any = await User.findByIdAndUpdate(data.userId, { $set: {...rest} });
+    const pUsers = await ProfileDetails.findOneAndUpdate(
       { user: data.userId },
-      { $set: data }
+      { $set: {...rest} }
     );
-    if (!User && !users) {
+    if (!pUsers && !users) {
       return {
         status: "error",
         data: "User does not exists",
       };
     }
+
+    if (pic?.isDeleted === 1 && users.pic?.name) {
+      await deleteFile(users.pic.name);
+      users.pic = {
+        name: undefined,
+        url: undefined,
+        type: undefined,
+      };
+      await users.save();
+    }
+
+    if (
+      pic &&
+      pic?.isAdd === 1 &&
+      pic?.filename &&
+      pic?.buffer
+    ) {
+      const { filename, type } = pic;
+      const url = await uploadFile(pic);
+      users.pic = {
+        name: filename,
+        url,
+        type,
+      };
+      await users.save();
+    }
+
+
     return {
       status: "success",
       data: "User has been updated successfully",

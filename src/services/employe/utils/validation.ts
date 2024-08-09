@@ -21,7 +21,7 @@ export const createUserValidation = Joi.object({
     personalEmail: Joi.string().min(5).trim().required().messages(customMessages),
     code:Joi.string().min(4).required().messages(customMessages),
     designation:Joi.array().required(),
-    pic: Joi.string().allow("").optional(),
+    pic: Joi.any().allow("").optional(),
     pfUanNo:Joi.string().allow("").optional(),
     aadharNo:Joi.string().allow("").optional(),
     panNo:Joi.string().allow("").optional(),
