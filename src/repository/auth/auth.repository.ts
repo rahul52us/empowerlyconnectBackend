@@ -16,6 +16,18 @@ const findUserByUserName = async (data: any) => {
   }
 };
 
+const findUserById = async (id: any) => {
+  try {
+    const user = await User.findById(id);
+    if (user) {
+      return user;
+    }
+    return null;
+  } catch (err: any) {
+    return null;
+  }
+};
+
 const loginUser = async (data: any): Promise<any> => {
   try {
     const query: any = {};
@@ -131,4 +143,4 @@ const getRoleUsers = async (data : any) => {
   }
 };
 
-export { loginUser, changePassword, findUserByUserName, getRoleUsers };
+export { loginUser, changePassword, findUserById, findUserByUserName, getRoleUsers };

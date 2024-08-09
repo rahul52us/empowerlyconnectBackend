@@ -3,6 +3,7 @@ import { statusCode } from "../../config/helper/statusCode";
 import Project from "../../schemas/project/Project.schema";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
 import { createCatchError } from "../../config/helper/function";
+import { findUserById } from "../auth/auth.repository";
 
 const getProjectCounts = async (data: any) => {
   try {
@@ -150,7 +151,7 @@ const getSingleProject = async (data: any) => {
           let: { userId: "$createdBy" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
-            { $project: { username: 1, _id: 1, code: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
           ],
           as: "createdBy",
         },
@@ -190,7 +191,7 @@ const getSingleProject = async (data: any) => {
           let: { projectManagerId: "$project_manager.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$projectManagerId"] } } },
-            { $project: { username: 1, _id: 1, code: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
           ],
           as: "project_manager.user",
         },
@@ -232,7 +233,7 @@ const getSingleProject = async (data: any) => {
           let: { teamMemberId: "$team_members.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
-            { $project: { username: 1, _id: 1, code: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
           ],
           as: "team_members.user",
         },
@@ -274,7 +275,7 @@ const getSingleProject = async (data: any) => {
           let: { followerId: "$followers.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$followerId"] } } },
-            { $project: { username: 1, _id: 1, code: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
           ],
           as: "followers.user",
         },
@@ -316,7 +317,7 @@ const getSingleProject = async (data: any) => {
           let: { customerId: "$customers.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$customerId"] } } },
-            { $project: { username: 1, _id: 1, code: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
           ],
           as: "customers.user",
         },
@@ -396,7 +397,64 @@ const getSingleProject = async (data: any) => {
   }
 };
 
+const addProjectMembers = async (data: any) => {
+  try {
+    const { id, type, user, isActive } = data;
 
+    const projectData = await Project.findById(id);
+
+    if (!projectData) {
+      return {
+        status: "error",
+        data: "Project does not exist",
+        message: "Project not found",
+        statusCode: statusCode.info,
+      };
+    }
+
+    const memberTypeMap : any = {
+      manager: projectData.project_manager,
+      follower: projectData.followers,
+      teamMember: projectData.team_members,
+    };
+
+    const memberList = memberTypeMap[type];
+
+    if (!memberList) {
+      return {
+        status: "error",
+        data: "Invalid type provided",
+        message: "No such type exists",
+        statusCode: statusCode.info,
+      };
+    }
+
+    const isMemberExists = memberList.some((item: any) => item.user.equals(user));
+    if (isMemberExists) {
+      return {
+        status: "error",
+        data: `User is already a ${type}`,
+        message: `${type} is already exists`,
+        statusCode: statusCode.info,
+      };
+    }
+
+    // Add the new member
+    memberList.push({ user, isActive });
+    await projectData.save();
+
+    const userData = await findUserById(user);
+
+    return {
+      status: "success",
+      message: `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`,
+      data: { user: userData, isActive },
+      statusCode: statusCode.success,
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
 
 const getAllProjects = async (data: any) => {
   try {
@@ -689,6 +747,7 @@ export {
   getProjectCounts,
   createProject,
   updateProject,
+  addProjectMembers,
   getAllProjects,
   getSingleProject,
   getSingleTask,

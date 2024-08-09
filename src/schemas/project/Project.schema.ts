@@ -10,7 +10,7 @@ interface ProjectI extends Document {
   dueDate?: Date;
   company: mongoose.Schema.Types.ObjectId;
   priority?: string;
-  project_manager?: mongoose.Schema.Types.ObjectId[];
+  project_manager?: any;
   startDate?: Date;
   endDate?: Date;
   status?: string;

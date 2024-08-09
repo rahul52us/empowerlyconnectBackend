@@ -1,5 +1,6 @@
 import { NextFunction, Response } from "express";
 import {
+  addProjectMembers,
   createProject,
   createTask,
   getAllProjects,
@@ -75,6 +76,26 @@ export const updateProjectService = async (
     next(err);
   }
 };
+
+export const addProjectMembersService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, statusCode, message, data } = await addProjectMembers(req.body);
+    res.status(statusCode).send({
+      status,
+      statusCode,
+      message,
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 // GET ALL PROJECT SERVICE
 export const getAllProjectsService = async (
