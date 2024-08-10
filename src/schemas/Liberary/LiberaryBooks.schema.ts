@@ -8,7 +8,7 @@ export interface LibraryBookI extends Document {
   isbn: string;
   publishedDate?: Date;
   categories: Schema.Types.ObjectId[];
-  language: string;
+  language: any;
   numberOfPages?: number;
   availableCopies: number;
   totalCopies: number;
@@ -35,7 +35,8 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
   title: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    index : true
   },
   author: {
     type: String,
@@ -53,8 +54,8 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
   },
   isbn: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    index : true
   },
   publishedDate: {
     type: Date
@@ -64,20 +65,21 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
     ref: 'BookCategory'
   }],
   language: {
-    type: String,
-    required: true,
-    trim: true
+    type: [String],
+    default:[]
   },
   numberOfPages: {
     type: Number
   },
   availableCopies: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
   totalCopies: {
     type: Number,
-    default:1
+    default:1,
+    min: 1
   },
   shelfLocation: {
     type: String,
@@ -102,13 +104,9 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
       type: String,
     },
   },
-  ratings: [
-    {
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      rating: { type: Number, min: 1, max: 5 },
-      review: { type: String, trim: true }
-    }
-  ],
+  ratings: {
+    type : String
+  },
   tags: {
     type: [String],
     default: []
@@ -133,7 +131,7 @@ const LibraryBookSchema: Schema<LibraryBookI> = new Schema<LibraryBookI>({
   },
 });
 
-LibraryBookSchema.index({ title: 1, author: 1 });
+LibraryBookSchema.index({ title: 1 });
 
 const LibraryBookModel = mongoose.model<LibraryBookI>("LibraryBook", LibraryBookSchema);
 export default LibraryBookModel;

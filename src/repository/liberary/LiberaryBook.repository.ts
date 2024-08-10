@@ -5,7 +5,8 @@ import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 export const createBook = async (data: any) => {
   try {
-    const bookData = new LibraryBook(data);
+    const {coverImage, ...rest} = data
+    const bookData = new LibraryBook(rest);
     const savedBookData = await bookData.save()
 
     if(data.coverImage && data.coverImage?.buffer && data.coverImage?.filename && data.coverImage?.isAdd){
@@ -74,18 +75,18 @@ export const getAllBooks = async (data: any) => {
     const totalPages = Math.ceil(totalBooks / limit);
 
     pipeline.push({
+      $sort: {
+        createdAt: -1,
+      },
+    });
+
+    pipeline.push({
       $skip: skip
     });
 
     pipeline.push({
       $limit: limit
     });
-
-    pipeline.push({
-      $sort : {
-        createdAt : -1
-      }
-    })
 
     const result = await LibraryBook.aggregate(pipeline);
     return {
