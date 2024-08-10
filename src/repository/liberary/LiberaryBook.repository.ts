@@ -14,7 +14,7 @@ export const createBook = async (data: any) => {
       savedBookData.coverImage = {
         name : data.coverImage.filename,
         url : uploadedData,
-        type : data.coverImage.fileType
+        type : data.coverImage.type
       }
       await savedBookData.save()
     }
@@ -131,18 +131,19 @@ export const updateBook = async (data: any) => {
       deletedAt: { $exists: false },
     });
     if (status === "success") {
+      const {coverImage,...rest} = data
       const liberaryBookData : any = await LibraryBook.findByIdAndUpdate(
         data.id,
-        { $set: data },
-        { new: true }
+        { $set: rest },
+        { new: true , upsert : false}
       );
 
-      if(data.coverImage && data.coverImage?.buffer && data.coverImage?.filename && data.coverImage?.isAdd){
-        const uploadedData = await uploadFile({...data.coverImage})
+      if(coverImage && coverImage?.buffer && coverImage?.filename && coverImage?.isAdd){
+        const uploadedData = await uploadFile({...coverImage})
         liberaryBookData.coverImage = {
-          name : data.coverImage.filename,
+          name : coverImage.filename,
           url : uploadedData,
-          type : data.coverImage.fileType
+          type : coverImage.type
         }
         await liberaryBookData.save()
       }
