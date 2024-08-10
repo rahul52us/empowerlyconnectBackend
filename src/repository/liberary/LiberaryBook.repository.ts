@@ -138,6 +138,14 @@ export const updateBook = async (data: any) => {
         { new: true , upsert : false}
       );
 
+      if(liberaryBookData?.coverImage?.name && data?.coverImage?.isDeleted)
+      {
+          await deleteFile(
+            liberaryBookData?.coverImage.name
+          );
+          await liberaryBookData.save()
+      }
+
       if(coverImage && coverImage?.buffer && coverImage?.filename && coverImage?.isAdd){
         const uploadedData = await uploadFile({...coverImage})
         liberaryBookData.coverImage = {
@@ -145,14 +153,6 @@ export const updateBook = async (data: any) => {
           url : uploadedData,
           type : coverImage.type
         }
-        await liberaryBookData.save()
-      }
-
-      if(liberaryBookData?.coverImage?.name && data?.coverImage?.isDeleted)
-      {
-        await deleteFile(
-          liberaryBookData?.coverImage.name
-        );
         await liberaryBookData.save()
       }
 
