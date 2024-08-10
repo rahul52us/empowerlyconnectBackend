@@ -16,7 +16,7 @@ router.post('/total/title/counts',authenticate,getBookTitleCountService)
 
 // category
 router.post('/category/get',authenticate, getAllBookCategoryService)
-router.post('/category',authenticate,createBookCategoryService)
+router.post('/category/create',authenticate,createBookCategoryService)
 router.put('/category/:id',authenticate,updateBookCategoryService)
 router.post('/category/total/counts',authenticate,getBookCategoryCountService)
 router.post('/category/total/title/counts',authenticate,getBookCategoryTitleCountService)

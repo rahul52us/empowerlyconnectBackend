@@ -459,7 +459,6 @@ const addProjectMembers = async (data: any) => {
   }
 };
 
-
 const getAllProjects = async (data: any) => {
   try {
     const { page = 1, limit = 10, company } = data;

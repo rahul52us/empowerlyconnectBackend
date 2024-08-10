@@ -1,11 +1,23 @@
 import { createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
 import BookCategory from "../../schemas/Liberary/BookCategory.schema";
+import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 export const createBookCategory = async (data: any) => {
   try {
     const category = new BookCategory(data);
     const savedCategory = await category.save();
+
+    if(data.coverImage && data.coverImage?.buffer && data.coverImage?.filename && data.coverImage?.isAdd){
+      const uploadedData = await uploadFile({...data.coverImage})
+      savedCategory.coverImage = {
+        name : data.coverImage.filename,
+        url : uploadedData,
+        type : data.coverImage.type
+      }
+      await savedCategory.save()
+    }
+
     return {
       status: "success",
       data: savedCategory,
@@ -47,12 +59,33 @@ export const updateBookCategory = async (data: any) => {
       company: data.company,
       deletedAt: { $exists: false },
     });
+
     if (status === "success") {
-      const updatedCategory = await BookCategory.findByIdAndUpdate(
+      const {coverImage,...rest} = data
+      const updatedCategory : any = await BookCategory.findByIdAndUpdate(
         data.id,
-        { $set: data },
+        { $set: {...rest} },
         { new: true }
       );
+
+      if(updatedCategory?.coverImage?.name && data?.coverImage?.isDeleted)
+        {
+            await deleteFile(
+              updatedCategory?.coverImage.name
+            );
+            await updatedCategory.save()
+        }
+
+        if(coverImage && coverImage?.buffer && coverImage?.filename && coverImage?.isAdd){
+          const uploadedData = await uploadFile({...coverImage})
+          updatedCategory.coverImage = {
+            name : coverImage.filename,
+            url : uploadedData,
+            type : coverImage.type
+          }
+          await updatedCategory.save()
+        }
+
       return {
         data: updatedCategory,
         message: "Category has been updated",

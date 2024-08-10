@@ -5,6 +5,7 @@ export interface BookCategoryI extends Document {
   company?:mongoose.Schema.Types.ObjectId;
   description?: mongoose.Schema.Types.Mixed;
   user?:mongoose.Schema.Types.ObjectId;
+  coverImage?: any;
   createdAt: Date;
   updatedAt: Date;
   deletedAt : Date
@@ -20,6 +21,17 @@ const BookCategorySchema: Schema<BookCategoryI> = new Schema<BookCategoryI>({
     type : mongoose.Schema.Types.ObjectId,
     ref : 'Company',
     required:true
+  },
+  coverImage: {
+    name: {
+      type: String,
+    },
+    url: {
+      type: String,
+    },
+    type: {
+      type: String,
+    },
   },
   user : {
     type : mongoose.Schema.Types.ObjectId,
