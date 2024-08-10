@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express"
 import mongoose from "mongoose"
 import { PaginationLimit } from "../../config/helper/constant"
-import { createBook, getAllBookCounts, getAllBooks, getAllBookTitleCounts, updateBook } from "../../repository/liberary/LiberaryBook.repository"
+import { createBook, getAllBookCounts, getAllBooks, getAllBookTitleCounts, getSingleBookById, updateBook } from "../../repository/liberary/LiberaryBook.repository"
 import { convertIdsToObjects } from "../../config/helper/function"
 
 export const createBookService = async(req : any , res : Response , next : NextFunction) => {
@@ -28,6 +28,23 @@ export const updateBookService = async(req : any , res : Response , next : NextF
         req.body.id = new mongoose.Types.ObjectId(req.params.id)
         req.body.company = new mongoose.Types.ObjectId(req.body.company)
         const {status, statusCode, data , message} = await updateBook(req.body)
+        res.status(statusCode).send({
+            message,
+            data,
+            status
+        })
+    }
+    catch(err : any)
+    {
+        next(err)
+    }
+}
+
+export const getSingleBookByIdService = async(req : any , res : Response , next : NextFunction) => {
+    try
+    {
+        req.body.id = new mongoose.Types.ObjectId(req.params.id)
+        const {status, statusCode, data , message} = await getSingleBookById(req.body)
         res.status(statusCode).send({
             message,
             data,

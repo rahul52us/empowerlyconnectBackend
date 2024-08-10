@@ -30,6 +30,29 @@ export const createBook = async (data: any) => {
   }
 };
 
+export const getSingleBookById = async(data : any) => {
+  try {
+    const book = await LibraryBook.findById(data.id);
+    if (book) {
+      return {
+        statusCode: statusCode.success,
+        status: "success",
+        data: book,
+        message: "Retrived book Successfully",
+      };
+    } else {
+      return {
+        statusCode: statusCode.info,
+        status: "error",
+        data: "Book does not exists",
+        message: "Book does not exists",
+      };
+    }
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+}
+
 export const findOneBook = async (data: any) => {
   try {
     const book = await LibraryBook.findOne(data);

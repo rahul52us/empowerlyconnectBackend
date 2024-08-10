@@ -1,7 +1,7 @@
 import express from "express";
 import authenticate from "../../modules/config/authenticate";
 import { createBookCategoryService, getAllBookCategoryService, getBookCategoryCountService, getBookCategoryTitleCountService, updateBookCategoryService } from "../../services/liberary/BookCategory.service";
-import { createBookService, getAllBookService, getBookCountService, getBookTitleCountService, updateBookService } from "../../services/liberary/Book.service";
+import { createBookService, getAllBookService, getBookCountService, getBookTitleCountService, getSingleBookByIdService, updateBookService } from "../../services/liberary/Book.service";
 import { createBookUserService, getBookUsersService } from "../../services/liberary/BookUsers.service";
 
 const router = express();
@@ -9,6 +9,7 @@ const router = express();
 // book
 router.post('/create',authenticate, createBookService)
 router.put('/:id',authenticate,updateBookService)
+router.get('/single/:id',authenticate,getSingleBookByIdService)
 router.post('/',authenticate,getAllBookService)
 router.post('/total/counts',authenticate,getBookCountService)
 router.post('/total/title/counts',authenticate,getBookTitleCountService)
