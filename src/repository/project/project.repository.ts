@@ -399,10 +399,9 @@ const getSingleProject = async (data: any) => {
 
 const addProjectMembers = async (data: any) => {
   try {
-    const { id, type, user, isActive } = data;
+    const { id, type, user, isActive, tags } = data;
 
     const projectData = await Project.findById(id);
-
     if (!projectData) {
       return {
         status: "error",
@@ -412,14 +411,14 @@ const addProjectMembers = async (data: any) => {
       };
     }
 
-    const memberTypeMap : any = {
+    const memberTypeMap: Record<string, any> = {
       manager: projectData.project_manager,
       follower: projectData.followers,
       teamMember: projectData.team_members,
+      tags: projectData.tags,
     };
 
     const memberList = memberTypeMap[type];
-
     if (!memberList) {
       return {
         status: "error",
@@ -429,18 +428,22 @@ const addProjectMembers = async (data: any) => {
       };
     }
 
-    const isMemberExists = memberList.some((item: any) => item.user.equals(user));
-    if (isMemberExists) {
-      return {
-        status: "error",
-        data: `User is already a ${type}`,
-        message: `${type} is already exists`,
-        statusCode: statusCode.info,
-      };
+    if (type === "tags") {
+      projectData.tags = tags || [];
+    } else {
+      const isMemberExists = memberList.some((item: any) => item.user.equals(user));
+      if (isMemberExists) {
+        return {
+          status: "error",
+          data: `User is already a ${type}`,
+          message: `${type} already exists`,
+          statusCode: statusCode.info,
+        };
+      }
+
+      memberList.push({ user, isActive });
     }
 
-    // Add the new member
-    memberList.push({ user, isActive });
     await projectData.save();
 
     const userData = await findUserById(user);
@@ -455,6 +458,7 @@ const addProjectMembers = async (data: any) => {
     return createCatchError(err);
   }
 };
+
 
 const getAllProjects = async (data: any) => {
   try {
