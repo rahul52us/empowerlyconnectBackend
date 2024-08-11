@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import {
   createBookCategory,
+  findCategoryById,
   getAllBookCategory,
   getAllBookCategoryCounts,
   getAllBookCategoryTitleCounts,
@@ -51,6 +52,28 @@ export const updateBookCategoryService = async (
     next(err);
   }
 };
+
+export const findBookCategoryByIdService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, statusCode, data, message } = await findCategoryById(
+      req.body
+    );
+    res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+
 
 export const getAllBookCategoryService = async (
   req: any,

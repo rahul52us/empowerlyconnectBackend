@@ -52,6 +52,29 @@ export const findOneCategory = async (data: any) => {
   }
 };
 
+export const findCategoryById = async (data: any) => {
+  try {
+    const bookData: any = await BookCategory.findById(data.id);
+    if (bookData) {
+      return {
+        data: bookData,
+        status: "success",
+        message: "retrived book category",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        data: "Category not Found",
+        status: "error",
+        message: "Category not Found",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err) {
+    return createCatchError(err);
+  }
+};
+
 export const updateBookCategory = async (data: any) => {
   try {
     const { status } = await findOneCategory({
@@ -116,15 +139,43 @@ export const getAllBookCategory = async (data: any) => {
     pipeline.push({
       $match: {
         deletedAt: { $exists: false },
-        company: {$in : company}
+        // company: { $in: company } // Uncomment if you want to filter by company
       }
     });
 
-    const totalCategoriesPipeline = [...pipeline, { $count: "total" }];
-    const totalCategoriesResult = await BookCategory.aggregate(totalCategoriesPipeline);
-    const totalCategories = totalCategoriesResult.length > 0 ? totalCategoriesResult[0].total : 0;
+    pipeline.push({
+      $lookup: {
+        from: "librarybooks",
+        localField: "_id",
+        foreignField: "categories",
+        as: "books"
+      }
+    });
 
-    const totalPages = Math.ceil(totalCategories / limit);
+    pipeline.push({
+      $unwind: {
+        path: "$books",
+        preserveNullAndEmptyArrays: true
+      }
+    });
+
+    pipeline.push({
+      $group: {
+        _id: "$_id",
+        title: { $first: "$title" },
+        coverImage : { $first: "$coverImage" },
+        description: { $first: "$description" },
+        createdAt: { $first: "$createdAt" },
+        updatedAt: { $first: "$updatedAt" },
+        bookCount: { $sum: { $cond: [{ $gt: ["$books._id", null] }, 1, 0] } }
+      }
+    });
+
+    pipeline.push({
+      $sort: {
+        createdAt : -1
+      }
+    });
 
     pipeline.push({
       $skip: skip
@@ -135,16 +186,19 @@ export const getAllBookCategory = async (data: any) => {
     });
 
     const result = await BookCategory.aggregate(pipeline);
+    const totalPages = Math.ceil(result.length / limit);
+
     return {
       status: "success",
-      data: {data : result, totalPages : totalPages},
-      message: "Category has been retrieved successfully",
+      data: { data: result, totalPages: totalPages },
+      message: "Categories with books have been retrieved successfully",
       statusCode: statusCode.success
     };
   } catch (err: any) {
     return createCatchError(err);
   }
 };
+
 
 export const getAllBookCategoryCounts = async (data : any) => {
   try
