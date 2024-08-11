@@ -1031,6 +1031,7 @@ export const getUserInfoWithManagersAction = async (data: any) => {
                 username: 1,
                 code: 1,
                 title: 1,
+                pic:1
               },
             },
           ],
@@ -1043,6 +1044,7 @@ export const getUserInfoWithManagersAction = async (data: any) => {
           username: 1,
           code: 1,
           title: 1,
+          pic:1,
           'designation.title': 1,
           'department.title': 1,
           profiledetails: 1,
@@ -1105,6 +1107,7 @@ export const getUserInfoWithManagersAction = async (data: any) => {
       {
         $project: {
           "userDetails.name": 1,
+          "userDetails.pic": 1,
           "userDetails.username": 1,
           "userDetails.code": 1,
           "userDetails.title": 1,

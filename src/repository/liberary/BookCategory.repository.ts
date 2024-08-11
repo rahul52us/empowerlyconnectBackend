@@ -139,7 +139,7 @@ export const getAllBookCategory = async (data: any) => {
     pipeline.push({
       $match: {
         deletedAt: { $exists: false },
-        // company: { $in: company } // Uncomment if you want to filter by company
+        company: { $in: company }
       }
     });
 
