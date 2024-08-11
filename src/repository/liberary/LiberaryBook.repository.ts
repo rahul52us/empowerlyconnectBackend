@@ -32,7 +32,7 @@ export const createBook = async (data: any) => {
 
 export const getSingleBookById = async(data : any) => {
   try {
-    const book = await LibraryBook.findById(data.id);
+    const book = await LibraryBook.findById(data.id).populate('categories');
     if (book) {
       return {
         statusCode: statusCode.success,
