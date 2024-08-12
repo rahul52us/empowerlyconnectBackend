@@ -1,6 +1,7 @@
 import { createCatchError } from "../config/helper/function";
 import { statusCode } from "../config/helper/statusCode";
 import { TripModel as Trip } from "../schemas/trip/trip.schema";
+import { findUserById } from "./auth/auth.repository";
 import { deleteFile, uploadFile } from "./uploadDoc.repository";
 
 export const createTrip = async (data: any) => {
@@ -384,5 +385,61 @@ export const totalTripUserTypeCount = async (data: any) => {
       message: err.message,
       statusCode: 500,
     };
+  }
+};
+
+export const addTripMembers = async (data: any) => {
+  try {
+    const { id, type, user, isActive } = data;
+
+    const tripData = await Trip.findById(id);
+    if (!tripData) {
+      return {
+        status: "error",
+        data: "Trip does not exist",
+        message: "Trip not found",
+        statusCode: statusCode.info,
+      };
+    }
+
+    const memberTypeMap: Record<string, any> = {
+      participants: tripData.participants,
+    };
+
+    const memberList = memberTypeMap[type];
+    if (!memberList) {
+      return {
+        status: "error",
+        data: "Invalid type provided",
+        message: "No such type exists",
+        statusCode: statusCode.info,
+      };
+    }
+
+
+      const isMemberExists = memberList.some((item: any) => item.user.equals(user));
+      if (isMemberExists) {
+        return {
+          status: "error",
+          data: `User is already a ${type}`,
+          message: `${type} already exists`,
+          statusCode: statusCode.info,
+        };
+      }
+
+    memberList.push({ user, isActive });
+
+    await tripData.save();
+
+    const userData = await findUserById(user);
+
+    return {
+      status: "success",
+      message: `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`,
+      data: { user: userData, isActive },
+      statusCode: statusCode.success,
+    };
+  } catch (err: any) {
+    return createCatchError(err);
   }
 };

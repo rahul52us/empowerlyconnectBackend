@@ -1,5 +1,6 @@
 import { NextFunction, Response } from "express";
 import {
+  addTripMembers,
   createTrip,
   getAllDayTripCount,
   getSingleTrips,
@@ -202,5 +203,23 @@ export const totalTripUserTypeCountService = async (
   }
 };
 
+export const addTripMembersService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, statusCode, message, data } = await addTripMembers(req.body);
+    res.status(statusCode).send({
+      status,
+      statusCode,
+      message,
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 

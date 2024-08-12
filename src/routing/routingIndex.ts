@@ -10,7 +10,7 @@ import quizRouting from "./quiz";
 import blogRouting from "./blog/blog";
 import StudentRouting from "./userTypes/student";
 import expenseRouting from "./expense.routing";
-import TripRouting from "./trip.routing";
+import TripRouting from "./trips/trip.routing";
 import UserRouting from "./users.routing";
 import departmentRouting from "./department.routing";
 import requestRouting from "./request.routing";

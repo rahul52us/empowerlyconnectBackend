@@ -1,6 +1,6 @@
 import express from "express";
-import authenticate from "../modules/config/authenticate";
-import { createTripService, getAllDayTripCountService, getSingleTripService, getTripCountService, getTripsService, totalTripTypeCountService, totalTripUserTypeCountService, updateTripService } from "../services/trip/trip.service";
+import authenticate from "../../modules/config/authenticate";
+import { addTripMembersService, createTripService, getAllDayTripCountService, getSingleTripService, getTripCountService, getTripsService, totalTripTypeCountService, totalTripUserTypeCountService, updateTripService } from "../../services/trip/trip.service";
 
 const router = express.Router();
 
@@ -12,5 +12,6 @@ router.post('/tripcounts',authenticate,getAllDayTripCountService)
 router.post('/total/count',authenticate,getTripCountService)
 router.post('/types/total/count',authenticate,totalTripTypeCountService)
 router.post('/user/types/total/count',authenticate,totalTripUserTypeCountService)
+router.put('/add/member/:id',authenticate,addTripMembersService)
 
 export default router;

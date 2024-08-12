@@ -18,7 +18,7 @@ const findUserByUserName = async (data: any) => {
 
 const findUserById = async (id: any) => {
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate('-password');
     if (user) {
       return user;
     }
