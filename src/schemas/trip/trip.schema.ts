@@ -43,6 +43,21 @@ interface Trip extends Document {
   additionalExpenses?: AdditionalExpense[];
 }
 
+const UserSchema = new Schema<any>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { _id: false }
+);
+
 const TravelDetailsSchema = new Schema<TravelDetails>({
   fromState: { type: String },
   toState: { type: String },
@@ -107,7 +122,10 @@ const TripSchema = new Schema<Trip>({
   createdAt: { type: Date, default: new Date() },
   updatedAt: { type: Date },
   deletedAt: { type: Date },
-  participants: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
+  participants: {
+    type: [UserSchema],
+    default: []
+  },
   travelDetails: { type: [TravelDetailsSchema] },
   additionalExpenses: { type: [AdditionalExpenseSchema] },
 });

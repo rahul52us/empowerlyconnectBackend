@@ -113,14 +113,45 @@ export const getSingleTrips = async (data: any) => {
         },
       },
       {
+        $unwind: {
+          path: "$participants",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $lookup: {
-          from: 'users',
-          let: { participantIds: '$participants' },
+          from: "users",
+          let: { teamMemberId: "$participants.user" },
           pipeline: [
-            { $match: { $expr: { $in: ['$_id', '$$participantIds'] } } },
-            { $project: { username: 1, _id: 1, role: 1 } },
+            { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
+            { $project: { username: 1, _id: 1, code: 1, pic : 1, name : 1 } },
           ],
-          as: 'participants',
+          as: "participants.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$participants.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          participants: {
+            $push: {
+              user: "$participants.user",
+              isActive: "$participants.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { participants: "$participants" }],
+          },
         },
       },
       {
