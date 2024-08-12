@@ -1125,10 +1125,19 @@ export const getUserInfoWithManagersAction = async (data: any) => {
       User.aggregate(userPipeline),
     ]);
 
-    return {
-      status: "success",
-      data: { userDetails, users, page, limit },
-    };
+    if(users.length && userDetails.length)
+    {
+      return {
+        status: "success",
+        data: { userDetails, users, page, limit },
+      };
+    }
+    else {
+      return {
+        status: "error",
+        data: 'User does not exists',
+      };
+    }
   } catch (err: any) {
     return {
       status: "error",

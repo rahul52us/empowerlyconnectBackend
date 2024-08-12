@@ -457,7 +457,7 @@ const getUserInfoWithManagerActionService = async (
       });
     }
   } catch (err: any) {
-    return createCatchError(err)
+    next(err)
   }
 };
 
@@ -483,7 +483,7 @@ const getManagerUsersCountsService = async (
       });
     }
   } catch (err: any) {
-    return createCatchError(err)
+    next(err)
   }
 };
 
