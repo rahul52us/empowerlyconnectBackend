@@ -1,6 +1,6 @@
 import { createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
-import BookCategory from "../../schemas/Liberary/BookCategory.schema";
+import BookCategory from "../../schemas/Liberary/books/BookCategory.schema";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 export const createBookCategory = async (data: any) => {

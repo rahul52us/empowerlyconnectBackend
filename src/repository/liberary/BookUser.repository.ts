@@ -1,4 +1,4 @@
-import BookUsers from "../../schemas/Liberary/BookUser.schema";
+import BookUsers from "../../schemas/Liberary/books/BookUser.schema";
 import { createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
 import { PipelineStage } from 'mongoose';

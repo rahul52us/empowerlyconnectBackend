@@ -1,0 +1,41 @@
+import { Schema } from "mongoose";
+import { ILibraryRoom } from "./utils/seat.interface";
+
+const LibraryRoomSchema = new Schema<ILibraryRoom>({
+    roomName: {
+      type: String,
+      required: true,
+      description: 'The name of the library room'
+    },
+    sections: [{
+      type: Schema.Types.ObjectId,
+      ref: 'LibrarySection',
+      description: 'Array of sections in the room'
+    }],
+    company: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      description: 'The company to which the library belongs'
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      description: 'User who created the room record'
+    },
+    createdAt : {
+      type : Date,
+      default : new Date()
+    },
+    updatedAt:{
+      type : Date
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+      description: 'Date when the room was deleted (soft delete)'
+    },
+});
+
+export default mongoose.model('LiberaryRoom',LibraryRoomSchema)
