@@ -13,6 +13,12 @@ const LibrarySectionSchema = new Schema<ILibrarySection>({
     required: true,
     description: "The room to which the section belongs",
   },
+  company: {
+    type: Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true,
+    description: 'The company to which the library belongs'
+  },
   seats: [
     {
       type: Schema.Types.ObjectId,
@@ -46,4 +52,4 @@ const LibrarySectionSchema = new Schema<ILibrarySection>({
   },
 });
 
-export default mongoose.model('LiberarySection',LibrarySectionSchema);
+export default mongoose.model('LiberaryRoomSection',LibrarySectionSchema);

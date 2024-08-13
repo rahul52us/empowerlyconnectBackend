@@ -9,8 +9,21 @@ const LibrarySeatSchema = new Schema<ILibrarySeat>({
     },
     section: {
       type: Schema.Types.ObjectId,
-      ref: 'LibrarySection',
+      ref: 'LiberaryRoomSection',
+      default: null,
       description: 'The section to which the seat belongs'
+    },
+    company: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      description: 'The company to which the library belongs'
+    },
+    room: {
+      type: Schema.Types.ObjectId,
+      ref: 'LibraryRoom',
+      required: true,
+      description: 'The room to which the seat belongs'
     },
     isAvailable: {
       type: Boolean,
@@ -26,10 +39,10 @@ const LibrarySeatSchema = new Schema<ILibrarySeat>({
     createdAt : {
         type : Date,
         default : new Date()
-      },
-      updatedAt:{
+    },
+    updatedAt:{
         type : Date
-      },
+    },
     deletedAt: {
       type: Date,
       default: null,
@@ -37,4 +50,4 @@ const LibrarySeatSchema = new Schema<ILibrarySeat>({
     },
   });
 
-export default mongoose.model('LiberarySeat',LibrarySeatSchema)
+export default mongoose.model('LibrarySeat', LibrarySeatSchema);
