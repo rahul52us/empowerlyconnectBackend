@@ -26,8 +26,10 @@ export interface ILibrarySeat extends Document {
 }
 
 export interface ILibraryRoom extends Document {
-    roomName: string;
+    title: string;
     sections: ObjectId[];
+    ratings:string;
+    description:string;
     coverImage:any;
     company: ObjectId;
     user: ObjectId;

@@ -45,7 +45,6 @@ const LibrarySeatSchema = new Schema<ILibrarySeat>({
     },
     deletedAt: {
       type: Date,
-      default: null,
       description: 'Date when the seat was deleted (soft delete)'
     },
   });

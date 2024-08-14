@@ -40,7 +40,6 @@ const LibrarySectionSchema = new Schema<ILibrarySection>({
   },
   deletedAt: {
     type: Date,
-    default: null,
     description: "Date when the section was deleted (soft delete)",
   },
   createdAt: {

@@ -36,7 +36,7 @@ const importRoutings = (app: any) => {
   app.use("/api/department", departmentRouting);
   app.use("/api/request", requestRouting);
   app.use("/api/attendenceRequest", attendencRequestRouting);
-  app.use('/api/liberary/book',LiberaryManagementRouting)
+  app.use('/api/liberary',LiberaryManagementRouting)
 };
 
 export default importRoutings;

@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { ILibraryRoom } from "./utils/seat.interface";
 
 const LibraryRoomSchema = new Schema<ILibraryRoom>({
-  roomName: {
+  title: {
     type: String,
     required: true,
     description: "The name of the library room",
@@ -14,6 +14,12 @@ const LibraryRoomSchema = new Schema<ILibraryRoom>({
       description: "Array of sections in the room",
     },
   ],
+  description:{
+    type : mongoose.Schema.Types.Mixed
+  },
+  ratings: {
+    type : String
+  },
   company: {
     type: Schema.Types.ObjectId,
     ref: "Company",
@@ -46,7 +52,6 @@ const LibraryRoomSchema = new Schema<ILibraryRoom>({
   },
   deletedAt: {
     type: Date,
-    default: null,
     description: "Date when the room was deleted (soft delete)",
   },
 });
