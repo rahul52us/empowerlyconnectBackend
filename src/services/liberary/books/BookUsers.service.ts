@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express"
 import mongoose from "mongoose"
-import { createBookUser, getBookUsersCount } from "../../repository/liberary/BookUser.repository"
-import { convertIdsToObjects, createCatchError } from "../../config/helper/function"
+import { createBookUser, getBookUsersCount } from "../../../repository/liberary/books/BookUser.repository"
+import { convertIdsToObjects, createCatchError } from "../../../config/helper/function"
 
 export const createBookUserService = async(req : any , res : Response , next : NextFunction) => {
     try

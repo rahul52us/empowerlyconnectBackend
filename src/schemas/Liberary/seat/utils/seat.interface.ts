@@ -28,8 +28,9 @@ export interface ILibrarySeat extends Document {
 export interface ILibraryRoom extends Document {
     roomName: string;
     sections: ObjectId[];
+    coverImage:any;
     company: ObjectId;
-    createdBy: ObjectId;
+    user: ObjectId;
     deletedAt?: Date;
     createdAt: Date;
     updatedAt: Date;

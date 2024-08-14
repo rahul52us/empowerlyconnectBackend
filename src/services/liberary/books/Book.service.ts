@@ -1,8 +1,8 @@
 import { NextFunction, Response } from "express"
 import mongoose from "mongoose"
-import { PaginationLimit } from "../../config/helper/constant"
-import { createBook, getAllBookCounts, getAllBooks, getAllBookTitleCounts, getSingleBookById, updateBook } from "../../repository/liberary/LiberaryBook.repository"
-import { convertIdsToObjects } from "../../config/helper/function"
+import { PaginationLimit } from "../../../config/helper/constant"
+import { createBook, getAllBookCounts, getAllBooks, getAllBookTitleCounts, getSingleBookById, updateBook } from "../../../repository/liberary/books/LiberaryBook.repository"
+import { convertIdsToObjects } from "../../../config/helper/function"
 
 export const createBookService = async(req : any , res : Response , next : NextFunction) => {
     try

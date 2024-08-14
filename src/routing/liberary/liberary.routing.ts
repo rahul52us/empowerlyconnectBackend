@@ -1,8 +1,9 @@
 import express from "express";
 import authenticate from "../../modules/config/authenticate";
-import { createBookCategoryService, findBookCategoryByIdService, getAllBookCategoryService, getBookCategoryCountService, getBookCategoryTitleCountService, updateBookCategoryService } from "../../services/liberary/BookCategory.service";
-import { createBookService, getAllBookService, getBookCountService, getBookTitleCountService, getSingleBookByIdService, updateBookService } from "../../services/liberary/Book.service";
-import { createBookUserService, getBookUsersService } from "../../services/liberary/BookUsers.service";
+import { createBookCategoryService, findBookCategoryByIdService, getAllBookCategoryService, getBookCategoryCountService, getBookCategoryTitleCountService, updateBookCategoryService } from "../../services/liberary/books/BookCategory.service";
+import { createBookService, getAllBookService, getBookCountService, getBookTitleCountService, getSingleBookByIdService, updateBookService } from "../../services/liberary/books/Book.service";
+import { createBookUserService, getBookUsersService } from "../../services/liberary/books/BookUsers.service";
+import { createRoomService, getAllRoomService, getRoomCountService, getRoomTitleCountService, getSingleRoomByIdService, updateRoomService } from "../../services/liberary/room/room.service";
 
 const router = express();
 
@@ -26,5 +27,18 @@ router.post('/category/total/title/counts',authenticate,getBookCategoryTitleCoun
 // Book User
 router.post('/user/create',authenticate, createBookUserService)
 router.post('/user/total/counts',authenticate,getBookUsersService)
+
+
+// Liberary Room
+
+
+router.post('/create',authenticate, createRoomService)
+router.put('/:id',authenticate,updateRoomService)
+router.get('/single/:id',authenticate,getSingleRoomByIdService)
+router.post('/',authenticate,getAllRoomService)
+router.post('/total/counts',authenticate,getRoomCountService)
+router.post('/total/title/counts',authenticate,getRoomTitleCountService)
+
+
 
 export default router;

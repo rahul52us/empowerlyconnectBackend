@@ -1,6 +1,6 @@
-import BookUsers from "../../schemas/Liberary/books/BookUser.schema";
-import { createCatchError } from "../../config/helper/function";
-import { statusCode } from "../../config/helper/statusCode";
+import BookUsers from "../../../schemas/Liberary/books/BookUser.schema";
+import { createCatchError } from "../../../config/helper/function";
+import { statusCode } from "../../../config/helper/statusCode";
 import { PipelineStage } from 'mongoose';
 
 export const createBookUser = async (data: any) => {

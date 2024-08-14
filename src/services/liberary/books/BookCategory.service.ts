@@ -6,10 +6,10 @@ import {
   getAllBookCategoryCounts,
   getAllBookCategoryTitleCounts,
   updateBookCategory,
-} from "../../repository/liberary/BookCategory.repository";
+} from "../../../repository/liberary/books/BookCategory.repository";
 import mongoose from "mongoose";
-import { PaginationLimit } from "../../config/helper/constant";
-import { convertIdsToObjects } from "../../config/helper/function";
+import { PaginationLimit } from "../../../config/helper/constant";
+import { convertIdsToObjects } from "../../../config/helper/function";
 
 export const createBookCategoryService = async (
   req: any,
