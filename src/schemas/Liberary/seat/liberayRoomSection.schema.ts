@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { ILibrarySection } from "./utils/seat.interface";
 
 const LibrarySectionSchema = new Schema<ILibrarySection>({
