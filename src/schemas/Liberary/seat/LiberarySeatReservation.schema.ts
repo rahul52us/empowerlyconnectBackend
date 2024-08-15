@@ -26,12 +26,12 @@ const ReservationSchema = new Schema({
     required: true,
   },
   startTime: {
-    type: Date, // Store as a Date object
-    required: false, // Optional, only if time is needed
+    type: Date,
+    required: false,
   },
   endTime: {
-    type: Date, // Store as a Date object
-    required: false, // Optional, only if time is needed
+    type: Date,
+    required: false,
   },
   fullDay: {
     type: Boolean,

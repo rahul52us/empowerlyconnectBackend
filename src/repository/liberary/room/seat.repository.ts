@@ -277,6 +277,32 @@ export const getAllRoomCounts = async (data: any) => {
   }
 };
 
+export const getAllSeatsByRoomAndSection = async (data: any) => {
+  try {
+    const pipeline: any = [];
+    pipeline.push({
+      $match: {
+        company: { $in: data.company },
+        deletedAt: { $exists: false },
+        isAvailable:true,
+        room : data.room
+
+      },
+    });
+
+    const result = await liberaySeat.aggregate(pipeline);
+    return {
+      data: result,
+      message: "Retrived Seats",
+      statusCode: statusCode.success,
+      status: "success",
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
+
 export const checkReservationConflicts = async (data : any) => {
   // Create date objects for the start and end of the reservation period
   const startOfDay = new Date(data.startDate);
@@ -312,8 +338,8 @@ export const checkReservationConflicts = async (data : any) => {
                     $and: [
                       { startTime: { $lt: data.endTime } },
                       { endTime: { $gt: data.startTime } },
-                      { startDate: { $eq: data.startDate } }, // Same date
-                      { endDate: { $eq: data.endDate } }     // Same date
+                      { startDate: { $eq: data.startDate } },
+                      { endDate: { $eq: data.endDate } }
                     ]
                   },
                   // Check if new reservation is within the bounds of an existing reservation
@@ -321,8 +347,8 @@ export const checkReservationConflicts = async (data : any) => {
                     $and: [
                       { startTime: { $lte: data.startTime } },
                       { endTime: { $gte: data.endTime } },
-                      { startDate: { $eq: data.startDate } }, // Same date
-                      { endDate: { $eq: data.endDate } }     // Same date
+                      { startDate: { $eq: data.startDate } },
+                      { endDate: { $eq: data.endDate }}
                     ]
                   }
                 ]
@@ -340,7 +366,6 @@ export const checkReservationConflicts = async (data : any) => {
   // If there are any existing reservations, return true (indicating a conflict)
   return existingReservations.length > 0;
 }
-
 
 
 export const createLiberaryReservationSeat = async(data:any) => {

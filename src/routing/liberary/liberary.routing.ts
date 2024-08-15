@@ -25,6 +25,7 @@ import {
   createRoomService,
   getAllRoomSeatCountsService,
   getAllRoomService,
+  getAllSeatsByRoomAndSectionService,
   getRoomAvailableSeatCountsService,
   getRoomCountService,
   getRoomTitleCountService,
@@ -81,9 +82,8 @@ router.post("/room/total/title/counts", authenticate, getRoomTitleCountService);
 router.post("/room/seat/create", authenticate, createRoomSeatService);
 router.post(
   "/room/seat/total/counts",
-  authenticate,
-  getAllRoomSeatCountsService
-);
+  authenticate,getAllRoomSeatCountsService);
+router.post("/room/seat", authenticate, getAllSeatsByRoomAndSectionService);
 router.post(
   "/room/seat/available/total/counts",
   authenticate,

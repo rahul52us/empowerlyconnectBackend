@@ -10,7 +10,7 @@ import {
   getSingleRoomById,
   updateRoom,
 } from "../../../repository/liberary/room/room.repository";
-import { checkReservationConflicts, createLiberaryReservationSeat, createManySeats, getAllRoomSeatCounts, getRoomAvailableSeatCounts } from "../../../repository/liberary/room/seat.repository";
+import { checkReservationConflicts, createLiberaryReservationSeat, createManySeats, getAllRoomSeatCounts, getAllSeatsByRoomAndSection, getRoomAvailableSeatCounts } from "../../../repository/liberary/room/seat.repository";
 
 export const createRoomService = async (
   req: any,
@@ -185,6 +185,7 @@ export const getAllRoomSeatCountsService = async (
   }
 };
 
+
 export const getRoomAvailableSeatCountsService = async (
   req: any,
   res: Response,
@@ -232,4 +233,20 @@ export const reserveLiberarySeat = async(req : any, res : Response, next : NextF
   }
 }
 
-
+export const getAllSeatsByRoomAndSectionService = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    req.body.company = await convertIdsToObjects(req.body.company);
+    req.body.room = new mongoose.Types.ObjectId(req.query.room)
+    const {status, statusCode, message, data} = await getAllSeatsByRoomAndSection(req.body)
+    return res.status(statusCode).send({
+      status,
+      message,
+      data
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
