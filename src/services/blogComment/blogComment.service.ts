@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import {
   createBlogComment,
   getBlogComments,
-} from "../../repository/blogComment.repository";
+} from "../../repository/blog/blogComment.repository";
 
 export const createBlogCommentService = async (
   req: any,

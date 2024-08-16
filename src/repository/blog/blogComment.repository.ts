@@ -1,4 +1,4 @@
-import CommentBlog from "../schemas/Blog/BlogCommentSchema";
+import CommentBlog from "../../schemas/Blog/BlogCommentSchema";
 
 const createBlogComment = async (data: any) => {
   try {

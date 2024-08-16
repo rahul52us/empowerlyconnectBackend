@@ -15,6 +15,7 @@ const createBlogValidation = Joi.object({
   coverImage: Joi.string().trim().messages(customMessages),
   title: Joi.string().trim().min(3).required().messages(customMessages),
   content: Joi.string().trim().messages(customMessages),
+  company : Joi.string().trim().required().messages(customMessages),
   tags: Joi.array().messages(customMessages),
   status: Joi.valid("published", "draft").messages(customMessages),
 }).options({

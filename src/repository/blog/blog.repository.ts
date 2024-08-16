@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
-import { generateError } from "../config/Error/functions";
-import Blog from "../schemas/Blog/BlogSchema";
+import { generateError } from "../../config/Error/functions";
+import Blog from "../../schemas/Blog/BlogSchema";
+import { statusCode } from "../../config/helper/statusCode";
+import { createCatchError } from "../../config/helper/function";
 
 const createBlog = async (data: any) => {
   try {
@@ -15,20 +17,20 @@ const createBlog = async (data: any) => {
     });
 
     const savedBlog = await createdBlog.save();
-    return { status: "success", data: savedBlog };
+    return {
+      status : 'success',
+      statusCode : statusCode.success,
+      data : savedBlog,
+      message : `${data.title} blog has been created successfully`
+    }
   } catch (err: any) {
-    return { status: "error", data: err };
+    return createCatchError(err)
   }
 };
 
 const getBlogs = async (data: any) => {
   try {
-    // const query = {
-    //   company:
-    //  req.bodyData.company
-    // };
-
-    const blogs = await Blog.find()
+    const blogs = await Blog.find({company : {$in : data.company}})
       .populate({
         path: "createdBy",
         select: "name username _id pic position createdAt",
@@ -47,6 +49,8 @@ const getBlogs = async (data: any) => {
 
     return {
       status: "success",
+      message : 'Retrived blogs successfully',
+      statusCode:statusCode.success,
       data: {
         totalPages: totalPages,
         data: blogs,
@@ -54,7 +58,7 @@ const getBlogs = async (data: any) => {
       },
     };
   } catch (err) {
-    return { status: "error", data: err };
+    return createCatchError(err)
   }
 };
 

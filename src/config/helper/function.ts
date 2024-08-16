@@ -10,7 +10,7 @@ export const createCatchError = (err: any) => {
   };
 };
 
-export const convertIdsToObjects = async(data : any) => {
+export const convertIdsToObjects = async (data : any) => {
   try
   {
     data = data.map((item : string) => new mongoose.Types.ObjectId(item))
