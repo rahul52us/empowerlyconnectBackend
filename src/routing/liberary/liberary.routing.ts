@@ -30,7 +30,8 @@ import {
   getRoomCountService,
   getRoomTitleCountService,
   getSingleRoomByIdService,
-  reserveLiberarySeat,
+  getUserReservationsService,
+  reserveLiberarySeatService,
   updateRoomService,
 } from "../../services/liberary/room/room.service";
 
@@ -91,6 +92,6 @@ router.post(
 );
 
 // room reserve seat
-router.post("/room/seat/reserve/create", authenticate, reserveLiberarySeat);
-
+router.post("/room/seat/reserve/create", authenticate, reserveLiberarySeatService);
+router.post("/room/seat/reserve/details/user/:userId",authenticate,getUserReservationsService)
 export default router;

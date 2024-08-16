@@ -10,7 +10,7 @@ import {
   getSingleRoomById,
   updateRoom,
 } from "../../../repository/liberary/room/room.repository";
-import { checkReservationConflicts, createLiberaryReservationSeat, createManySeats, getAllRoomSeatCounts, getAllSeatsByRoomAndSection, getRoomAvailableSeatCounts } from "../../../repository/liberary/room/seat.repository";
+import { checkReservationConflicts, createLiberaryReservationSeat, createManySeats, getAllRoomSeatCounts, getAllSeatsByRoomAndSection, getRoomAvailableSeatCounts, getUserReservations } from "../../../repository/liberary/room/seat.repository";
 
 export const createRoomService = async (
   req: any,
@@ -206,7 +206,7 @@ export const getRoomAvailableSeatCountsService = async (
   }
 };
 
-export const reserveLiberarySeat = async(req : any, res : Response, next : NextFunction) => {
+export const reserveLiberarySeatService = async(req : any, res : Response, next : NextFunction) => {
   try
   {
     const hasConflict = await checkReservationConflicts(req.body);
@@ -244,6 +244,28 @@ export const getAllSeatsByRoomAndSectionService = async(req : any, res : Respons
       message,
       data
     })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
+export const getUserReservationsService = async(req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    req.body.page = req.query.page ? Number(req.query.page) : 1;
+    req.body.limit = req.query.limit
+      ? Number(req.query.limit)
+      : PaginationLimit;
+    req.body.userId = new mongoose.Types.ObjectId(req.params.userId)
+    req.body.company = await convertIdsToObjects(req.body.company);
+    const { status, statusCode, data, message } = await getUserReservations(req.body);
+    res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
   }
   catch(err : any)
   {

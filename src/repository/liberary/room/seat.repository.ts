@@ -218,7 +218,7 @@ export const getRoomAvailableSeatCounts = async (data: any) => {
       $match: {
         company: { $in: data.company },
         deletedAt: { $exists: false },
-        isAvailable:true
+        isAvailable: true,
       },
     });
 
@@ -284,9 +284,8 @@ export const getAllSeatsByRoomAndSection = async (data: any) => {
       $match: {
         company: { $in: data.company },
         deletedAt: { $exists: false },
-        isAvailable:true,
-        room : data.room
-
+        isAvailable: true,
+        room: data.room,
       },
     });
 
@@ -302,8 +301,7 @@ export const getAllSeatsByRoomAndSection = async (data: any) => {
   }
 };
 
-
-export const checkReservationConflicts = async (data : any) => {
+export const checkReservationConflicts = async (data: any) => {
   // Create date objects for the start and end of the reservation period
   const startOfDay = new Date(data.startDate);
   startOfDay.setHours(0, 0, 0, 0);
@@ -318,9 +316,7 @@ export const checkReservationConflicts = async (data : any) => {
       {
         // Check for overlapping full-day reservations
         fullDay: true,
-        $or: [
-          { startDate: { $lte: endOfDay }, endDate: { $gte: startOfDay } },
-        ],
+        $or: [{ startDate: { $lte: endOfDay }, endDate: { $gte: startOfDay } }],
       },
       {
         // Check for overlapping time-based reservations
@@ -339,8 +335,8 @@ export const checkReservationConflicts = async (data : any) => {
                       { startTime: { $lt: data.endTime } },
                       { endTime: { $gt: data.startTime } },
                       { startDate: { $eq: data.startDate } },
-                      { endDate: { $eq: data.endDate } }
-                    ]
+                      { endDate: { $eq: data.endDate } },
+                    ],
                   },
                   // Check if new reservation is within the bounds of an existing reservation
                   {
@@ -348,15 +344,15 @@ export const checkReservationConflicts = async (data : any) => {
                       { startTime: { $lte: data.startTime } },
                       { endTime: { $gte: data.endTime } },
                       { startDate: { $eq: data.startDate } },
-                      { endDate: { $eq: data.endDate }}
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+                      { endDate: { $eq: data.endDate } },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
         ],
-      }
+      },
     ],
   };
 
@@ -365,23 +361,119 @@ export const checkReservationConflicts = async (data : any) => {
 
   // If there are any existing reservations, return true (indicating a conflict)
   return existingReservations.length > 0;
-}
+};
 
-
-export const createLiberaryReservationSeat = async(data:any) => {
-  try
-  {
-    const reserveSeat =  new LiberarySeatReservation(data)
-    const savedReserveSeat = await reserveSeat.save()
+export const createLiberaryReservationSeat = async (data: any) => {
+  try {
+    const reserveSeat = new LiberarySeatReservation(data);
+    const savedReserveSeat = await reserveSeat.save();
     return {
-      status : 'success',
-      statusCode : statusCode.create,
-      data : savedReserveSeat,
-      message : 'Seat has been reserved successfully'
+      status: "success",
+      statusCode: statusCode.create,
+      data: savedReserveSeat,
+      message: "Seat has been reserved successfully",
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
+export const getUserReservations = async (data: any) => {
+  try {
+    const matchConditions: any = {
+      user: data.userId,
+    };
+
+    if (data.startDate) {
+      matchConditions.startDate = { $gte: data.startDate };
     }
+
+    if (data.endDate) {
+      matchConditions.endDate = { $lte: data.endDate };
+    }
+
+    const pipeline: any = [
+      {
+        $match: matchConditions,
+      },
+      {
+        $lookup: {
+          from: "libraryseats",
+          localField: "seat",
+          foreignField: "_id",
+          as: "seatDetails",
+        },
+      },
+      {
+        $unwind: "$seatDetails",
+      },
+      {
+        $lookup: {
+          from: "liberaryroomsections",
+          localField: "seatDetails.section",
+          foreignField: "_id",
+          as: "sectionDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$sectionDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "liberaryrooms",
+          localField: "seatDetails.room",
+          foreignField: "_id",
+          as: "roomDetails",
+        },
+      },
+      {
+        $unwind: "$roomDetails",
+      },
+      // {
+      //   $project: {
+      //     _id: 1,
+      //     seatNumber: "$seatDetails.seatNumber",
+      //     sectionName: "$sectionDetails.sectionName", // This will be null if no section
+      //     roomName: "$roomDetails.roomName",
+      //     startDate: 1,
+      //     endDate: 1,
+      //     startTime: 1,
+      //     endTime: 1,
+      //     status: 1,
+      //     createdAt: 1,
+      //     updatedAt: 1,
+      //   },
+      // },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: (data.page - 1) * data.limit,
+      },
+      {
+        $limit: data.limit,
+      },
+    ];
+
+    const userReservations = await LiberarySeatReservation.aggregate(pipeline);
+    const totalReservations = await LiberarySeatReservation.countDocuments(matchConditions);
+
+    return {
+      data: {
+        data: userReservations,
+        totalPages: Math.ceil(totalReservations / data.limit),
+        currentPage: data.page,
+        totalReservations,
+      },
+      status: "success",
+      message: "Retrieved user reservation data",
+      statusCode: statusCode.success,
+    };
+  } catch (err) {
+    return createCatchError(err);
   }
-  catch(err : any)
-  {
-    return createCatchError(err)
-  }
-}
+};
+
