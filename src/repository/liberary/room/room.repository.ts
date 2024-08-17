@@ -5,18 +5,23 @@ import { deleteFile, uploadFile } from "../../uploadDoc.repository";
 
 export const createRoom = async (data: any) => {
   try {
-    const {coverImage, ...rest} = data
+    const { coverImage, ...rest } = data;
     const roomData = new liberaryRoom(rest);
-    const savedRoomData = await roomData.save()
+    const savedRoomData = await roomData.save();
 
-    if(data.coverImage && data.coverImage?.buffer && data.coverImage?.filename && data.coverImage?.isAdd){
-      const uploadedData = await uploadFile({...data.coverImage})
+    if (
+      data.coverImage &&
+      data.coverImage?.buffer &&
+      data.coverImage?.filename &&
+      data.coverImage?.isAdd
+    ) {
+      const uploadedData = await uploadFile({ ...data.coverImage });
       savedRoomData.coverImage = {
-        name : data.coverImage.filename,
-        url : uploadedData,
-        type : data.coverImage.type
-      }
-      await savedRoomData.save()
+        name: data.coverImage.filename,
+        url: uploadedData,
+        type: data.coverImage.type,
+      };
+      await savedRoomData.save();
     }
 
     return {
@@ -25,14 +30,14 @@ export const createRoom = async (data: any) => {
       message: "Room has been created successfully",
       statusCode: statusCode.success,
     };
-  } catch (err :any) {
+  } catch (err: any) {
     return createCatchError(err);
   }
 };
 
-export const getSingleRoomById = async(data : any) => {
+export const getSingleRoomById = async (data: any) => {
   try {
-    const room = await liberaryRoom.findById(data.id)
+    const room = await liberaryRoom.findById(data.id);
     if (room) {
       return {
         statusCode: statusCode.success,
@@ -51,7 +56,7 @@ export const getSingleRoomById = async(data : any) => {
   } catch (err: any) {
     return createCatchError(err);
   }
-}
+};
 
 export const findOneRoom = async (data: any) => {
   try {
@@ -86,14 +91,15 @@ export const getAllRooms = async (data: any) => {
 
     pipeline.push({
       $match: {
-        company: {$in : company},
-        deletedAt: { $exists: false }
-      }
+        company: { $in: company },
+        deletedAt: { $exists: false },
+      },
     });
 
     const totalRoomsPipeline = [...pipeline, { $count: "total" }];
     const totalRoomsResult = await liberaryRoom.aggregate(totalRoomsPipeline);
-    const totalRooms = totalRoomsResult.length > 0 ? totalRoomsResult[0].total : 0;
+    const totalRooms =
+      totalRoomsResult.length > 0 ? totalRoomsResult[0].total : 0;
 
     const totalPages = Math.ceil(totalRooms / limit);
 
@@ -104,34 +110,35 @@ export const getAllRooms = async (data: any) => {
     });
 
     pipeline.push({
-      $skip: skip
+      $skip: skip,
     });
 
     pipeline.push({
-      $limit: limit
+      $limit: limit,
     });
 
     const result = await liberaryRoom.aggregate(pipeline);
     return {
-      status: 'success',
-      data: {data : result, totalPages : totalPages},
-      message: 'Rooms retrieved successfully',
-      statusCode: statusCode.success
+      status: "success",
+      data: { data: result, totalPages: totalPages },
+      message: "Rooms retrieved successfully",
+      statusCode: statusCode.success,
     };
   } catch (err: any) {
     return createCatchError(err);
   }
 };
 
-
 export const getAllDropdownRooms = async (data: any) => {
   try {
-    const rooms = await liberaryRoom.find({company : {$in : data.company}}).select('title _id')
+    const rooms = await liberaryRoom
+      .find({ deletedAt: { $exists: false }, company: { $in: data.company } })
+      .select("title _id");
     return {
-      status: 'success',
+      status: "success",
       data: rooms,
-      message: 'Rooms retrieved successfully',
-      statusCode: statusCode.success
+      message: "Rooms retrieved successfully",
+      statusCode: statusCode.success,
     };
   } catch (err: any) {
     return createCatchError(err);
@@ -146,29 +153,31 @@ export const updateRoom = async (data: any) => {
       deletedAt: { $exists: false },
     });
     if (status === "success") {
-      const {coverImage,...rest} = data
-      const liberaaryRoom : any = await liberaryRoom.findByIdAndUpdate(
+      const { coverImage, ...rest } = data;
+      const liberaaryRoom: any = await liberaryRoom.findByIdAndUpdate(
         data.id,
         { $set: rest },
-        { new: true , upsert : false}
+        { new: true, upsert: false }
       );
 
-      if(liberaaryRoom?.coverImage?.name && data?.coverImage?.isDeleted)
-      {
-          await deleteFile(
-            liberaaryRoom?.coverImage.name
-          );
-          await liberaaryRoom.save()
+      if (liberaaryRoom?.coverImage?.name && data?.coverImage?.isDeleted) {
+        await deleteFile(liberaaryRoom?.coverImage.name);
+        await liberaaryRoom.save();
       }
 
-      if(coverImage && coverImage?.buffer && coverImage?.filename && coverImage?.isAdd){
-        const uploadedData = await uploadFile({...coverImage})
+      if (
+        coverImage &&
+        coverImage?.buffer &&
+        coverImage?.filename &&
+        coverImage?.isAdd
+      ) {
+        const uploadedData = await uploadFile({ ...coverImage });
         liberaaryRoom.coverImage = {
-          name : coverImage.filename,
-          url : uploadedData,
-          type : coverImage.type
-        }
-        await liberaaryRoom.save()
+          name: coverImage.filename,
+          url: uploadedData,
+          type: coverImage.type,
+        };
+        await liberaaryRoom.save();
       }
 
       return {
@@ -190,34 +199,31 @@ export const updateRoom = async (data: any) => {
   }
 };
 
-export const getAllRoomCounts = async (data : any) => {
-  try
-  {
-     const pipeline : any = []
-     pipeline.push({
-      $match : {
-        company : {$in : data.company},
-        deletedAt : {$exists : false}
-      }
-     })
+export const getAllRoomCounts = async (data: any) => {
+  try {
+    const pipeline: any = [];
+    pipeline.push({
+      $match: {
+        company: { $in: data.company },
+        deletedAt: { $exists: false },
+      },
+    });
 
-     pipeline.push({
-      $count : 'totalRoom'
-     })
+    pipeline.push({
+      $count: "totalRoom",
+    });
 
-     const result = await liberaryRoom.aggregate(pipeline)
-     return {
+    const result = await liberaryRoom.aggregate(pipeline);
+    return {
       data: result[0] ? result[0].totalRoom : 0,
-      message : 'Retrived Room Counts',
-      statusCode : statusCode.success,
-      status : 'success'
-     }
+      message: "Retrived Room Counts",
+      statusCode: statusCode.success,
+      status: "success",
+    };
+  } catch (err: any) {
+    return createCatchError(err);
   }
-  catch(err : any)
-  {
-    return createCatchError(err)
-  }
-}
+};
 
 export const getAllRoomTitleCounts = async (data: any) => {
   try {
@@ -226,32 +232,32 @@ export const getAllRoomTitleCounts = async (data: any) => {
     pipeline.push({
       $match: {
         company: { $in: data.company },
-        deletedAt: { $exists: false }
-      }
+        deletedAt: { $exists: false },
+      },
     });
 
     pipeline.push({
       $group: {
-        _id: '$title',
-        count: { $sum: 1 }
-      }
+        _id: "$title",
+        count: { $sum: 1 },
+      },
     });
 
     pipeline.push({
       $project: {
         _id: 0,
-        title: '$_id',
-        count: 1
-      }
+        title: "$_id",
+        count: 1,
+      },
     });
 
     const result = await liberaryRoom.aggregate(pipeline);
 
     return {
       data: result,
-      message: 'Retrieved Room Counts by Title',
+      message: "Retrieved Room Counts by Title",
       statusCode: statusCode.success,
-      status: 'success'
+      status: "success",
     };
   } catch (err: any) {
     return createCatchError(err);
