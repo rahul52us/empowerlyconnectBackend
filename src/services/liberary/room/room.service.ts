@@ -4,6 +4,7 @@ import { PaginationLimit } from "../../../config/helper/constant";
 import { convertIdsToObjects } from "../../../config/helper/function";
 import {
   createRoom,
+  getAllDropdownRooms,
   getAllRoomCounts,
   getAllRooms,
   getAllRoomTitleCounts,
@@ -91,6 +92,25 @@ export const getAllRoomService = async (
     next(err);
   }
 };
+
+export const getAllDropdownRoomsService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company);
+    const { status, statusCode, data, message } = await getAllDropdownRooms(req.body);
+    res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
 
 export const getRoomCountService = async (
   req: any,

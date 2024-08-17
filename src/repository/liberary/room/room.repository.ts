@@ -123,6 +123,21 @@ export const getAllRooms = async (data: any) => {
   }
 };
 
+
+export const getAllDropdownRooms = async (data: any) => {
+  try {
+    const rooms = await liberaryRoom.find({company : {$in : data.company}}).select('title _id')
+    return {
+      status: 'success',
+      data: rooms,
+      message: 'Rooms retrieved successfully',
+      statusCode: statusCode.success
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
 export const updateRoom = async (data: any) => {
   try {
     const { status } = await findOneRoom({
