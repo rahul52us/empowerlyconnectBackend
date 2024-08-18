@@ -452,7 +452,7 @@ const updateBankDetails = async (data: any) => {
     }
 
     if (
-      data?.cancelledCheque?.isFileDeleted === 1 &&
+      data?.cancelledCheque?.isDeleted === 1 &&
       updatedData.cancelledCheque?.name
     ) {
       await deleteFile(updatedData.cancelledCheque.name);
