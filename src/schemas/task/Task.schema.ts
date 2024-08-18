@@ -218,7 +218,7 @@ const TaskSchema = new Schema<TaskI>({
   reminders: [Date],
   status: {
     type: String,
-    enum: ["backlog", "toDo", "inProgress", "done"],
+    enum: ["backlog", "toDo", "inProgress", "done", "complete"],
     default: "backlog",
   },
   priority: {
