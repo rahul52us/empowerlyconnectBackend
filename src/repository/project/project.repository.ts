@@ -583,17 +583,17 @@ const getSingleTask = async (datas: any) => {
         },
       },
       {
+        $lookup : {
+          from : 'users',
+          foreignField : '_id',
+          localField : 'assigner',
+          as : 'assigner'
+        }
+      },
+      {
         $unwind: {
           path: "$dependencies",
           preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "assigner",
-          foreignField: "_id",
-          as: "assigner",
         },
       },
       {
@@ -629,6 +629,17 @@ const getSingleTask = async (datas: any) => {
         $replaceRoot: {
           newRoot: {
             $mergeObjects: ["$doc", { dependencies: "$dependencies" }],
+          },
+        },
+      },
+      {
+        $addFields: {
+          dependencies: {
+            $cond: {
+              if: { $eq: ["$dependencies", [{}]] },
+              then: [],
+              else: "$dependencies",
+            },
           },
         },
       },
@@ -675,6 +686,17 @@ const getSingleTask = async (datas: any) => {
         },
       },
       {
+        $addFields: {
+          team_members: {
+            $cond: {
+              if: { $eq: ["$team_members", [{}]] },
+              then: [],
+              else: "$team_members",
+            },
+          },
+        },
+      },
+      {
         $limit: 1,
       }
     );
@@ -699,6 +721,7 @@ const getSingleTask = async (datas: any) => {
     return createCatchError(err);
   }
 };
+
 
 // CREATE TASK FUNCTION
 const findSingleTask = async (datas: any) => {
