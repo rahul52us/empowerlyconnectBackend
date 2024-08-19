@@ -54,14 +54,14 @@ const createProject = async (data: any) => {
         const documentInfo = await uploadFile(file.file);
         attach_files.push({
           ...file,
-          file : {
-          url: documentInfo,
-          name: file.file.filename,
-          type: file.file.type
-          }
+          file: {
+            url: documentInfo,
+            name: file.file.filename,
+            type: file.file.type,
+          },
         });
       } catch (err: any) {
-        console.error('Error uploading file:', err);
+        console.error("Error uploading file:", err);
       }
     }
 
@@ -151,7 +151,7 @@ const getSingleProject = async (data: any) => {
           let: { userId: "$createdBy" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
           ],
           as: "createdBy",
         },
@@ -191,7 +191,7 @@ const getSingleProject = async (data: any) => {
           let: { projectManagerId: "$project_manager.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$projectManagerId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
           ],
           as: "project_manager.user",
         },
@@ -233,7 +233,7 @@ const getSingleProject = async (data: any) => {
           let: { teamMemberId: "$team_members.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
           ],
           as: "team_members.user",
         },
@@ -275,7 +275,7 @@ const getSingleProject = async (data: any) => {
           let: { followerId: "$followers.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$followerId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
           ],
           as: "followers.user",
         },
@@ -317,7 +317,7 @@ const getSingleProject = async (data: any) => {
           let: { customerId: "$customers.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$customerId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic : 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
           ],
           as: "customers.user",
         },
@@ -370,7 +370,7 @@ const getSingleProject = async (data: any) => {
           deletedAt: 1,
           createdAt: 1,
           updatedAt: 1,
-          tags:1
+          tags: 1,
         },
       },
     ];
@@ -431,7 +431,9 @@ const addProjectMembers = async (data: any) => {
     if (type === "tags") {
       projectData.tags = tags || [];
     } else {
-      const isMemberExists = memberList.some((item: any) => item.user.equals(user));
+      const isMemberExists = memberList.some((item: any) =>
+        item.user.equals(user)
+      );
       if (isMemberExists) {
         return {
           status: "error",
@@ -450,7 +452,9 @@ const addProjectMembers = async (data: any) => {
 
     return {
       status: "success",
-      message: `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`,
+      message: `${
+        type.charAt(0).toUpperCase() + type.slice(1)
+      } added successfully`,
       data: { user: userData, isActive },
       statusCode: statusCode.success,
     };
@@ -579,27 +583,99 @@ const getSingleTask = async (datas: any) => {
         },
       },
       {
-        $lookup: {
-          from: "users",
-          let: { assigneeIds: "$dependencies" },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $in: ["$_id", "$$dependencies.user"] },
-                    { $eq: ["$$dependencies.isActive", true] }
-                  ]
-                }
-              }
-            },
-            { $project: { username: 1, _id: 1, code: 1 } },
-          ],
-          as: "dependencies",
+        $unwind: {
+          path: "$dependencies",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
-        $limit: 1
+        $lookup: {
+          from: "users",
+          localField: "assigner",
+          foreignField: "_id",
+          as: "assigner",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { dependenciesId: "$dependencies.user" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$dependenciesId"] } } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
+          ],
+          as: "dependencies.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$dependencies.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          dependencies: {
+            $push: {
+              user: "$dependencies.user",
+              isActive: "$dependencies.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { dependencies: "$dependencies" }],
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$team_members",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { teamMemberId: "$team_members.user" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
+          ],
+          as: "team_members.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$team_members.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          team_members: {
+            $push: {
+              user: "$team_members.user",
+              isActive: "$team_members.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { team_members: "$team_members" }],
+          },
+        },
+      },
+      {
+        $limit: 1,
       }
     );
 
@@ -669,16 +745,16 @@ const createTask = async (datas: any) => {
         try {
           const documentInfo = await uploadFile(file.file);
           attach_files.push({
-            project : datas.projectId,
+            project: datas.projectId,
             ...file,
-            file : {
-            url: documentInfo,
-            name: file.file.filename,
-            type: file.file.type
-            }
+            file: {
+              url: documentInfo,
+              name: file.file.filename,
+              type: file.file.type,
+            },
           });
         } catch (err: any) {
-          console.error('Error uploading file:', err);
+          console.error("Error uploading file:", err);
         }
       }
 
