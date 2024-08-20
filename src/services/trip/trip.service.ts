@@ -1,6 +1,8 @@
 import { NextFunction, Response } from "express";
 import {
   addTripMembers,
+  calculateTotalTripsAmount,
+  calculateTripAmountByTitle,
   createTrip,
   getAllDayTripCount,
   getSingleTrips,
@@ -222,4 +224,40 @@ export const addTripMembersService = async (
   }
 };
 
+export const calculateTripAmountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company)
+    const { status, statusCode, message, data } = await calculateTripAmountByTitle(req.body);
+    res.status(statusCode).send({
+      status,
+      statusCode,
+      message,
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
+export const calculateTotalTripsAmountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company)
+    const { status, statusCode, message, data } = await calculateTotalTripsAmount(req.body);
+    res.status(statusCode).send({
+      status,
+      statusCode,
+      message,
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
