@@ -602,7 +602,7 @@ const getSingleTask = async (datas: any) => {
           let: { dependenciesId: "$dependencies.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$dependenciesId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 , name : 1} },
           ],
           as: "dependencies.user",
         },
@@ -655,7 +655,7 @@ const getSingleTask = async (datas: any) => {
           let: { teamMemberId: "$team_members.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic: 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1 , name : 1} },
           ],
           as: "team_members.user",
         },
