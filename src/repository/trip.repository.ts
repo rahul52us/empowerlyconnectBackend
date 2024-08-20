@@ -125,7 +125,7 @@ export const getSingleTrips = async (data: any) => {
           let: { teamMemberId: "$participants.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic : 1, name : 1 } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1, name: 1 } },
           ],
           as: "participants.user",
         },
@@ -185,7 +185,7 @@ export const getTrips = async (data: any) => {
     const pipeline: any = [];
 
     let matchConditions: any = {
-      company: {$in : data.company},
+      company: { $in: data.company },
       companyOrg: data.companyOrg,
       deletedAt: { $exists: false },
     };
@@ -237,7 +237,7 @@ export const getAllDayTripCount = async (data: any) => {
     const pipeline = [
       {
         $match: {
-          company: {$in : data.company},
+          company: { $in: data.company },
           companyOrg: data.companyOrg,
           createdAt: { $gte: data.startDate, $lte: data.endDate },
           deletedAt: { $exists: false },
@@ -278,7 +278,7 @@ export const getTripCounts = async (data: any) => {
       {
         $match: {
           ...data,
-          company : {$in : data.company},
+          company: { $in: data.company },
           deletedAt: { $exists: false },
         },
       },
@@ -311,24 +311,24 @@ export const totalTripTypeCount = async (data: any) => {
     pipeline.push({
       $match: {
         company: { $in: data.company },
-        deletedAt: { $exists: false }
-      }
+        deletedAt: { $exists: false },
+      },
     });
 
     pipeline.push({
       $group: {
         _id: "$type",
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     });
 
     pipeline.push({
-      $project : {
-        _id : 0,
-        count : 1,
-        title : '$_id'
-      }
-    })
+      $project: {
+        _id: 0,
+        count: 1,
+        title: "$_id",
+      },
+    });
 
     const result = await Trip.aggregate(pipeline);
 
@@ -336,13 +336,12 @@ export const totalTripTypeCount = async (data: any) => {
       status: "success",
       data: result,
       statusCode: statusCode.success,
-      message: 'Get Trip type counts'
+      message: "Get Trip type counts",
     };
-
   } catch (err: any) {
     return createCatchError(err);
   }
-}
+};
 
 export const totalTripUserTypeCount = async (data: any) => {
   try {
@@ -352,7 +351,7 @@ export const totalTripUserTypeCount = async (data: any) => {
       $match: {
         company: { $in: data.company },
         deletedAt: { $exists: false },
-        participants: { $in: data.users},
+        participants: { $in: data.users },
       },
     });
 
@@ -416,16 +415,17 @@ export const addTripMembers = async (data: any) => {
       };
     }
 
-
-      const isMemberExists = memberList.some((item: any) => item.user.equals(user));
-      if (isMemberExists) {
-        return {
-          status: "error",
-          data: `User is already a ${type}`,
-          message: `${type} already exists`,
-          statusCode: statusCode.info,
-        };
-      }
+    const isMemberExists = memberList.some((item: any) =>
+      item.user.equals(user)
+    );
+    if (isMemberExists) {
+      return {
+        status: "error",
+        data: `User is already a ${type}`,
+        message: `${type} already exists`,
+        statusCode: statusCode.info,
+      };
+    }
 
     memberList.push({ user, isActive });
 
@@ -435,7 +435,9 @@ export const addTripMembers = async (data: any) => {
 
     return {
       status: "success",
-      message: `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`,
+      message: `${
+        type.charAt(0).toUpperCase() + type.slice(1)
+      } added successfully`,
       data: { user: userData, isActive },
       statusCode: statusCode.success,
     };
@@ -444,14 +446,14 @@ export const addTripMembers = async (data: any) => {
   }
 };
 
-export const calculateTripAmountByTitle = async (data : any) => {
+export const calculateTripAmountByTitle = async (data: any) => {
   try {
     const result = await Trip.aggregate([
       {
         $match: {
-          company : {$in : data.company},
+          company: { $in: data.company },
           deletedAt: { $exists: false },
-        }
+        },
       },
       {
         $addFields: {
@@ -463,44 +465,56 @@ export const calculateTripAmountByTitle = async (data : any) => {
                 in: {
                   $add: [
                     { $toDouble: "$$detail.travelCost" },
-                    { $cond: [{ $ifNull: ["$$detail.isCab", false] }, { $toDouble: "$$detail.cabCost" }, 0] },
-                    { $cond: [{ $ifNull: ["$$detail.isAccommodation", false] }, { $toDouble: "$$detail.accommodationCost" }, 0] }
-                  ]
-                }
-              }
-            }
+                    {
+                      $cond: [
+                        { $ifNull: ["$$detail.isCab", false] },
+                        { $toDouble: "$$detail.cabCost" },
+                        0,
+                      ],
+                    },
+                    {
+                      $cond: [
+                        { $ifNull: ["$$detail.isAccommodation", false] },
+                        { $toDouble: "$$detail.accommodationCost" },
+                        0,
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
           },
           totalAdditionalExpenses: {
             $sum: {
               $map: {
                 input: "$additionalExpenses",
                 as: "expense",
-                in: { $toDouble: "$$expense.amount" }
-              }
-            }
-          }
-        }
+                in: { $toDouble: "$$expense.amount" },
+              },
+            },
+          },
+        },
       },
       {
         $addFields: {
           totalAmount: {
-            $add: ["$totalTravelCost", "$totalAdditionalExpenses"]
-          }
-        }
+            $add: ["$totalTravelCost", "$totalAdditionalExpenses"],
+          },
+        },
       },
       {
         $group: {
           _id: "$title",
-          count: { $sum: "$totalAmount" }
-        }
+          amount: { $sum: "$totalAmount" },
+        },
       },
       {
         $project: {
           _id: 0,
           title: "$_id",
-          count: 1
-        }
-      }
+          amount: 1,
+        },
+      },
     ]);
 
     return {
@@ -514,65 +528,76 @@ export const calculateTripAmountByTitle = async (data : any) => {
   }
 };
 
-export const calculateTotalTripsAmount = async (data : any) => {
-  try
-  {
-  const result = await Trip.aggregate([
-    {
-      $match: { company : {$in : data.company} }
-    },
-    {
-      $addFields: {
-        totalTravelCost: {
-          $sum: {
-            $map: {
-              input: "$travelDetails",
-              as: "detail",
-              in: {
-                $add: [
-                  { $toDouble: "$$detail.travelCost" }, // Convert string to double
-                  { $cond: [{ $ifNull: ["$$detail.isCab", false] }, { $toDouble: "$$detail.cabCost" }, 0] },
-                  { $cond: [{ $ifNull: ["$$detail.isAccommodation", false] }, { $toDouble: "$$detail.accommodationCost" }, 0] }
-                ]
-              }
-            }
-          }
+export const calculateTotalTripsAmount = async (data: any) => {
+  try {
+    const result = await Trip.aggregate([
+      {
+        $match: {
+          company: { $in: data.company },
+          deletedAt: { $exists: false },
         },
-        totalAdditionalExpenses: {
-          $sum: {
-            $map: {
-              input: "$additionalExpenses",
-              as: "expense",
-              in: { $toDouble: "$$expense.amount" }
-            }
-          }
-        }
-      }
-    },
-    {
-      $addFields: {
-        totalAmount: {
-          $add: ["$totalTravelCost", "$totalAdditionalExpenses"]
-        }
-      }
-    },
-    {
-      $project: {
-        _id: 0,
-        totalAmount: 1
-      }
-    }
-  ]);
-  return {
-    status: "success",
-    message: `GET Trip Amounts Successfully`,
-    data: result.length > 0 ? result[0].totalAmount : 0,
-    statusCode: statusCode.success,
-  };
-}
-catch(err : any)
-{
-  return createCatchError(err);
-}
+      },
+      {
+        $addFields: {
+          totalTravelCost: {
+            $sum: {
+              $map: {
+                input: "$travelDetails",
+                as: "detail",
+                in: {
+                  $add: [
+                    { $toDouble: "$$detail.travelCost" }, // Convert string to double
+                    {
+                      $cond: [
+                        { $ifNull: ["$$detail.isCab", false] },
+                        { $toDouble: "$$detail.cabCost" },
+                        0,
+                      ],
+                    },
+                    {
+                      $cond: [
+                        { $ifNull: ["$$detail.isAccommodation", false] },
+                        { $toDouble: "$$detail.accommodationCost" },
+                        0,
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          totalAdditionalExpenses: {
+            $sum: {
+              $map: {
+                input: "$additionalExpenses",
+                as: "expense",
+                in: { $toDouble: "$$expense.amount" },
+              },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          totalAmount: {
+            $add: ["$totalTravelCost", "$totalAdditionalExpenses"],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalAmount: 1,
+        },
+      },
+    ]);
+    return {
+      status: "success",
+      message: `GET Trip Amounts Successfully`,
+      data: result.length > 0 ? result[0].totalAmount : 0,
+      statusCode: statusCode.success,
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
 };
-
