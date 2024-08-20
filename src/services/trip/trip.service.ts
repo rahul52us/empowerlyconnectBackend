@@ -231,6 +231,7 @@ export const calculateTripAmountService = async (
 ) => {
   try {
     req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.limit = req.body.limit ? req.body.limit : 8
     const { status, statusCode, message, data } = await calculateTripAmountByTitle(req.body);
     res.status(statusCode).send({
       status,

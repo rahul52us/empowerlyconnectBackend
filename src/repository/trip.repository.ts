@@ -509,6 +509,14 @@ export const calculateTripAmountByTitle = async (data: any) => {
         },
       },
       {
+        $sort : {
+          createdAt : -1
+        }
+      },
+      {
+        $limit : data.limit
+      },
+      {
         $project: {
           _id: 0,
           title: "$_id",
