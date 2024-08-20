@@ -546,18 +546,18 @@ export const calculateTotalTripsAmount = async (data: any) => {
                 as: "detail",
                 in: {
                   $add: [
-                    { $toDouble: "$$detail.travelCost" }, // Convert string to double
+                    { $toDouble: { $ifNull: ["$$detail.travelCost", "0"] } },
                     {
                       $cond: [
                         { $ifNull: ["$$detail.isCab", false] },
-                        { $toDouble: "$$detail.cabCost" },
+                        { $toDouble: { $ifNull: ["$$detail.cabCost", "0"] } },
                         0,
                       ],
                     },
                     {
                       $cond: [
                         { $ifNull: ["$$detail.isAccommodation", false] },
-                        { $toDouble: "$$detail.accommodationCost" },
+                        { $toDouble: { $ifNull: ["$$detail.accommodationCost", "0"] } },
                         0,
                       ],
                     },
@@ -571,16 +571,19 @@ export const calculateTotalTripsAmount = async (data: any) => {
               $map: {
                 input: "$additionalExpenses",
                 as: "expense",
-                in: { $toDouble: "$$expense.amount" },
+                in: { $toDouble: { $ifNull: ["$$expense.amount", "0"] } },
               },
             },
           },
         },
       },
       {
-        $addFields: {
+        $group: {
+          _id: null,
           totalAmount: {
-            $add: ["$totalTravelCost", "$totalAdditionalExpenses"],
+            $sum: {
+              $add: ["$totalTravelCost", "$totalAdditionalExpenses"],
+            },
           },
         },
       },
@@ -591,6 +594,7 @@ export const calculateTotalTripsAmount = async (data: any) => {
         },
       },
     ]);
+
     return {
       status: "success",
       message: `GET Trip Amounts Successfully`,
@@ -601,3 +605,5 @@ export const calculateTotalTripsAmount = async (data: any) => {
     return createCatchError(err);
   }
 };
+
+
