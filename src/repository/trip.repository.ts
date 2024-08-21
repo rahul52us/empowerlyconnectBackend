@@ -614,4 +614,97 @@ export const calculateTotalTripsAmount = async (data: any) => {
   }
 };
 
+export const calculateIndividualTripAmount = async (data: any) => {
+  try {
+
+    const matchCondition: any = {
+      company: { $in: data.company },
+      deletedAt: { $exists: false },
+    };
+
+    if (data.tripId) {
+      matchCondition._id = data.tripId;
+    } else if (data.tripTitle) {
+      matchCondition.title = { $regex: data.tripTitle, $options: "i" };
+    }
+
+    const result = await Trip.aggregate([
+      {
+        $match: matchCondition,
+      },
+      {
+        $addFields: {
+          totalTravelCost: {
+            $sum: {
+              $map: {
+                input: "$travelDetails",
+                as: "detail",
+                in: {
+                  $add: [
+                    { $toDouble: "$$detail.travelCost" },
+                    {
+                      $cond: [
+                        { $ifNull: ["$$detail.isCab", false] },
+                        { $toDouble: "$$detail.cabCost" },
+                        0,
+                      ],
+                    },
+                    {
+                      $cond: [
+                        { $ifNull: ["$$detail.isAccommodation", false] },
+                        { $toDouble: "$$detail.accommodationCost" },
+                        0,
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          totalAdditionalExpenses: {
+            $sum: {
+              $map: {
+                input: "$additionalExpenses",
+                as: "expense",
+                in: { $toDouble: "$$expense.amount" },
+              },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          totalAmount: {
+            $add: ["$totalTravelCost", "$totalAdditionalExpenses"],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$title",
+          amount: { $sum: "$totalAmount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          title: "$_id",
+          amount: 1,
+        },
+      },
+    ]);
+
+    return {
+      status: "success",
+      message: `GET Trip Amount SuccesSsfully`,
+      data: result,
+      statusCode: statusCode.success,
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
+
+
 

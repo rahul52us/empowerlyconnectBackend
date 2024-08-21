@@ -1,4 +1,4 @@
-import { createCatchError } from "../../../config/helper/function";
+import { createCatchError, generateFileName } from "../../../config/helper/function";
 import { statusCode } from "../../../config/helper/statusCode";
 import LibraryBook from "../../../schemas/Liberary/books/LiberaryBooks.schema";
 import { deleteFile, uploadFile } from "../../uploadDoc.repository";
@@ -10,6 +10,7 @@ export const createBook = async (data: any) => {
     const savedBookData = await bookData.save()
 
     if(data.coverImage && data.coverImage?.buffer && data.coverImage?.filename && data.coverImage?.isAdd){
+      data.coverImage.filename = generateFileName(data.coverImage.filename)
       const uploadedData = await uploadFile({...data.coverImage})
       savedBookData.coverImage = {
         name : data.coverImage.filename,
@@ -147,6 +148,7 @@ export const updateBook = async (data: any) => {
       }
 
       if(coverImage && coverImage?.buffer && coverImage?.filename && coverImage?.isAdd){
+        coverImage.filename = generateFileName(coverImage.filename)
         const uploadedData = await uploadFile({...coverImage})
         liberaryBookData.coverImage = {
           name : coverImage.filename,

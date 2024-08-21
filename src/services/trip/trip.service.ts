@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import {
   addTripMembers,
+  calculateIndividualTripAmount,
   calculateTotalTripsAmount,
   calculateTripAmountByTitle,
   createTrip,
@@ -262,3 +263,26 @@ export const calculateTotalTripsAmountService = async (
     next(err);
   }
 };
+
+export const calculateIndividualTripAmountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = await convertIdsToObjects(req.body.company)
+    if(req.body.tripId){
+      req.body.tripId = new mongoose.Types.ObjectId(req.body.tripId)
+    }
+    const { status, statusCode, message, data } = await calculateIndividualTripAmount(req.body);
+    res.status(statusCode).send({
+      status,
+      statusCode,
+      message,
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
