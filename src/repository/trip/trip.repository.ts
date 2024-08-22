@@ -227,12 +227,7 @@ export const getAllDayTripCount = async (data: any) => {
   try {
     const pipeline = [
       {
-        $match: {
-          company: { $in: data.company },
-          companyOrg: data.companyOrg,
-          createdAt: { $gte: data.startDate, $lte: data.endDate },
-          deletedAt: { $exists: false },
-        },
+        $match: data.matchConditions,
       },
       {
         $group: {
@@ -327,50 +322,6 @@ export const totalTripTypeCount = async (data: any) => {
   }
 };
 
-export const totalTripUserTypeCount = async (data: any) => {
-  try {
-    const pipeline: any = [];
-
-    pipeline.push({
-      $match: {
-        company: { $in: data.company},
-        deletedAt: { $exists: false },
-        "participants.user": { $in: data.users },
-      },
-    });
-
-    pipeline.push({
-      $group: {
-        _id: "$type",
-        count: { $sum: 1 },
-      },
-    });
-
-    // Project the results with appropriate fields
-    pipeline.push({
-      $project: {
-        _id: 0,
-        count: 1,
-        title: "$_id",
-      },
-    });
-
-    const result = await Trip.aggregate(pipeline);
-
-    return {
-      status: "success",
-      data: result,
-      statusCode: 200,
-      message: "Get Trip type counts",
-    };
-  } catch (err: any) {
-    return {
-      status: "error",
-      message: err.message,
-      statusCode: 500,
-    };
-  }
-};
 
 export const addTripMembers = async (data: any) => {
   try {
@@ -435,10 +386,7 @@ export const calculateTripAmountByTitle = async (data: any) => {
   try {
     const result = await Trip.aggregate([
       {
-        $match: {
-          company: { $in: data.company },
-          deletedAt: { $exists: false },
-        },
+        $match: data.matchConditions,
       },
       {
         $addFields: {

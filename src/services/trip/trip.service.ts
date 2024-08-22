@@ -10,7 +10,6 @@ import {
   getTripCounts,
   getTrips,
   totalTripTypeCount,
-  totalTripUserTypeCount,
   updateTrip,
 } from "../../repository/trip/trip.repository";
 import { generateError } from "../../config/Error/functions";
@@ -125,20 +124,31 @@ export const getAllDayTripCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = await convertIdsToObjects(req.body.company)
-    req.body.companyOrg = req.bodyData.companyOrg;
+
+    let matchConditions : any = {}
+
     const endDate = new Date();
     const startDate = new Date(endDate);
-    startDate.setMonth(startDate.getMonth() - 6);
+    startDate.setMonth(startDate.getMonth() - 12);
 
     if (!req.body.startDate && !req.body.endDate) {
       req.body.startDate = startDate;
       req.body.endDate = endDate;
     }
 
-    req.body.createdAt = { $gte: req.body.startDate, $lte: req.body.endDate };
+    matchConditions =  {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false },
+      companyOrg : req.bodyData.companyOrg,
+      createdAt : { $gte: req.body.startDate, $lte: req.body.endDate }
+    }
 
-    const { status, data } = await getAllDayTripCount(req.body);
+    if(req.body.userId){
+        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+      }
+    }
+
+    const { status, data } = await getAllDayTripCount({matchConditions,...req.body});
     if (status === "success") {
       res.status(200).send({
         data: data,
@@ -219,25 +229,6 @@ export const totalTripTypeCountService = async (
   }
 };
 
-export const totalTripUserTypeCountService = async (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    req.body.company = await convertIdsToObjects(req.body.company)
-    req.body.companyOrg = req.bodyData.companyOrg;
-    req.body.users = await convertIdsToObjects(req.body.userId)
-    const { status, message , statusCode, data } = await totalTripUserTypeCount(req.body);
-      res.status(statusCode).send({
-        data: data,
-        message: message,
-        status: status,
-      });
-  } catch (err : any) {
-    return createCatchError(err)
-  }
-};
 
 export const addTripMembersService = async (
   req: any,
@@ -264,9 +255,24 @@ export const calculateTripAmountService = async (
   next: NextFunction
 ) => {
   try {
+
+    let matchConditions : any = {}
+
     req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.companyOrg = req.bodyData.companyOrg;
+
+    matchConditions =  {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false }
+    }
+
+    if(req.body.userId){
+        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+      }
+    }
+
     req.body.limit = req.body.limit ? req.body.limit : 8
-    const { status, statusCode, message, data } = await calculateTripAmountByTitle(req.body);
+    const { status, statusCode, message, data } = await calculateTripAmountByTitle({matchConditions,...req.body});
     res.status(statusCode).send({
       status,
       statusCode,
