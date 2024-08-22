@@ -12,7 +12,7 @@ import {
   totalTripTypeCount,
   totalTripUserTypeCount,
   updateTrip,
-} from "../../repository/trip.repository";
+} from "../../repository/trip/trip.repository";
 import { generateError } from "../../config/Error/functions";
 import mongoose from "mongoose";
 import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
@@ -64,16 +64,26 @@ export const getTripsService = async (
   next: NextFunction
 ) => {
   try {
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const limit = req.query.limit ?  Number(req.query.limit) : PaginationLimit;
-    const search = req.query.search || undefined;
+
+    let matchConditions: any = {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      companyOrg: req.bodyData.companyOrg,
+      deletedAt: { $exists: false }
+    };
+
+    if (req.query.search?.trim()) {
+      matchConditions = { ...matchConditions, code: req.query.search?.trim() };
+    }
+
+    if(req.body.userId){
+      matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+    }
+  }
 
     const { data, status, totalPages } = await getTrips({
-      search: search,
-      company: await convertIdsToObjects(req.body.company),
-      companyOrg: req.bodyData.companyOrg,
-      page: Number(page),
-      limit: Number(limit),
+      matchConditions,
+      page : req.query.page ? Number(req.query.page) : 1,
+      limit : req.query.limit ?  Number(req.query.limit) : PaginationLimit
     });
     if (status === "success") {
       res.status(200).send({
@@ -149,9 +159,19 @@ export const getTripCountService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.company = await convertIdsToObjects(req.body.company)
-    req.body.companyOrg = req.bodyData.companyOrg;
-    const { status, data } = await getTripCounts(req.body);
+    let matchConditions : any = {}
+
+    matchConditions =  {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false }
+    }
+
+    if(req.body.userId){
+        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+      }
+    }
+
+    const { status, data } = await getTripCounts({matchConditions,...req.body});
     if (status === "success") {
       res.status(200).send({
         data: data,
@@ -173,9 +193,22 @@ export const totalTripTypeCountService = async (
   next: NextFunction
 ) => {
   try {
+    let matchConditions : any = {}
+
     req.body.company = await convertIdsToObjects(req.body.company)
     req.body.companyOrg = req.bodyData.companyOrg;
-    const { status, message , statusCode, data } = await totalTripTypeCount(req.body);
+
+    matchConditions =  {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false }
+    }
+
+    if(req.body.userId){
+        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+      }
+    }
+
+    const { status, message , statusCode, data } = await totalTripTypeCount({matchConditions,...req.body});
       res.status(statusCode).send({
         data: data,
         message: message,
@@ -194,7 +227,7 @@ export const totalTripUserTypeCountService = async (
   try {
     req.body.company = await convertIdsToObjects(req.body.company)
     req.body.companyOrg = req.bodyData.companyOrg;
-    req.body.users = await convertIdsToObjects(req.body.users)
+    req.body.users = await convertIdsToObjects(req.body.userId)
     const { status, message , statusCode, data } = await totalTripUserTypeCount(req.body);
       res.status(statusCode).send({
         data: data,
@@ -251,8 +284,21 @@ export const calculateTotalTripsAmountService = async (
   next: NextFunction
 ) => {
   try {
+    let matchConditions : any = {}
+
     req.body.company = await convertIdsToObjects(req.body.company)
-    const { status, statusCode, message, data } = await calculateTotalTripsAmount(req.body);
+    req.body.companyOrg = req.bodyData.companyOrg;
+
+    matchConditions =  {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false }
+    }
+
+    if(req.body.userId){
+        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+      }
+    }
+    const { status, statusCode, message, data } = await calculateTotalTripsAmount({matchConditions, ...req.body});
     res.status(statusCode).send({
       status,
       statusCode,
@@ -270,6 +316,7 @@ export const calculateIndividualTripAmountService = async (
   next: NextFunction
 ) => {
   try {
+
     req.body.company = await convertIdsToObjects(req.body.company)
     if(req.body.tripId){
       req.body.tripId = new mongoose.Types.ObjectId(req.body.tripId)

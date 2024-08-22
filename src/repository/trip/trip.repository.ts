@@ -1,8 +1,8 @@
-import { createCatchError } from "../config/helper/function";
-import { statusCode } from "../config/helper/statusCode";
-import { TripModel as Trip } from "../schemas/trip/trip.schema";
-import { findUserById } from "./auth/auth.repository";
-import { deleteFile, uploadFile } from "./uploadDoc.repository";
+import { createCatchError } from "../../config/helper/function";
+import { statusCode } from "../../config/helper/statusCode";
+import { TripModel as Trip } from "../../schemas/trip/trip.schema";
+import { findUserById } from "../auth/auth.repository";
+import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 export const createTrip = async (data: any) => {
   try {
@@ -184,19 +184,10 @@ export const getTrips = async (data: any) => {
   try {
     const pipeline: any = [];
 
-    let matchConditions: any = {
-      company: { $in: data.company },
-      companyOrg: data.companyOrg,
-      deletedAt: { $exists: false },
-    };
-
-    if (data.search) {
-      matchConditions = { ...matchConditions, code: data.search?.trim() };
-    }
-
     pipeline.push({
-      $match: matchConditions,
+      $match: data.matchConditions,
     });
+
     let documentPipeline: any = [
       ...pipeline,
       { $sort: { createdAt: -1 } },
@@ -276,11 +267,7 @@ export const getTripCounts = async (data: any) => {
   try {
     const pipeline = [
       {
-        $match: {
-          ...data,
-          company: { $in: data.company },
-          deletedAt: { $exists: false },
-        },
+        $match: data.matchConditions
       },
       {
         $group: {
@@ -309,10 +296,7 @@ export const totalTripTypeCount = async (data: any) => {
     const pipeline: any = [];
 
     pipeline.push({
-      $match: {
-        company: { $in: data.company },
-        deletedAt: { $exists: false },
-      },
+      $match: data.matchConditions
     });
 
     pipeline.push({
@@ -349,9 +333,9 @@ export const totalTripUserTypeCount = async (data: any) => {
 
     pipeline.push({
       $match: {
-        company: { $in: data.company },
+        company: { $in: data.company},
         deletedAt: { $exists: false },
-        participants: { $in: data.users },
+        "participants.user": { $in: data.users },
       },
     });
 
@@ -362,6 +346,7 @@ export const totalTripUserTypeCount = async (data: any) => {
       },
     });
 
+    // Project the results with appropriate fields
     pipeline.push({
       $project: {
         _id: 0,
@@ -509,12 +494,12 @@ export const calculateTripAmountByTitle = async (data: any) => {
         },
       },
       {
-        $sort : {
-          createdAt : -1
-        }
+        $sort: {
+          createdAt: -1,
+        },
       },
       {
-        $limit : data.limit
+        $limit: data.limit,
       },
       {
         $project: {
@@ -540,10 +525,7 @@ export const calculateTotalTripsAmount = async (data: any) => {
   try {
     const result = await Trip.aggregate([
       {
-        $match: {
-          company: { $in: data.company },
-          deletedAt: { $exists: false },
-        },
+        $match: data.matchConditions,
       },
       {
         $addFields: {
@@ -565,7 +547,11 @@ export const calculateTotalTripsAmount = async (data: any) => {
                     {
                       $cond: [
                         { $ifNull: ["$$detail.isAccommodation", false] },
-                        { $toDouble: { $ifNull: ["$$detail.accommodationCost", "0"] } },
+                        {
+                          $toDouble: {
+                            $ifNull: ["$$detail.accommodationCost", "0"],
+                          },
+                        },
                         0,
                       ],
                     },
@@ -616,7 +602,6 @@ export const calculateTotalTripsAmount = async (data: any) => {
 
 export const calculateIndividualTripAmount = async (data: any) => {
   try {
-
     const matchCondition: any = {
       company: { $in: data.company },
       deletedAt: { $exists: false },
@@ -704,7 +689,3 @@ export const calculateIndividualTripAmount = async (data: any) => {
     return createCatchError(err);
   }
 };
-
-
-
-
