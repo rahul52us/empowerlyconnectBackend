@@ -9,10 +9,7 @@ const getProjectCounts = async (data: any) => {
   try {
     let pipeline = [
       {
-        $match: {
-          company: { $in: data.company },
-          deletedAt: { $exists: false },
-        },
+        $match: data.matchConditions,
       },
       {
         $count: "totalProjects",
@@ -465,41 +462,26 @@ const addProjectMembers = async (data: any) => {
 
 const getAllProjects = async (data: any) => {
   try {
-    const { page = 1, limit = 10, company } = data;
+    const { page = 1, limit = 10, userId } = data;
 
-    const pipeline: any = [];
+    const pipeline: any[] = [];
 
-    const matchConditions = {
-      company: { $in: company },
-      deletedAt: { $exists: false },
-    };
+    pipeline.push({ $match: data.matchConditions });
 
-    pipeline.push({
-      $match: matchConditions,
-    });
+    pipeline.push({ $sort: { createdAt: -1 } });
 
-    // Sorting by createdAt in descending order
-    pipeline.push({
-      $sort: {
-        createdAt: -1,
-      },
-    });
-
-    // Pagination logic
     const skip = (page - 1) * limit;
     pipeline.push({ $skip: skip });
     pipeline.push({ $limit: limit });
 
-    // Count total projects matching the conditions
-    const totalProjectsPipeline = [
-      { $match: matchConditions },
+    const countPipeline = [
+      { $match: data.matchConditions },
       { $count: "total" },
     ];
 
-    // Execute the pipelines
     const [result, totalProjects] = await Promise.all([
       Project.aggregate(pipeline),
-      Project.aggregate(totalProjectsPipeline),
+      Project.aggregate(countPipeline),
     ]);
 
     const total = totalProjects.length > 0 ? totalProjects[0].total : 0;
@@ -508,7 +490,7 @@ const getAllProjects = async (data: any) => {
     // Return the response
     return {
       status: "success",
-      data: { data: result, totalPages: totalPages },
+      data: { data: result, totalPages },
       page,
       message: "Projects retrieved successfully",
       statusCode: statusCode.success,
@@ -517,6 +499,8 @@ const getAllProjects = async (data: any) => {
     return createCatchError(err);
   }
 };
+
+
 
 // Task Repository
 

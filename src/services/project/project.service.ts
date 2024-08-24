@@ -23,9 +23,28 @@ export const getProjectCountsService = async (
   next: NextFunction
 ) => {
   try {
-    const company = await convertIdsToObjects(req.body.company);
+    let matchConditions: any = {};
+    matchConditions = {
+      company: { $in: await convertIdsToObjects(req.body.company)},
+      deletedAt: { $exists: false },
+    };
+
+    let userId = req.body.userId;
+    if (userId) {
+      userId = new mongoose.Types.ObjectId(userId)
+      matchConditions = {
+        ...matchConditions,
+        $or: [
+          { customers: { $elemMatch: { user:  userId, isActive: true } } },
+          { team_members: { $elemMatch: { user: userId, isActive: true } } },
+          { followers: { $elemMatch: { user: userId, isActive: true } } },
+          { project_manager: { $elemMatch: { user: userId, isActive: true } } },
+        ],
+      };
+    }
+
     const { statusCode, status, data, message } = await getProjectCounts({
-      company,
+      matchConditions
     });
     res.status(statusCode).send({
       message,
@@ -97,28 +116,51 @@ export const addProjectMembersService = async (
 };
 
 
-// GET ALL PROJECT SERVICE
+
 export const getAllProjectsService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    req.body.company = await convertIdsToObjects(req.body.company);
-    req.body.page = req.query.page ? Number(req.query.page) : 1;
-    req.body.limit = req.query.limit
-      ? Number(req.query.limit)
-      : PaginationLimit;
+    let matchConditions: any = {};
 
-    const { status, statusCode, message, data } = await getAllProjects(
-      req.body
-    );
+      matchConditions = {
+      company: { $in: await convertIdsToObjects(req.body.company)},
+      deletedAt: { $exists: false },
+    };
+
+    let userId = req.body.userId;
+    if (userId) {
+      userId = new mongoose.Types.ObjectId(userId)
+      matchConditions = {
+        ...matchConditions,
+        $or: [
+          { customers: { $elemMatch: { user:  userId, isActive: true } } },
+          { team_members: { $elemMatch: { user: userId, isActive: true } } },
+          { followers: { $elemMatch: { user: userId, isActive: true } } },
+          { project_manager: { $elemMatch: { user: userId, isActive: true } } },
+        ],
+      };
+    }
+
+    // Set pagination defaults
+    req.body.page = req.query.page ? Number(req.query.page) : 1;
+    req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit;
+
+    // Fetch projects using the match conditions and pagination settings
+    const { status, statusCode, message, data } = await getAllProjects({
+      matchConditions,
+      ...req.body,
+    });
+
     res.status(statusCode).send({
       status,
       message,
       data,
     });
   } catch (err: any) {
+    // Handle errors
     res.status(500).send({
       data: err?.message,
       message: "Internal Server Error",
@@ -126,6 +168,7 @@ export const getAllProjectsService = async (
     });
   }
 };
+
 
 // GET SINGLE PROJECT
 export const getSingleProjectService = async (
