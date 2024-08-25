@@ -31,39 +31,9 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
     type : mongoose.Schema.Types.ObjectId,
     ref : 'User'
   },
-  workLocations: [{
-    ipAddress: {
-      type: String
-    },
-    locationName: {
-      type: String,
-      required : true
-    },
-  }],
-  workTiming: [{
-    startTime: {
-      type: String,
-      required: true,
-    },
-    endTime: {
-      type: String,
-      required: true,
-    },
-    daysOfWeek: {
-      type: [String],
-      required: true,
-    },
-  }],
-  holidays: [{
-    date: { type: Date, required: true },
-    title: { type: String, required: true },
-    description: { type: String }
-  }],
-  ipAddressRange : {
-    type : mongoose.Schema.Types.Mixed
-  },
   is_active : {
-    type : Boolean
+    type : Boolean,
+    default : true
   },
   deletedAt: {
     type: Date,

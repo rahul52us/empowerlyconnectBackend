@@ -200,14 +200,24 @@ const createOrganisationCompany = async (
         });
       }
     } else {
-      const userData = new User({
-        name: req.body.name,
-        username: req.body.username,
-        password: req.body.password,
-        code : req.body.code,
-        role: "admin",
-      });
-      user = await userData.save();
+      const codeUser = await User.findOne({ code: req.body.code });
+      if (codeUser) {
+        res.status(statusCode.info).send({
+          status: "error",
+          data: `${codeUser.code} Code is already exists with ${user.username}`,
+          message: `${codeUser.code} Code is already exists with ${user.username}`,
+        });
+      }
+      else {
+        const userData = new User({
+          name: req.body.name,
+          username: req.body.username,
+          password: req.body.password,
+          code : req.body.code,
+          role: "admin",
+        });
+        user = await userData.save();
+      }
     }
 
     // Create the Company

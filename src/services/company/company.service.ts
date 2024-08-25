@@ -63,7 +63,8 @@ export const getHolidayService = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await getHolidays({
-      company: req.query.company,
+      company: new mongoose.Types.ObjectId(req.query.company),
+      policy : new mongoose.Types.ObjectId(req.query.policy)
     });
     return res.status(statusCode).send({
       message: message,
@@ -82,7 +83,8 @@ export const getWorkLocationservice = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await getWorkLocations({
-      company: req.query.company,
+      company: new mongoose.Types.ObjectId(req.query.company),
+      policy : new mongoose.Types.ObjectId(req.query.policy)
     });
     return res.status(statusCode).send({
       message: message,
@@ -101,7 +103,8 @@ export const getWorkTimingService = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await getWorkTiming({
-      company: req.query.company,
+      company: new mongoose.Types.ObjectId(req.query.company),
+      policy : new mongoose.Types.ObjectId(req.query.policy)
     });
     return res.status(statusCode).send({
       message: message,
@@ -120,8 +123,9 @@ export const updateHolidayService = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await updateHolidays({
-      holidays: { ...req.body },
+      ...req.body,
       company: new mongoose.Types.ObjectId(req.body.company),
+      policy : new mongoose.Types.ObjectId(req.body.policy)
     });
     return res.status(statusCode).send({
       message: message,
@@ -200,7 +204,8 @@ export const updateWorkLocationService = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await updateWorkLocations({
-      workLocation: { ...req.body },
+      ...req.body ,
+      policy : new mongoose.Types.ObjectId(req.body.policy),
       company: new mongoose.Types.ObjectId(req.body.company),
     });
     return res.status(statusCode).send({

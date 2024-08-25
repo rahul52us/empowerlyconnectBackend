@@ -43,6 +43,10 @@ const companyDetailsSchema = Joi.object({
       "string.empty": "Mobile number field cannot be empty",
       "string.pattern.base": "Mobile number must be between 10 and 15 digits",
     }),
+  companyCode: Joi.string().required().messages({
+      "any.required": "Company Code field is required",
+      "string.empty": "Company Code field cannot be empty",
+    }),
   workNo: Joi.string().pattern(/^\d{10,15}$/),
   remember_me: Joi.boolean(),
   bio: Joi.string().allow(""),

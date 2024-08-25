@@ -3,76 +3,77 @@ import Company from "../../schemas/company/Company";
 import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
 import { createCatchError } from "../../config/helper/function";
+import companyHolidays from "../../schemas/company/companyHolidays";
+import companyWorkLocations from "../../schemas/company/companyWorkLocations";
+import companyWorkTiming from "../../schemas/company/companyWorkTiming";
 
-export const getOrganisationCompanies  = async(data : any) => {
-  try
-  {
-    const pipeline : any = []
-    pipeline.push({
-      $match : {
-        companyOrg : data.companyOrg,
-        deletedAt : {$exists : false},
-        is_active : true
+export const getOrganisationCompanies = async (data: any) => {
+  try {
+    const pipeline: any = [];
+    pipeline.push(
+      {
+        $match: {
+          companyOrg: data.companyOrg,
+          deletedAt: { $exists: false },
+          is_active: true,
+        },
       },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "createdBy",
-        foreignField: "_id",
-        as: "createdBy",
-        pipeline: [
-          {
-            $project: {
-              username: 1,
-              code: 1,
-              role: 1,
-              _id: 1,
-              name: 1
-            }
-          }
-        ]
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+          pipeline: [
+            {
+              $project: {
+                username: 1,
+                code: 1,
+                role: 1,
+                _id: 1,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "activeUser",
+          foreignField: "_id",
+          as: "activeUser",
+          pipeline: [
+            {
+              $project: {
+                username: 1,
+                code: 1,
+                role: 1,
+                _id: 1,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
       }
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "activeUser",
-        foreignField: "_id",
-        as: "activeUser",
-        pipeline: [
-          {
-            $project: {
-              username: 1,
-              code: 1,
-              role: 1,
-              _id: 1,
-              name: 1
-            }
-          }
-        ]
-      }
-    },
-    {
-      $sort : {
-        createdAt : -1
-      }
-    }
-  )
+    );
 
-    const companies = await Company.aggregate(pipeline)
+    const companies = await Company.aggregate(pipeline);
     return {
-      data : companies,
-      message : 'Retrieved Company successfully',
-      statusCode : statusCode.success,
-      status : 'success'
-    }
+      data: companies,
+      message: "Retrieved Company successfully",
+      statusCode: statusCode.success,
+      status: "success",
+    };
+  } catch (err: any) {
+    return createCatchError(err);
   }
-  catch(err : any)
-  {
-    return createCatchError(err)
-  }
-}
+};
 
 export const getCompanyDetailsByName = async (data: any) => {
   try {
@@ -104,19 +105,17 @@ export const getCompanyDetailsByName = async (data: any) => {
 
 export const getHolidays = async (data: any) => {
   try {
-    const policy: any = await CompanyPolicy.findOne({
-      company: new mongoose.Types.ObjectId(data.company),
-    });
-    if (policy) {
+    const holidays: any = await companyHolidays.find(data).sort({createdAt : -1});
+    if (holidays) {
       return {
         status: "success",
-        data: policy.holidays || [],
+        data: holidays || [],
         message: "Successfully retrieved holidays",
         statusCode: statusCode.success,
       };
     } else {
       return {
-        status: "success",
+        status: "error",
         message: "Policy not found",
         data: "Policy not found",
         statusCode: statusCode.info,
@@ -129,19 +128,17 @@ export const getHolidays = async (data: any) => {
 
 export const getWorkLocations = async (data: any) => {
   try {
-    const policy: any = await CompanyPolicy.findOne({
-      company: new mongoose.Types.ObjectId(data.company),
-    });
-    if (policy) {
+    const workLocations: any = await companyWorkLocations.find(data);
+    if (workLocations) {
       return {
         status: "success",
-        data: policy.workLocations || [],
+        data: workLocations || [],
         message: "Successfully retrieved Locations",
         statusCode: statusCode.success,
       };
     } else {
       return {
-        status: "success",
+        status: "error",
         message: "Policy not found",
         data: "Policy not found",
         statusCode: statusCode.info,
@@ -154,13 +151,11 @@ export const getWorkLocations = async (data: any) => {
 
 export const getWorkTiming = async (data: any) => {
   try {
-    const policy: any = await CompanyPolicy.findOne({
-      company: new mongoose.Types.ObjectId(data.company),
-    });
-    if (policy) {
+    const workTiming: any = await companyWorkTiming.find(data);
+    if (workTiming) {
       return {
         status: "success",
-        data: policy.workTiming || [],
+        data: workTiming || [],
         message: "Successfully retrieved Timings",
         statusCode: statusCode.success,
       };
@@ -195,7 +190,7 @@ export const updateHolidayByExcel = async (data: any) => {
       };
     } else {
       return {
-        status: "success",
+        status: "error",
         message: "Policy not found",
         data: "Policy not found",
         statusCode: statusCode.info,
@@ -208,72 +203,77 @@ export const updateHolidayByExcel = async (data: any) => {
 
 export const updateHolidays = async (data: any) => {
   try {
-    const policy: any = await CompanyPolicy.findOne({ company: data.company });
+    const policy: any = await CompanyPolicy.findOne({
+      _id: data.policy,
+      is_active: true,
+    });
 
     if (!policy) {
       return {
         status: "success",
         message: "Policy not found",
-        data: null,
+        data: "Policy not found",
         statusCode: statusCode.info,
       };
     }
 
-    if (data?.holidays?.edit === 1) {
-      const index = policy.holidays.findIndex(
-        (item: any) => item.title === data.holidays?.oldTitle
-      );
-
-      if (index !== -1) {
-        policy.holidays[index] = data.holidays;
-        const savedPolicy = await policy.save();
-
-        return {
-          status: "success",
-          data: savedPolicy.holidays,
-          message: "Holidays have been updated successfully",
-          statusCode: statusCode.success,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "The specified holiday does not exist",
-          data: null,
-          statusCode: statusCode.info,
-        };
-      }
-    } else if (data?.holidays?.delete === 1) {
-      const index = policy.holidays.findIndex(
-        (item: any) => item.title === data.holidays?.title
-      );
-      if (index !== -1) {
-        policy.holidays.splice(index, 1);
-        const savedPolicy = await policy.save();
-        return {
-          status: "success",
-          data: savedPolicy.holidays,
-          message: "Holidays updated successfully",
-          statusCode: statusCode.success,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "The specified holiday does not exist",
-          data: null,
-          statusCode: statusCode.info,
-        };
-      }
-    } else {
-      policy.holidays.push(data.holidays);
-      const savedPolicy = await policy.save();
-
+    if (data?.isAdd) {
+      const holiday = new companyHolidays({
+        title: data.title,
+        description: data.description,
+        date : data.date,
+        policy: policy._id,
+        company: policy.company,
+      });
+      const savedHoliday = await holiday.save();
       return {
         status: "success",
-        data: savedPolicy,
-        message: "Holidays updated successfully",
+        data: savedHoliday,
+        message: "Holiday have been updated successfully",
         statusCode: statusCode.success,
       };
     }
+
+    if (data?.isEdit) {
+      const holiday = await companyHolidays.findByIdAndUpdate(
+        data._id,
+        { $set: {...data} },
+        { new: true }
+      );
+      return {
+        status: "success",
+        data: holiday,
+        message: "Holiday have been updated successfully",
+        statusCode: statusCode.success,
+      };
+    }
+
+    if (data?.isDelete) {
+      const holiday = await companyHolidays.findById(data._id);
+      if (holiday) {
+        const deletedHoliday = await holiday.deleteOne();
+        return {
+          status: "success",
+          data: deletedHoliday,
+          message: "Holiday delete successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          data: "No Such holiday exists",
+          message: "No Such holiday exists",
+          statusCode: statusCode.success,
+        };
+      }
+    }
+
+    return {
+      status: "error",
+      data: "No success action exists",
+      message: "No success action exists",
+      statusCode: statusCode.success,
+    };
   } catch (err: any) {
     throw new Error(err);
   }
@@ -292,19 +292,21 @@ export const updateWorkTiming = async (data: any) => {
       };
     }
 
-    const updatedWorkTiming = data.workTiming?.workTiming.map((newTiming: any) => {
-      const existingTiming = policy.workTiming.find(
-        (timing: any) => timing._id.toString() === newTiming._id
-      );
-      if (existingTiming) {
-        existingTiming.startTime = newTiming.startTime;
-        existingTiming.endTime = newTiming.endTime;
-        existingTiming.daysOfWeek = newTiming.daysOfWeek;
-        return existingTiming;
-      } else {
-        return newTiming;
+    const updatedWorkTiming = data.workTiming?.workTiming.map(
+      (newTiming: any) => {
+        const existingTiming = policy.workTiming.find(
+          (timing: any) => timing._id.toString() === newTiming._id
+        );
+        if (existingTiming) {
+          existingTiming.startTime = newTiming.startTime;
+          existingTiming.endTime = newTiming.endTime;
+          existingTiming.daysOfWeek = newTiming.daysOfWeek;
+          return existingTiming;
+        } else {
+          return newTiming;
+        }
       }
-    });
+    );
 
     policy.workTiming = updatedWorkTiming;
 
@@ -317,10 +319,72 @@ export const updateWorkTiming = async (data: any) => {
       statusCode: statusCode.success,
     };
   } catch (err: any) {
-    return createCatchError(err)
+    return createCatchError(err);
   }
 };
 export const updateWorkLocations = async (data: any) => {
+  try {
+    const policy: any = await CompanyPolicy.findById(data.policy);
+
+    if (!policy) {
+      return {
+        status: "success",
+        message: "Policy not found",
+        data: null,
+        statusCode: statusCode.info,
+      };
+    }
+
+    if (data?.edit === 1) {
+      const updatedWorkLocations = await companyWorkLocations.findByIdAndUpdate(data._id, {$set : data},{new : true})
+      if (updatedWorkLocations) {
+        return {
+          status: "success",
+          data: updateWorkLocations,
+          message: "Location have been updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          message: "The specified location does not exist",
+          data: null,
+          statusCode: statusCode.info,
+        };
+      }
+    } else if (data?.delete === 1) {
+      const deletedLocation = await companyWorkLocations.findByIdAndDelete(data?._id)
+      if (deletedLocation) {
+        return {
+          status: "success",
+          data: deletedLocation,
+          message: "Locations has been Deleted",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          message: "The specified Locations does not exist",
+          data: null,
+          statusCode: statusCode.info,
+        };
+      }
+    } else {
+      const locations =  new companyWorkLocations(data)
+      const savedLocations = await locations.save()
+      return {
+        status: "success",
+        data: savedLocations,
+        message: "Location has been added successfully",
+        statusCode: statusCode.success,
+      };
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
+export const uploadWorkLocationsByExcel = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findOne({ company: data.company });
 
@@ -333,92 +397,16 @@ export const updateWorkLocations = async (data: any) => {
       };
     }
 
-    if (data?.workLocation?.edit === 1) {
-      const index = policy.workLocations.findIndex(
-        (item: any) => item.locationName === data.workLocation?.oldLocation
-      );
+    policy.workLocations = data?.workLocations;
 
-      if (index !== -1) {
-        policy.workLocations[index] = data.workLocation;
-        const savedPolicy = await policy.save();
-
-        return {
-          status: "success",
-          data: savedPolicy.workLocations,
-          message: "Location have been updated successfully",
-          statusCode: statusCode.success,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "The specified location does not exist",
-          data: null,
-          statusCode: statusCode.info,
-        };
-      }
-    } else if (data?.workLocation?.delete === 1) {
-      const index = policy.workLocations.findIndex(
-        (item: any) => item.locationName === data.workLocation?.locationName
-      );
-      if (index !== -1) {
-        policy.workLocations.splice(index, 1);
-        const savedPolicy = await policy.save();
-        return {
-          status: "success",
-          data: savedPolicy.workLocations,
-          message: "Holidays updated successfully",
-          statusCode: statusCode.success,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "The specified holiday does not exist",
-          data: null,
-          statusCode: statusCode.info,
-        };
-      }
-    } else {
-      policy.workLocations.push(data.workLocation);
-      const savedPolicy = await policy.save();
-
-      return {
-        status: "success",
-        data: savedPolicy.workLocations,
-        message: "Location updated successfully",
-        statusCode: statusCode.success,
-      };
-    }
-  } catch (err: any) {
-    throw new Error(err);
-  }
-};
-
-export const uploadWorkLocationsByExcel = async(data : any) => {
-  try
-  {
-    const policy: any = await CompanyPolicy.findOne({ company: data.company });
-
-    if (!policy) {
-      return {
-        status: "success",
-        message: "Policy not found",
-        data: null,
-        statusCode: statusCode.info,
-      };
-    }
-
-    policy.workLocations = data?.workLocations
-
-    const savedPolicy = await policy.save()
+    const savedPolicy = await policy.save();
     return {
       status: "success",
       data: savedPolicy.workLocations,
       message: "Locations updated successfully",
       statusCode: statusCode.success,
     };
-  }
-  catch(err : any)
-  {
+  } catch (err: any) {
     throw new Error(err);
   }
-}
+};

@@ -99,6 +99,7 @@ const forgotPasswordService = async (
       user.name,
       user.username,
       `${baseURL}/reset-password/${resetData.token}`,
+      "We received a request to reset your password. If you didn't initiate this request, please disregard this email for security.",
       'Reset Your Password',
       'forgot_email_templates.html'
     );
