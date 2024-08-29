@@ -23,6 +23,7 @@ import CompanyDetails from "../../schemas/User/CompanyDetails";
 import {baseURL} from '../../config/helper/urls'
 import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
+import { createToken } from "../../services/token/token.service";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
@@ -92,11 +93,12 @@ const createUser = async (
 
       if (selectedCompany.verified_email_allowed) {
         const token = generateResetPasswordToken(savedUser._id);
-        const storeToken = new Token({
+
+        await createToken({
           userId: savedUser._id,
           token: token,
-          type: REGISTER_NEW_USER_TOKEN_TYPE,
-        });
+          type: REGISTER_NEW_USER_TOKEN_TYPE
+        })
         const sendMail: any = await SendMail(
           savedUser.name,
           savedUser.username,
@@ -108,7 +110,6 @@ const createUser = async (
         if (!sendMail.success) {
           await savedUser.deleteOne();
           await profileDetail.deleteOne();
-          await storeToken.deleteOne();
           throw generateError(
             `Failed to send mail to ${req.body.username} please try again later`,
             400

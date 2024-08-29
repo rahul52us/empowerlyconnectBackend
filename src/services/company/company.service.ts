@@ -184,8 +184,9 @@ export const updateWorkTimingService = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await updateWorkTiming({
-      workTiming: { ...req.body },
+      ...req.body,
       company: new mongoose.Types.ObjectId(req.body.company),
+      policy : new mongoose.Types.ObjectId(req.body.policy)
     });
     return res.status(statusCode).send({
       message: message,

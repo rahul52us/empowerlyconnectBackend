@@ -6,6 +6,7 @@ import { createCatchError } from "../../config/helper/function";
 import companyHolidays from "../../schemas/company/companyHolidays";
 import companyWorkLocations from "../../schemas/company/companyWorkLocations";
 import companyWorkTiming from "../../schemas/company/companyWorkTiming";
+import { CompanyDetailsI } from "../../schemas/User/CompanyDetails";
 
 export const getOrganisationCompanies = async (data: any) => {
   try {
@@ -103,6 +104,19 @@ export const getCompanyDetailsByName = async (data: any) => {
   }
 };
 
+export const getCompanyById = async (id: any): Promise<any | null> => {
+  try {
+    const company = await Company.findOne({ _id: id, is_active: true });
+    if (company) {
+      return company;
+    } else {
+      return null;
+    }
+  } catch (err: any) {
+    return null;
+  }
+};;
+
 export const getHolidays = async (data: any) => {
   try {
     const holidays: any = await companyHolidays.find(data).sort({createdAt : -1});
@@ -149,7 +163,7 @@ export const getWorkLocations = async (data: any) => {
   }
 };
 
-export const getWorkTiming = async (data: any) => {
+export const updateWorkTiming = async (data: any) => {
   try {
     const workTiming: any = await companyWorkTiming.find(data);
     if (workTiming) {
@@ -157,14 +171,14 @@ export const getWorkTiming = async (data: any) => {
         status: "success",
         data: workTiming || [],
         message: "Successfully retrieved Timings",
-        statusCode: statusCode.success,
+        statusCode: statusCode.success
       };
     } else {
       return {
         status: "success",
         message: "Policy not found",
         data: "Policy not found",
-        statusCode: statusCode.info,
+        statusCode: statusCode.info
       };
     }
   } catch (err: any) {
@@ -279,9 +293,9 @@ export const updateHolidays = async (data: any) => {
   }
 };
 
-export const updateWorkTiming = async (data: any) => {
+export const getWorkTiming = async (data: any) => {
   try {
-    const policy = await CompanyPolicy.findOne({ company: data.company });
+    const policy = await CompanyPolicy.findOne(data);
 
     if (!policy) {
       return {
@@ -292,36 +306,20 @@ export const updateWorkTiming = async (data: any) => {
       };
     }
 
-    const updatedWorkTiming = data.workTiming?.workTiming.map(
-      (newTiming: any) => {
-        const existingTiming = policy.workTiming.find(
-          (timing: any) => timing._id.toString() === newTiming._id
-        );
-        if (existingTiming) {
-          existingTiming.startTime = newTiming.startTime;
-          existingTiming.endTime = newTiming.endTime;
-          existingTiming.daysOfWeek = newTiming.daysOfWeek;
-          return existingTiming;
-        } else {
-          return newTiming;
-        }
-      }
-    );
-
-    policy.workTiming = updatedWorkTiming;
-
-    const savedPolicy = await policy.save();
+    const datas = await companyWorkTiming.find({policy : data._id})
 
     return {
       status: "success",
-      data: savedPolicy.workTiming,
-      message: "WorkTiming updated successfully",
+      data: datas,
+      message: "WorkTiming Retrieved successfully",
       statusCode: statusCode.success,
     };
+
   } catch (err: any) {
     return createCatchError(err);
   }
 };
+
 export const updateWorkLocations = async (data: any) => {
   try {
     const policy: any = await CompanyPolicy.findById(data.policy);

@@ -14,6 +14,12 @@ import {
 import mongoose from "mongoose";
 import { PaginationLimit } from "../../config/helper/constant";
 import { convertIdsToObjects } from "../../config/helper/function";
+import SendMail from "../../config/sendMail/sendMail";
+import { baseDashURL } from "../../config/helper/urls";
+import { findUserById } from "../../repository/auth/auth.repository";
+import { getCompanyById } from "../../repository/company/company.respository";
+import { createToken } from "../token/token.service";
+import { generateResetPasswordToken } from "../../config/helper/generateToken";
 
 // CREATE PROJECT SERVICE
 
@@ -25,17 +31,17 @@ export const getProjectCountsService = async (
   try {
     let matchConditions: any = {};
     matchConditions = {
-      company: { $in: await convertIdsToObjects(req.body.company)},
+      company: { $in: await convertIdsToObjects(req.body.company) },
       deletedAt: { $exists: false },
     };
 
     let userId = req.body.userId;
     if (userId) {
-      userId = new mongoose.Types.ObjectId(userId)
+      userId = new mongoose.Types.ObjectId(userId);
       matchConditions = {
         ...matchConditions,
         $or: [
-          { customers: { $elemMatch: { user:  userId, isActive: true } } },
+          { customers: { $elemMatch: { user: userId, isActive: true } } },
           { team_members: { $elemMatch: { user: userId, isActive: true } } },
           { followers: { $elemMatch: { user: userId, isActive: true } } },
           { project_manager: { $elemMatch: { user: userId, isActive: true } } },
@@ -44,7 +50,7 @@ export const getProjectCountsService = async (
     }
 
     const { statusCode, status, data, message } = await getProjectCounts({
-      matchConditions
+      matchConditions,
     });
     res.status(statusCode).send({
       message,
@@ -102,20 +108,71 @@ export const addProjectMembersService = async (
   next: NextFunction
 ) => {
   try {
-    req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    const { status, statusCode, message, data } = await addProjectMembers(req.body);
+    const { id } = req.params;
+    req.body.id = new mongoose.Types.ObjectId(id);
+
+    const { status, statusCode, message, data, extraData } = await addProjectMembers(req.body);
+
+    if (status !== "success" || !extraData?.projectData) {
+      return res.status(statusCode).send({ status, statusCode, message, data });
+    }
+
+    const [currentUser, company] = await Promise.all([
+      findUserById(req.body.user),
+      getCompanyById(extraData.projectData.company),
+    ]);
+
+    if (!currentUser || !company) {
+      return res.status(404).send({ status: "error", statusCode: 404, message: "User or Company not found" });
+    }
+
+    let projectLink = `${baseDashURL}/project/${extraData.projectData._id}`;
+    let mailSubject, mailTemplate;
+
+    if (data.isActive) {
+      const token = await createToken({
+        metaData: { projectId: extraData.projectData._id },
+        userId: currentUser._id,
+        token: generateResetPasswordToken(currentUser._id),
+        type: "project",
+        company: extraData.projectData.company,
+      });
+      projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
+      mailSubject = `Invitation to Collaborate on ${extraData.projectData.project_name}`;
+      mailTemplate = "project/add_member_invitation_template.html";
+    } else {
+      mailSubject = `Welcome to the ${extraData.projectData.project_name} Project!`;
+      mailTemplate = "project/add_member_template.html";
+    }
+
+    const mailData = {
+      projectName: extraData.projectData.project_name,
+      role: req.body.type,
+      companyName: company.company_name,
+      logoUrl: company.logo?.url,
+    };
+
+    // Send an email to the user
+    SendMail(
+      currentUser.username,
+      currentUser.username,
+      projectLink,
+      "",
+      mailSubject,
+      mailTemplate,
+      mailData
+    );
+
     res.status(statusCode).send({
       status,
       statusCode,
       message,
-      data,
+      data
     });
   } catch (err) {
     next(err);
   }
 };
-
-
 
 export const getAllProjectsService = async (
   req: any,
@@ -125,18 +182,18 @@ export const getAllProjectsService = async (
   try {
     let matchConditions: any = {};
 
-      matchConditions = {
-      company: { $in: await convertIdsToObjects(req.body.company)},
+    matchConditions = {
+      company: { $in: await convertIdsToObjects(req.body.company) },
       deletedAt: { $exists: false },
     };
 
     let userId = req.body.userId;
     if (userId) {
-      userId = new mongoose.Types.ObjectId(userId)
+      userId = new mongoose.Types.ObjectId(userId);
       matchConditions = {
         ...matchConditions,
         $or: [
-          { customers: { $elemMatch: { user:  userId, isActive: true } } },
+          { customers: { $elemMatch: { user: userId, isActive: true } } },
           { team_members: { $elemMatch: { user: userId, isActive: true } } },
           { followers: { $elemMatch: { user: userId, isActive: true } } },
           { project_manager: { $elemMatch: { user: userId, isActive: true } } },
@@ -146,7 +203,9 @@ export const getAllProjectsService = async (
 
     // Set pagination defaults
     req.body.page = req.query.page ? Number(req.query.page) : 1;
-    req.body.limit = req.query.limit ? Number(req.query.limit) : PaginationLimit;
+    req.body.limit = req.query.limit
+      ? Number(req.query.limit)
+      : PaginationLimit;
 
     // Fetch projects using the match conditions and pagination settings
     const { status, statusCode, message, data } = await getAllProjects({
@@ -168,7 +227,6 @@ export const getAllProjectsService = async (
     });
   }
 };
-
 
 // GET SINGLE PROJECT
 export const getSingleProjectService = async (

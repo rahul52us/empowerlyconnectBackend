@@ -4,6 +4,9 @@ import Project from "../../schemas/project/Project.schema";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
 import { createCatchError } from "../../config/helper/function";
 import { findUserById } from "../auth/auth.repository";
+import SendMail from "../../config/sendMail/sendMail";
+import { baseDashURL } from "../../config/helper/urls";
+import { getCompanyById } from "../company/company.respository";
 
 const getProjectCounts = async (data: any) => {
   try {
@@ -394,8 +397,10 @@ const getSingleProject = async (data: any) => {
   }
 };
 
-const addProjectMembers = async (data: any) => {
+const addProjectMembers = async (data: any) : Promise<any> => {
   try {
+    let currentUser: any = null;
+    let company: any = null;
     const { id, type, user, isActive, tags } = data;
 
     const projectData = await Project.findById(id);
@@ -429,7 +434,7 @@ const addProjectMembers = async (data: any) => {
       projectData.tags = tags || [];
     } else {
       const isMemberExists = memberList.some((item: any) =>
-        item.user.equals(user)
+        item?.user?.equals(user)
       );
       if (isMemberExists) {
         return {
@@ -445,15 +450,14 @@ const addProjectMembers = async (data: any) => {
 
     await projectData.save();
 
-    const userData = await findUserById(user);
-
     return {
       status: "success",
       message: `${
         type.charAt(0).toUpperCase() + type.slice(1)
       } added successfully`,
-      data: { user: userData, isActive },
+      data: { user: currentUser, isActive },
       statusCode: statusCode.success,
+      extraData : {projectData}
     };
   } catch (err: any) {
     return createCatchError(err);
@@ -499,8 +503,6 @@ const getAllProjects = async (data: any) => {
     return createCatchError(err);
   }
 };
-
-
 
 // Task Repository
 
@@ -567,12 +569,12 @@ const getSingleTask = async (datas: any) => {
         },
       },
       {
-        $lookup : {
-          from : 'users',
-          foreignField : '_id',
-          localField : 'assigner',
-          as : 'assigner'
-        }
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "assigner",
+          as: "assigner",
+        },
       },
       {
         $unwind: {
@@ -586,7 +588,7 @@ const getSingleTask = async (datas: any) => {
           let: { dependenciesId: "$dependencies.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$dependenciesId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic: 1 , name : 1} },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1, name: 1 } },
           ],
           as: "dependencies.user",
         },
@@ -639,7 +641,7 @@ const getSingleTask = async (datas: any) => {
           let: { teamMemberId: "$team_members.user" },
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$teamMemberId"] } } },
-            { $project: { username: 1, _id: 1, code: 1, pic: 1 , name : 1} },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1, name: 1 } },
           ],
           as: "team_members.user",
         },
@@ -705,7 +707,6 @@ const getSingleTask = async (datas: any) => {
     return createCatchError(err);
   }
 };
-
 
 // CREATE TASK FUNCTION
 const findSingleTask = async (datas: any) => {

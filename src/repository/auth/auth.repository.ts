@@ -1,6 +1,7 @@
 import generateToken from "../../config/helper/generateToken";
 import { generateError } from "../../config/Error/functions";
 import User from "../../schemas/User/User";
+import mongoose from "mongoose";
 
 const findUserByUserName = async (data: any) => {
   try {
@@ -18,7 +19,7 @@ const findUserByUserName = async (data: any) => {
 
 const findUserById = async (id: any) => {
   try {
-    const user = await User.findById(id).populate('-password');
+    const user = await User.findById(id).select('-password');
     if (user) {
       return user;
     }
