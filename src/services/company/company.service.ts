@@ -104,7 +104,8 @@ export const getWorkTimingService = async (
   try {
     const { status, data, statusCode, message } = await getWorkTiming({
       company: new mongoose.Types.ObjectId(req.query.company),
-      policy : new mongoose.Types.ObjectId(req.query.policy)
+      policy : new mongoose.Types.ObjectId(req.query.policy),
+      is_active : true
     });
     return res.status(statusCode).send({
       message: message,

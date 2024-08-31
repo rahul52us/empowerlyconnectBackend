@@ -27,7 +27,8 @@ const companyWorkTiming = new mongoose.Schema({
     required : true
   },
   is_active : {
-    type : Boolean
+    type : Boolean,
+    default : true
   },
   deletedAt: {
     type: Date,

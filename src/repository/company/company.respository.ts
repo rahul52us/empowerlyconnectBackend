@@ -115,11 +115,13 @@ export const getCompanyById = async (id: any): Promise<any | null> => {
   } catch (err: any) {
     return null;
   }
-};;
+};
 
 export const getHolidays = async (data: any) => {
   try {
-    const holidays: any = await companyHolidays.find(data).sort({createdAt : -1});
+    const holidays: any = await companyHolidays
+      .find(data)
+      .sort({ createdAt: -1 });
     if (holidays) {
       return {
         status: "success",
@@ -165,22 +167,54 @@ export const getWorkLocations = async (data: any) => {
 
 export const updateWorkTiming = async (data: any) => {
   try {
-    const workTiming: any = await companyWorkTiming.find(data);
-    if (workTiming) {
+    if (data.isAdd) {
+      const timing = new companyWorkTiming(data);
+      const savedTiming = await timing.save();
       return {
         status: "success",
-        data: workTiming || [],
-        message: "Successfully retrieved Timings",
-        statusCode: statusCode.success
+        data: savedTiming || [],
+        message: "Timing has been created successfully",
+        statusCode: statusCode.success,
       };
-    } else {
+    } else if (data.isEdit) {
+      const updatedData = await companyWorkTiming.findByIdAndUpdate(
+        data._id,
+        {
+          $set: {
+            startTime: data.startTime,
+            endTime: data.endTime,
+            is_active: data.is_active,
+            daysOfWeek: data.daysOfWeek,
+          },
+        },
+        { new: true }
+      );
       return {
         status: "success",
-        message: "Policy not found",
-        data: "Policy not found",
-        statusCode: statusCode.info
+        data: updatedData || null,
+        message: "Timing has been updated successfully",
+        statusCode: statusCode.success,
       };
     }
+    else if(data.isDelete){
+      const updatedData = await companyWorkTiming.findByIdAndUpdate(data._id, {$set : {is_active : false}}, {new : true})
+      return {
+        status: "success",
+        data: updatedData || null,
+        message: "Timing has been deleted successfully",
+        statusCode: statusCode.success,
+      };
+    }
+    else {
+      return {
+        status: "error",
+        data: 'No such action exists',
+        message: "No such action exists",
+        statusCode: statusCode.success,
+      };
+    }
+
+
   } catch (err: any) {
     throw new Error(err);
   }
@@ -235,7 +269,7 @@ export const updateHolidays = async (data: any) => {
       const holiday = new companyHolidays({
         title: data.title,
         description: data.description,
-        date : data.date,
+        date: data.date,
         policy: policy._id,
         company: policy.company,
       });
@@ -251,7 +285,7 @@ export const updateHolidays = async (data: any) => {
     if (data?.isEdit) {
       const holiday = await companyHolidays.findByIdAndUpdate(
         data._id,
-        { $set: {...data} },
+        { $set: { ...data } },
         { new: true }
       );
       return {
@@ -295,18 +329,7 @@ export const updateHolidays = async (data: any) => {
 
 export const getWorkTiming = async (data: any) => {
   try {
-    const policy = await CompanyPolicy.findOne(data);
-
-    if (!policy) {
-      return {
-        status: "success",
-        message: "Policy not found",
-        data: null,
-        statusCode: statusCode.info,
-      };
-    }
-
-    const datas = await companyWorkTiming.find({policy : data._id})
+    const datas = await companyWorkTiming.find(data);
 
     return {
       status: "success",
@@ -314,7 +337,6 @@ export const getWorkTiming = async (data: any) => {
       message: "WorkTiming Retrieved successfully",
       statusCode: statusCode.success,
     };
-
   } catch (err: any) {
     return createCatchError(err);
   }
@@ -334,7 +356,11 @@ export const updateWorkLocations = async (data: any) => {
     }
 
     if (data?.edit === 1) {
-      const updatedWorkLocations = await companyWorkLocations.findByIdAndUpdate(data._id, {$set : data},{new : true})
+      const updatedWorkLocations = await companyWorkLocations.findByIdAndUpdate(
+        data._id,
+        { $set: data },
+        { new: true }
+      );
       if (updatedWorkLocations) {
         return {
           status: "success",
@@ -351,7 +377,9 @@ export const updateWorkLocations = async (data: any) => {
         };
       }
     } else if (data?.delete === 1) {
-      const deletedLocation = await companyWorkLocations.findByIdAndDelete(data?._id)
+      const deletedLocation = await companyWorkLocations.findByIdAndDelete(
+        data?._id
+      );
       if (deletedLocation) {
         return {
           status: "success",
@@ -368,8 +396,8 @@ export const updateWorkLocations = async (data: any) => {
         };
       }
     } else {
-      const locations =  new companyWorkLocations(data)
-      const savedLocations = await locations.save()
+      const locations = new companyWorkLocations(data);
+      const savedLocations = await locations.save();
       return {
         status: "success",
         data: savedLocations,
