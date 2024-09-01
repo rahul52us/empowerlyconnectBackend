@@ -8,6 +8,7 @@ export interface IEmailToken extends Document {
   type: string;
   is_active:boolean;
   createdAt: Date;
+  deletedAt:Date
 }
 
 const Token: Schema<IEmailToken> = new Schema({
@@ -39,6 +40,9 @@ const Token: Schema<IEmailToken> = new Schema({
     type: Date,
     default: Date.now
   },
+  deletedAt : {
+    type : Date
+  }
 });
 
 export default mongoose.model<IEmailToken>(

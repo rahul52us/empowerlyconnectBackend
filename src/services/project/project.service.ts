@@ -231,7 +231,7 @@ export const addProjectMembersService = async (
       return res.status(statusCode).send({ status, statusCode, message, data });
     }
 
-    const [currentUser, company] = await Promise.all([
+    const [currentUser, company] : any = await Promise.all([
       findUserById(req.body.user),
       getCompanyById(extraData.projectData.company),
     ]);
@@ -249,7 +249,7 @@ export const addProjectMembersService = async (
         userId: currentUser._id,
         token: generateResetPasswordToken(currentUser._id),
         type: "project",
-        company: extraData.projectData.company,
+        company: extraData.projectData.company
       });
       projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
       mailSubject = `Invitation to Collaborate on ${extraData.projectData.project_name}`;

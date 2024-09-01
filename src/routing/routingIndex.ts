@@ -1,5 +1,6 @@
 import userRouting from "./User";
 import companyOrganisation from "./company.routing";
+import tokenRouting from "./token/token.routing";
 import projectRouting from "./project";
 import testimonialRouting from "./testimonial";
 import videosRouting from "./video";
@@ -22,6 +23,7 @@ const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
   app.use("/api/company", companyOrganisation);
   app.use("/api/User", UserRouting);
+  app.use('/api/token',tokenRouting)
   app.use("/api/project", projectRouting);
   app.use("/api/testimonial", testimonialRouting);
   app.use("/api/videos", videosRouting);
