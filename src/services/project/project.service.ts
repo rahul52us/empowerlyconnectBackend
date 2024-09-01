@@ -20,6 +20,7 @@ import { findUserById } from "../../repository/auth/auth.repository";
 import { getCompanyById } from "../../repository/company/company.respository";
 import { createToken } from "../token/token.service";
 import { generateResetPasswordToken } from "../../config/helper/generateToken";
+import { ROLE_TEMPLATES } from "./utils/constant";
 
 // CREATE PROJECT SERVICE
 
@@ -69,9 +70,66 @@ export const createProjectService = async (
 ) => {
   try {
     req.body.createdBy = req.userId;
-    const { statusCode, status, data, message }: any = await createProject(
-      req.body
-    );
+    const { statusCode, status, data, message }: any = await createProject(req.body);
+
+    if (status === "success") {
+      const company = await getCompanyById(data.company);
+      if (!company) {
+        return res.status(404).send({ status: "error", statusCode: 404, message: "Company not found" });
+      }
+
+      const sendEmails = async (users: any[], role: string) => {
+        for (let user of users) {
+          if (user.isActive && user.isAdd) {
+            const userDetails = await findUserById(user.user);
+            if (userDetails) {
+              let projectLink: string;
+              let { mailSubject, mailTemplate } = ROLE_TEMPLATES[role] || {};
+              mailSubject = mailSubject.replace('{projectName}', data.project_name);
+              if (user.invitationMail) {
+                const token = await createToken({
+                  metaData: { projectId: data._id },
+                  userId: userDetails._id,
+                  token: generateResetPasswordToken(userDetails._id),
+                  type: "project",
+                  company: data.company,
+                });
+                projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
+              } else {
+                projectLink = `${baseDashURL}/project/${data._id}`;
+                mailTemplate = mailTemplate.replace('invitation', 'welcome');
+                mailSubject = mailSubject.replace('Invitation', 'Welcome');
+              }
+
+              const mailData = {
+                projectName: data.project_name,
+                role : role.split('_').join(' '),
+                companyName: company.company_name,
+                logoUrl: company.logo?.url,
+              };
+
+              await SendMail(
+                userDetails.username,
+                userDetails.username,
+                projectLink,
+                "",
+                mailSubject,
+                mailTemplate,
+                mailData
+              );
+            }
+          }
+        }
+      };
+
+      await Promise.all([
+        sendEmails(req.body.followers, 'follower'),
+        sendEmails(req.body.team_members, 'team_member'),
+        sendEmails(req.body.project_manager, 'project_manager'),
+        sendEmails(req.body.customers, 'customer'),
+      ]);
+    }
+
     res.status(statusCode).send({
       message,
       data,
@@ -91,6 +149,62 @@ export const updateProjectService = async (
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
     const { status, statusCode, message, data } = await updateProject(req.body);
+    if(status === "success"){
+      const company = await getCompanyById(data.company);
+      if (!company) {
+        return res.status(404).send({ status: "error", statusCode: 404, message: "Company not found" });
+      }
+      const sendEmails = async (users: any[], role: string) => {
+        for (let user of users) {
+          if (user.isActive && user.isAdd) {
+            const userDetails = await findUserById(user.user);
+            if (userDetails) {
+              let projectLink: string;
+              let { mailSubject, mailTemplate } = ROLE_TEMPLATES[role] || {};
+              mailSubject = mailSubject.replace('{projectName}', data.project_name);
+              if (user.invitationMail) {
+                const token = await createToken({
+                  metaData: { projectId: data._id },
+                  userId: userDetails._id,
+                  token: generateResetPasswordToken(userDetails._id),
+                  type: "project",
+                  company: data.company,
+                });
+                projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
+              } else {
+                projectLink = `${baseDashURL}/project/${data._id}`;
+                mailTemplate = mailTemplate.replace('invitation', 'welcome');
+                mailSubject = mailSubject.replace('Invitation', 'Welcome');
+              }
+
+              const mailData = {
+                projectName: data.project_name,
+                role : role.split('_').join(' '),
+                companyName: company.company_name,
+                logoUrl: company.logo?.url,
+              };
+
+              await SendMail(
+                userDetails.username,
+                userDetails.username,
+                projectLink,
+                "",
+                mailSubject,
+                mailTemplate,
+                mailData
+              );
+            }
+          }
+        }
+      };
+
+      await Promise.all([
+        sendEmails(req.body.followers, 'follower'),
+        sendEmails(req.body.team_members, 'team_member'),
+        sendEmails(req.body.project_manager, 'project_manager'),
+        sendEmails(req.body.customers, 'customer'),
+      ]);
+    }
     res.status(statusCode).send({
       status,
       statusCode,
