@@ -3,6 +3,7 @@ import {
   addProjectMembers,
   createProject,
   createTask,
+  findActiveUserInProject,
   getAllProjects,
   getAllTask,
   getProjectCounts,
@@ -10,6 +11,7 @@ import {
   getSingleTask,
   updateProject,
   updateTask,
+  verifyUserProject,
 } from "../../repository/project/project.repository";
 import mongoose from "mongoose";
 import { PaginationLimit } from "../../config/helper/constant";
@@ -18,7 +20,7 @@ import SendMail from "../../config/sendMail/sendMail";
 import { baseDashURL } from "../../config/helper/urls";
 import { findUserById } from "../../repository/auth/auth.repository";
 import { getCompanyById } from "../../repository/company/company.respository";
-import { createToken } from "../token/token.service";
+import { createToken, verifyToken } from "../token/token.service";
 import { generateResetPasswordToken } from "../../config/helper/generateToken";
 import { ROLE_TEMPLATES } from "./utils/constant";
 
@@ -63,6 +65,120 @@ export const getProjectCountsService = async (
   }
 };
 
+export const findActiveUserInProjectService = async (
+  req: any,
+  res: any,
+  next: NextFunction
+) => {
+  try {
+    let matchConditions: any = {};
+    matchConditions = {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false },
+      _id: new mongoose.Types.ObjectId(req.params.projectId),
+    };
+
+    let userId = req.body.userId;
+    if (userId) {
+      userId = new mongoose.Types.ObjectId(userId);
+      matchConditions = {
+        ...matchConditions,
+        $or: [
+          { customers: { $elemMatch: { user: userId, isActive: true } } },
+          { team_members: { $elemMatch: { user: userId, isActive: true } } },
+          { followers: { $elemMatch: { user: userId, isActive: true } } },
+          { project_manager: { $elemMatch: { user: userId, isActive: true } } },
+        ],
+      };
+    }
+
+    const { statusCode, status, data, message } = await findActiveUserInProject(
+      {
+        matchConditions,
+      }
+    );
+    res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const verifyUserTokenProjectService = async (
+  req: any,
+  res: any,
+  next: NextFunction
+) => {
+  try {
+    const { data, message, statusCode, status }: any = await verifyToken(
+      req.body
+    );
+    if (data) {
+      const {
+        status,
+        statusCode,
+        data: datas,
+        message,
+      } = await verifyUserProject({
+        userId: data.userId,
+        projectId: data?.metaData?.projectId,
+        arrayName: data?.metaData?.type,
+        is_active: true
+      });
+
+      if (status === "success") {
+        const userDetails = await findUserById(data.userId);
+        const company = await getCompanyById(req.body.company);
+
+        if (userDetails && company) {
+          let projectLink: string;
+          let { mailSubject, mailTemplate } =
+            ROLE_TEMPLATES[data.metaData?.type] || {};
+          mailSubject = mailSubject.replace("{projectName}", datas.project_name);
+
+          projectLink = `${baseDashURL}/project/${datas._id}`;
+          mailTemplate = mailTemplate.replace("invitation", "welcome");
+          mailSubject = mailSubject.replace("Invitation", "Welcome");
+
+          const mailData = {
+            projectName: datas.project_name,
+            role: data.metaData?.type,
+            companyName: company.company_name,
+            logoUrl: company.logo?.url,
+          };
+
+          await SendMail(
+            userDetails.username,
+            userDetails.username,
+            projectLink,
+            "",
+            mailSubject,
+            mailTemplate,
+            mailData
+          );
+        }
+      }
+
+      res.status(statusCode).send({
+        data: datas,
+        message,
+        status,
+      });
+    } else {
+      res.status(statusCode).send({
+        data: "Invalid Token",
+        message,
+        status,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const createProjectService = async (
   req: any,
   res: Response,
@@ -70,25 +186,33 @@ export const createProjectService = async (
 ) => {
   try {
     req.body.createdBy = req.userId;
-    const { statusCode, status, data, message }: any = await createProject(req.body);
+    const { statusCode, status, data, message }: any = await createProject(
+      req.body
+    );
 
     if (status === "success") {
       const company = await getCompanyById(data.company);
       if (!company) {
-        return res.status(404).send({ status: "error", statusCode: 404, message: "Company not found" });
+        return res.status(404).send({
+          status: "error",
+          statusCode: 404,
+          message: "Company not found",
+        });
       }
-
       const sendEmails = async (users: any[], role: string) => {
         for (let user of users) {
-          if (user.isActive && user.isAdd) {
+          if (user.isAdd) {
             const userDetails = await findUserById(user.user);
             if (userDetails) {
               let projectLink: string;
               let { mailSubject, mailTemplate } = ROLE_TEMPLATES[role] || {};
-              mailSubject = mailSubject.replace('{projectName}', data.project_name);
-              if (user.invitationMail) {
+              mailSubject = mailSubject.replace(
+                "{projectName}",
+                data.project_name
+              );
+              if (!user.isActive) {
                 const token = await createToken({
-                  metaData: { projectId: data._id },
+                  metaData: { projectId: data._id, type: role },
                   userId: userDetails._id,
                   token: generateResetPasswordToken(userDetails._id),
                   type: "project",
@@ -97,13 +221,13 @@ export const createProjectService = async (
                 projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
               } else {
                 projectLink = `${baseDashURL}/project/${data._id}`;
-                mailTemplate = mailTemplate.replace('invitation', 'welcome');
-                mailSubject = mailSubject.replace('Invitation', 'Welcome');
+                mailTemplate = mailTemplate.replace("invitation", "welcome");
+                mailSubject = mailSubject.replace("Invitation", "Welcome");
               }
 
               const mailData = {
                 projectName: data.project_name,
-                role : role.split('_').join(' '),
+                role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
               };
@@ -123,10 +247,10 @@ export const createProjectService = async (
       };
 
       await Promise.all([
-        sendEmails(req.body.followers, 'follower'),
-        sendEmails(req.body.team_members, 'team_member'),
-        sendEmails(req.body.project_manager, 'project_manager'),
-        sendEmails(req.body.customers, 'customer'),
+        sendEmails(req.body.followers, "followers"),
+        sendEmails(req.body.team_members, "team_members"),
+        sendEmails(req.body.project_manager, "project_manager"),
+        sendEmails(req.body.customers, "customers"),
       ]);
     }
 
@@ -149,22 +273,29 @@ export const updateProjectService = async (
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
     const { status, statusCode, message, data } = await updateProject(req.body);
-    if(status === "success"){
+    if (status === "success") {
       const company = await getCompanyById(data.company);
       if (!company) {
-        return res.status(404).send({ status: "error", statusCode: 404, message: "Company not found" });
+        return res.status(404).send({
+          status: "error",
+          statusCode: 404,
+          message: "Company not found",
+        });
       }
       const sendEmails = async (users: any[], role: string) => {
         for (let user of users) {
-          if (user.isActive && user.isAdd) {
+          if (user.isAdd) {
             const userDetails = await findUserById(user.user);
             if (userDetails) {
               let projectLink: string;
               let { mailSubject, mailTemplate } = ROLE_TEMPLATES[role] || {};
-              mailSubject = mailSubject.replace('{projectName}', data.project_name);
-              if (user.invitationMail) {
+              mailSubject = mailSubject.replace(
+                "{projectName}",
+                data.project_name
+              );
+              if (!user.isActive) {
                 const token = await createToken({
-                  metaData: { projectId: data._id },
+                  metaData: { projectId: data._id, type: role },
                   userId: userDetails._id,
                   token: generateResetPasswordToken(userDetails._id),
                   type: "project",
@@ -173,13 +304,13 @@ export const updateProjectService = async (
                 projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
               } else {
                 projectLink = `${baseDashURL}/project/${data._id}`;
-                mailTemplate = mailTemplate.replace('invitation', 'welcome');
-                mailSubject = mailSubject.replace('Invitation', 'Welcome');
+                mailTemplate = mailTemplate.replace("invitation", "welcome");
+                mailSubject = mailSubject.replace("Invitation", "Welcome");
               }
 
               const mailData = {
                 projectName: data.project_name,
-                role : role.split('_').join(' '),
+                role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
               };
@@ -199,10 +330,10 @@ export const updateProjectService = async (
       };
 
       await Promise.all([
-        sendEmails(req.body.followers, 'follower'),
-        sendEmails(req.body.team_members, 'team_member'),
-        sendEmails(req.body.project_manager, 'project_manager'),
-        sendEmails(req.body.customers, 'customer'),
+        sendEmails(req.body.followers, "followers"),
+        sendEmails(req.body.team_members, "team_members"),
+        sendEmails(req.body.project_manager, "project_manager"),
+        sendEmails(req.body.customers, "customers"),
       ]);
     }
     res.status(statusCode).send({
@@ -225,19 +356,24 @@ export const addProjectMembersService = async (
     const { id } = req.params;
     req.body.id = new mongoose.Types.ObjectId(id);
 
-    const { status, statusCode, message, data, extraData } = await addProjectMembers(req.body);
+    const { status, statusCode, message, data, extraData } =
+      await addProjectMembers(req.body);
 
     if (status !== "success" || !extraData?.projectData) {
       return res.status(statusCode).send({ status, statusCode, message, data });
     }
 
-    const [currentUser, company] : any = await Promise.all([
+    const [currentUser, company]: any = await Promise.all([
       findUserById(req.body.user),
       getCompanyById(extraData.projectData.company),
     ]);
 
     if (!currentUser || !company) {
-      return res.status(404).send({ status: "error", statusCode: 404, message: "User or Company not found" });
+      return res.status(404).send({
+        status: "error",
+        statusCode: 404,
+        message: "User or Company not found",
+      });
     }
 
     let projectLink = `${baseDashURL}/project/${extraData.projectData._id}`;
@@ -249,7 +385,7 @@ export const addProjectMembersService = async (
         userId: currentUser._id,
         token: generateResetPasswordToken(currentUser._id),
         type: "project",
-        company: extraData.projectData.company
+        company: extraData.projectData.company,
       });
       projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
       mailSubject = `Invitation to Collaborate on ${extraData.projectData.project_name}`;
@@ -281,7 +417,7 @@ export const addProjectMembersService = async (
       status,
       statusCode,
       message,
-      data
+      data,
     });
   } catch (err) {
     next(err);

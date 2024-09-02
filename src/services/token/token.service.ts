@@ -46,29 +46,37 @@ export const findToken = async(data : any) => {
     }
 }
 
-export const verifyToken = async (req : any , res : any, next : NextFunction) => {
+export const verifyToken = async (data : any) => {
     try
     {
-        const tkon = await Token.findOne({company : req.body.company , userId : req.body.userId, token : req.body.token, type : req.body.type, deletedAt : {$exists : false}})
+        const tkon = await Token.findOne({company : data.company , userId : data.userId, token : data.token, type : data.type})
         if(tkon){
             tkon.deletedAt = new Date()
             await tkon.save()
-            return res.status(200).send({
+            return ({
                 message : 'Token has been verified',
-                data : 'Token has been verified',
-                status : 'success'
+                data : tkon,
+                status : 'success',
+                statusCode : 200
             })
         }
-        else{
-            return res.status(300).send({
+        else
+        {
+             return({
                 message : 'Invalid token',
-                data : 'Invalid token',
-                status : 'error'
+                data : null,
+                status : 'error',
+                statusCode : 300
+
             })
         }
     }
     catch(err)
     {
-        next(err)
-    }
+        return({
+            message : 'Invalid token',
+            data : null,
+            status : 'error',
+            statusCode : 500
+        })}
 }

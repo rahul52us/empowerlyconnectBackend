@@ -1,9 +1,9 @@
 export const ROLE_TEMPLATES : any = {
-    follower: {
+    followers: {
       mailSubject: 'Invitation to Collaborate on {projectName} project',
       mailTemplate: 'project/add_member_invitation_template.html',
     },
-    team_member: {
+    team_members: {
       mailSubject: 'Invitation to Collaborate on {projectName} project',
       mailTemplate: 'project/add_member_invitation_template.html',
     },
@@ -11,7 +11,7 @@ export const ROLE_TEMPLATES : any = {
       mailSubject: 'Invitation to Collaborate on {projectName} project',
       mailTemplate: 'project/add_member_invitation_template.html',
     },
-    customer: {
+    customers: {
       mailSubject: 'Invitation to Collaborate on {projectName} project',
       mailTemplate: 'project/add_member_invitation_template.html',
     }

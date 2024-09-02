@@ -504,6 +504,85 @@ const getAllProjects = async (data: any) => {
   }
 };
 
+export const findActiveUserInProject = async(data : any) => {
+  try
+  {
+    const projectData = await Project.aggregate([{$match : data.matchConditions}])
+    if(projectData.length){
+      return {
+        status : 'success',
+        data : true,
+        message : "Fetch Project Data successfully",
+        statusCode : statusCode.success
+      }
+    }
+    else {
+      return {
+        status : 'error',
+        data : false,
+        message : "No Such Project Exists",
+        statusCode : statusCode.info
+      }
+    }
+  }
+  catch(err : any)
+  {
+    return {
+      status : 'error',
+      data : err?.message,
+      message : err?.message,
+      statusCode : statusCode.serverError
+    }  }
+}
+
+export const verifyUserProject = async (data: any) => {
+  try {
+    const filterPath = `${data.arrayName}.user`;
+    const updatePath = `${data.arrayName}.$.isActive`;
+
+    // Update the isActive state for the user in the array
+    const updatedProject = await Project.findOneAndUpdate(
+      {
+        _id: data.projectId,
+        deletedAt: { $exists: false },
+        [filterPath]: data.userId
+      },
+      {
+        $set: {
+          [updatePath]: data.is_active
+        }
+      },
+      {
+        new: true
+      }
+    );
+
+    if (updatedProject) {
+      return {
+        status: 'success',
+        statusCode: 200,
+        data: updatedProject,
+        message: 'User has been updated successfully'
+      };
+    } else {
+      return {
+        data : null,
+        status: 'error',
+        statusCode: 300,
+        message: 'Failed to update the user'
+      };
+    }
+  } catch (err: any) {
+    return {
+      status: 'error',
+      statusCode: 500,
+      data: err?.message,
+      message: err?.message
+    };
+  }
+};
+
+
 // Task Repository
 
 const getAllTask = async (data: any) => {
@@ -829,6 +908,8 @@ const updateTask = async (datas: any) => {
     return createCatchError(err);
   }
 };
+
+
 
 export {
   getProjectCounts,
