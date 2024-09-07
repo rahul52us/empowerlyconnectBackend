@@ -56,7 +56,7 @@ const createProject = async (data: any) => {
           ...file,
           file: {
             url: documentInfo,
-            name: file.file.filename,
+            name: `${projectData?._id}_atFile_${file.file.filename}`,
             type: file.file.type,
           },
         });
@@ -115,6 +115,38 @@ const updateProject = async (data: any) => {
         };
         await updatedProject.save();
       }
+
+      for(const file of data.deleteAttachments){
+        await deleteFile(file)
+      }
+
+      let attach_files : any = []
+
+      for (const file of data.attach_files) {
+        try {
+          if(file.isAdd)
+          {
+            let filename  =  `${projectData?._id}_atFile_${file.file.filename}`
+            const documentInfo = await uploadFile({...file.file, filename });
+            attach_files.push({
+              ...file,
+              file: {
+                url: documentInfo,
+                name: filename,
+                type: file.file.type,
+              },
+            });
+          }
+          else {
+            attach_files.push(file)
+          }
+        } catch (err: any) {
+          console.error("Error uploading file:", err);
+        }
+      }
+
+      updatedProject.attach_files = attach_files
+      await updatedProject.save()
 
       return {
         statusCode: 200,
