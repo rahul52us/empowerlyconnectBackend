@@ -382,18 +382,18 @@ export const addProjectMembersService = async (
 
     if (data.isActive) {
       const token = await createToken({
-        metaData: { projectId: extraData.projectData._id },
+        metaData: { projectId: extraData.projectData._id, type: req.body.type },
         userId: currentUser._id,
         token: generateResetPasswordToken(currentUser._id),
         type: "project",
-        company: extraData.projectData.company,
+        company: extraData.projectData.company
       });
       projectLink = `${baseDashURL}/project/verify-invitation/${token?.data?.token}`;
       mailSubject = `Invitation to Collaborate on ${extraData.projectData.project_name}`;
       mailTemplate = "project/add_member_invitation_template.html";
     } else {
       mailSubject = `Welcome to the ${extraData.projectData.project_name} Project!`;
-      mailTemplate = "project/add_member_template.html";
+      mailTemplate = "project/add_member_welcome_template.html";
     }
 
     const mailData = {

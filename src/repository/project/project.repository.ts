@@ -95,7 +95,7 @@ const updateProject = async (data: any) => {
         updatedProject.logo = {
           name: undefined,
           url: undefined,
-          type: undefined,
+          type: undefined
         };
         await updatedProject.save();
       }
@@ -111,7 +111,7 @@ const updateProject = async (data: any) => {
         updatedProject.logo = {
           name: filename,
           url,
-          type,
+          type
         };
         await updatedProject.save();
       }
@@ -133,7 +133,7 @@ const updateProject = async (data: any) => {
               file: {
                 url: documentInfo,
                 name: filename,
-                type: file.file.type,
+                type: file.file.type
               },
             });
           }
@@ -446,9 +446,10 @@ const addProjectMembers = async (data: any) : Promise<any> => {
     }
 
     const memberTypeMap: Record<string, any> = {
-      manager: projectData.project_manager,
-      follower: projectData.followers,
-      teamMember: projectData.team_members,
+      customers: projectData.customers,
+      project_manager: projectData.project_manager,
+      followers: projectData.followers,
+      team_members: projectData.team_members,
       tags: projectData.tags,
     };
 
@@ -471,13 +472,12 @@ const addProjectMembers = async (data: any) : Promise<any> => {
       if (isMemberExists) {
         return {
           status: "error",
-          data: `User is already a ${type}`,
-          message: `${type} already exists`,
-          statusCode: statusCode.info,
+          data: `User is already a ${type?.split('_').join(' ')}`,
+          message: `${type?.split('_').join(' ')} already exists`,
+          statusCode: statusCode.info
         };
       }
-
-      memberList.push({ user, isActive });
+      memberList.push({ user, isActive : !isActive });
     }
 
     await projectData.save();
