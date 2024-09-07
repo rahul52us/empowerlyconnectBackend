@@ -363,6 +363,7 @@ export const addProjectMembersService = async (
       return res.status(statusCode).send({ status, statusCode, message, data });
     }
 
+    if(req.body.type !== 'tags'){
     const [currentUser, company]: any = await Promise.all([
       findUserById(req.body.user),
       getCompanyById(extraData.projectData.company),
@@ -411,7 +412,7 @@ export const addProjectMembersService = async (
       mailSubject,
       mailTemplate,
       mailData
-    );
+    )}
 
     res.status(statusCode).send({
       status,
