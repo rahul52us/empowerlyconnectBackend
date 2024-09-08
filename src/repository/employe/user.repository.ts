@@ -627,39 +627,69 @@ async function updateDocumentDetails(data: any) {
     const docum = await Documents.findOne({ user: data.id });
     if (docum) {
       const { documents } = data;
-      const documentFields = Object.keys(documents);
-      let uploadedDocuments: { [key: string]: any } = {};
 
-      for (const fieldName of documentFields) {
-        const documentInfo = await uploadDocument(
-          docum.documents,
-          documents,
-          fieldName
-        );
-        if (documentInfo) {
-          uploadedDocuments[fieldName] = {
-            name: String(documentInfo.name),
-            url: String(documentInfo.url),
-            type: String(documentInfo.type),
-            validTill: documentInfo.validTill,
-            effectiveFrom: documentInfo.effectiveFrom,
-          };
+
+      for (const file of data.deleteAttachments) {
+        await deleteFile(file);
+      }
+
+      let attach_files: any = [];
+
+      for (const file of documents) {
+        try {
+          if (file.file && file.isAdd) {
+            let filename = `${data.id}_document_${file.file.filename}`
+            const documentInfo = await uploadFile({...file.file,filename});
+            delete file.isAdd
+            attach_files.push({
+              ...file,
+              file: {
+                url: documentInfo,
+                name: filename,
+                type: file.file.type,
+              },
+            });
+          } else {
+            if (file.file) {
+              delete file.isAdd
+              attach_files.push({
+                ...file,
+              });
+            } else {
+              delete file.isAdd
+              attach_files.push({
+                ...file,
+                file: {
+                  url: undefined,
+                  name: undefined,
+                  type: undefined,
+                },
+              });
+            }
+          }
+        } catch (err: any) {
+          console.error("Error uploading file:", err);
         }
       }
-      docum.documents = uploadedDocuments;
+
+
+      docum.documents = attach_files;
       await docum.save();
       return {
+        statusCode : statusCode.success,
         status: "success",
         data: docum,
       };
     } else {
       return {
+        statusCode:statusCode.info,
         status: "error",
         data: "Documents do not exist",
       };
     }
   } catch (err) {
     return {
+      statusCode : statusCode.serverError,
       status: "error",
       data: err,
     };

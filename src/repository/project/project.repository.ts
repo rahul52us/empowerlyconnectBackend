@@ -142,13 +142,14 @@ const updateProject = async (data: any) => {
 
       for (const file of data.attach_files) {
         try {
+          let filename = `${projectData?._id}_atFile_${file.file.filename}`
           if (file.file && file.isAdd) {
-            const documentInfo = await uploadFile(file.file);
+            const documentInfo = await uploadFile({...file.file,filename});
             attach_files.push({
               ...file,
               file: {
                 url: documentInfo,
-                name: `${projectData?._id}_atFile_${file.file.filename}`,
+                name: filename,
                 type: file.file.type,
               },
             });
@@ -959,13 +960,14 @@ const updateTask = async (datas: any) => {
 
         for (const file of datas.attach_files) {
           try {
+            let filename = `${updatedTask?._id}_atFile_${file.file.filename}`
             if (file.isAdd && file.file) {
-              const documentInfo = await uploadFile(file.file);
+              const documentInfo = await uploadFile({...file.file,filename});
               attach_files.push({
                 ...file,
                 file: {
                   url: documentInfo,
-                  name: `${updatedTask?._id}_atFile_${file.file.filename}`,
+                  name: filename,
                   type: file.file.type,
                 },
               });

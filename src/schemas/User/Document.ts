@@ -1,11 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface DocumentInfo {
+  file : {
   name: string;
   url: string;
   type: string;
+  }
+  title? : string
   validTill?: Date;
-  effectiveFrom?: Date;
 }
 
 export interface DocumentInterface extends Document {
@@ -28,7 +30,7 @@ const DocumentSchema: Schema<DocumentInterface> = new Schema<DocumentInterface>(
     },
     documents: {
       type : mongoose.Schema.Types.Mixed,
-      default: {},
+      default: [],
     },
     deletedAt: {
       type: Date,

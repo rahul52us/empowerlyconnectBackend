@@ -36,7 +36,11 @@ const AttendanceRequestSchema = new mongoose.Schema({
   punchRecords: [PunchRecordSchema],
   date: {
     type: Date,
-    default: Date.now,
+    default: Date.now(),
+  },
+  policy : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : ''
   },
   officeStartTime: {
     type: String,
@@ -45,17 +49,7 @@ const AttendanceRequestSchema = new mongoose.Schema({
   officeEndTime: {
     type: String,
     required: true,
-  },
-  gracePeriodMinutesLate: {
-    type: Number,
-    required: true,
-    default :10
-  },
-  gracePeriodMinutesEarly: {
-    type: Number,
-    required: true,
-    default:20
-  },
+  }
 });
 
 export default mongoose.model("AttendanceRequest", AttendanceRequestSchema);

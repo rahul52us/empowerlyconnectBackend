@@ -34,7 +34,7 @@ export async function createAttendenceRequest(data: any): Promise<any> {
 
 export async function findAttendanceRequests(data: any) {
   try {
-    const { startDate, endDate, user, companyId } = data;
+    const { startDate, endDate, user } = data;
 
     const pipeline: any[] = [
       {
@@ -75,11 +75,11 @@ export async function findAttendanceRequests(data: any) {
         $lookup: {
           from: "companypolicies",
           let: {
+            policyId: "$policy",  // Use the policy reference directly
             date: "$date",
-            companyId: new mongoose.Types.ObjectId(companyId),
           },
           pipeline: [
-            { $match: { $expr: { $eq: ["$company", "$$companyId"] } } },
+            { $match: { $expr: { $eq: ["$_id", "$$policyId"] } } },
             { $unwind: "$holidays" },
             {
               $addFields: {
@@ -109,7 +109,13 @@ export async function findAttendanceRequests(data: any) {
                 },
               },
             },
-            { $project: { holiday: "$holidays" } },
+            {
+              $project: {
+                holiday: "$holidays",
+                gracePeriodMinutesLate: 1,
+                gracePeriodMinutesEarly: 1,
+              },
+            },
           ],
           as: "holidayInfo",
         },
@@ -160,6 +166,8 @@ export async function findAttendanceRequests(data: any) {
               cond: { $eq: ["$$punch.isActive", true] },
             },
           },
+          gracePeriodMinutesLate: { $arrayElemAt: ["$holidayInfo.gracePeriodMinutesLate", 0] },
+          gracePeriodMinutesEarly: { $arrayElemAt: ["$holidayInfo.gracePeriodMinutesEarly", 0] },
         },
       },
       {
@@ -300,3 +308,4 @@ export async function findAttendanceRequests(data: any) {
     );
   }
 }
+

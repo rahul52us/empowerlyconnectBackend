@@ -129,7 +129,7 @@ export const getAttendenceRequestsService = async (
       user: new mongoose.Types.ObjectId(userId),
       startDate: startDate,
       endDate: endDate,
-      companyId: companyId
+      companyId: companyId,
     });
 
     res.status(200).send({
