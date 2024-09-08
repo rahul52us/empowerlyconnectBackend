@@ -51,15 +51,33 @@ const createProject = async (data: any) => {
 
     for (const file of data.attach_files) {
       try {
-        const documentInfo = await uploadFile(file.file);
-        attach_files.push({
-          ...file,
-          file: {
-            url: documentInfo,
-            name: `${projectData?._id}_atFile_${file.file.filename}`,
-            type: file.file.type,
-          },
-        });
+        if (file.file) {
+          const documentInfo = await uploadFile(file.file);
+          attach_files.push({
+            ...file,
+            file: {
+              url: documentInfo,
+              name: `${projectData?._id}_atFile_${file.file.filename}`,
+              type: file.file.type,
+            },
+          });
+        } else {
+          if(file.file){
+            attach_files.push({
+              ...file
+            });
+          }
+          else {
+            attach_files.push({
+              ...file,
+              file: {
+                url: undefined,
+                name: undefined,
+                type: undefined,
+              },
+            });
+          }
+        }
       } catch (err: any) {
         console.error("Error uploading file:", err);
       }
@@ -95,7 +113,7 @@ const updateProject = async (data: any) => {
         updatedProject.logo = {
           name: undefined,
           url: undefined,
-          type: undefined
+          type: undefined,
         };
         await updatedProject.save();
       }
@@ -111,42 +129,52 @@ const updateProject = async (data: any) => {
         updatedProject.logo = {
           name: filename,
           url,
-          type
+          type,
         };
         await updatedProject.save();
       }
 
-      for(const file of data.deleteAttachments){
-        await deleteFile(file)
+      for (const file of data.deleteAttachments) {
+        await deleteFile(file);
       }
 
-      let attach_files : any = []
+      let attach_files: any = [];
 
       for (const file of data.attach_files) {
         try {
-          if(file.isAdd)
-          {
-            let filename  =  `${projectData?._id}_atFile_${file.file.filename}`
-            const documentInfo = await uploadFile({...file.file, filename });
+          if (file.file && file.isAdd) {
+            const documentInfo = await uploadFile(file.file);
             attach_files.push({
               ...file,
               file: {
                 url: documentInfo,
-                name: filename,
-                type: file.file.type
+                name: `${projectData?._id}_atFile_${file.file.filename}`,
+                type: file.file.type,
               },
             });
-          }
-          else {
-            attach_files.push(file)
+          } else {
+            if (file.file) {
+              attach_files.push({
+                ...file,
+              });
+            } else {
+              attach_files.push({
+                ...file,
+                file: {
+                  url: undefined,
+                  name: undefined,
+                  type: undefined,
+                },
+              });
+            }
           }
         } catch (err: any) {
           console.error("Error uploading file:", err);
         }
       }
 
-      updatedProject.attach_files = attach_files
-      await updatedProject.save()
+      updatedProject.attach_files = attach_files;
+      await updatedProject.save();
 
       return {
         statusCode: 200,
@@ -429,7 +457,7 @@ const getSingleProject = async (data: any) => {
   }
 };
 
-const addProjectMembers = async (data: any) : Promise<any> => {
+const addProjectMembers = async (data: any): Promise<any> => {
   try {
     let currentUser: any = null;
     let company: any = null;
@@ -472,12 +500,12 @@ const addProjectMembers = async (data: any) : Promise<any> => {
       if (isMemberExists) {
         return {
           status: "error",
-          data: `User is already a ${type?.split('_').join(' ')}`,
-          message: `${type?.split('_').join(' ')} already exists`,
-          statusCode: statusCode.info
+          data: `User is already a ${type?.split("_").join(" ")}`,
+          message: `${type?.split("_").join(" ")} already exists`,
+          statusCode: statusCode.info,
         };
       }
-      memberList.push({ user, isActive : !isActive });
+      memberList.push({ user, isActive: !isActive });
     }
 
     await projectData.save();
@@ -489,7 +517,7 @@ const addProjectMembers = async (data: any) : Promise<any> => {
       } added successfully`,
       data: { user: currentUser, isActive },
       statusCode: statusCode.success,
-      extraData : {projectData}
+      extraData: { projectData },
     };
   } catch (err: any) {
     return createCatchError(err);
@@ -536,36 +564,35 @@ const getAllProjects = async (data: any) => {
   }
 };
 
-export const findActiveUserInProject = async(data : any) => {
-  try
-  {
-    const projectData = await Project.aggregate([{$match : data.matchConditions}])
-    if(projectData.length){
+export const findActiveUserInProject = async (data: any) => {
+  try {
+    const projectData = await Project.aggregate([
+      { $match: data.matchConditions },
+    ]);
+    if (projectData.length) {
       return {
-        status : 'success',
-        data : true,
-        message : "Fetch Project Data successfully",
-        statusCode : statusCode.success
-      }
-    }
-    else {
+        status: "success",
+        data: true,
+        message: "Fetch Project Data successfully",
+        statusCode: statusCode.success,
+      };
+    } else {
       return {
-        status : 'error',
-        data : false,
-        message : "No Such Project Exists",
-        statusCode : statusCode.info
-      }
+        status: "error",
+        data: false,
+        message: "No Such Project Exists",
+        statusCode: statusCode.info,
+      };
     }
-  }
-  catch(err : any)
-  {
+  } catch (err: any) {
     return {
-      status : 'error',
-      data : err?.message,
-      message : err?.message,
-      statusCode : statusCode.serverError
-    }  }
-}
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+      statusCode: statusCode.serverError,
+    };
+  }
+};
 
 export const verifyUserProject = async (data: any) => {
   try {
@@ -577,43 +604,42 @@ export const verifyUserProject = async (data: any) => {
       {
         _id: data.projectId,
         deletedAt: { $exists: false },
-        [filterPath]: data.userId
+        [filterPath]: data.userId,
       },
       {
         $set: {
-          [updatePath]: data.is_active
-        }
+          [updatePath]: data.is_active,
+        },
       },
       {
-        new: true
+        new: true,
       }
     );
 
     if (updatedProject) {
       return {
-        status: 'success',
+        status: "success",
         statusCode: 200,
         data: updatedProject,
-        message: 'User has been updated successfully'
+        message: "User has been updated successfully",
       };
     } else {
       return {
-        data : null,
-        status: 'error',
+        data: null,
+        status: "error",
         statusCode: 300,
-        message: 'Failed to update the user'
+        message: "Failed to update the user",
       };
     }
   } catch (err: any) {
     return {
-      status: 'error',
+      status: "error",
       statusCode: 500,
       data: err?.message,
-      message: err?.message
+      message: err?.message,
     };
   }
 };
-
 
 // Task Repository
 
@@ -862,16 +888,26 @@ const createTask = async (datas: any) => {
 
       for (const file of datas.attach_files) {
         try {
-          const documentInfo = await uploadFile(file.file);
-          attach_files.push({
-            project: datas.projectId,
-            ...file,
-            file: {
-              url: documentInfo,
-              name: file.file.filename,
-              type: file.file.type,
-            },
-          });
+          if (file.file) {
+            const documentInfo = await uploadFile(file.file);
+            attach_files.push({
+              ...file,
+              file: {
+                url: documentInfo,
+                name: `${savedTask?._id}_atFile_${file.file.filename}`,
+                type: file.file.type,
+              },
+            });
+          } else {
+              attach_files.push({
+                ...file,
+                file: {
+                  url: undefined,
+                  name: undefined,
+                  type: undefined,
+                },
+              });
+          }
         } catch (err: any) {
           console.error("Error uploading file:", err);
         }
@@ -909,11 +945,54 @@ const updateTask = async (datas: any) => {
     if (projects) {
       const { status: taskStatus } = await findSingleTask({ id: datas.taskId });
       if (taskStatus === "success") {
-        const updatedTask = await Task.findByIdAndUpdate(
+        const updatedTask: any = await Task.findByIdAndUpdate(
           datas.taskId,
           { $set: datas },
           { new: true }
         );
+
+        for (const file of datas.deleteAttachments) {
+          await deleteFile(file);
+        }
+
+        let attach_files: any = [];
+
+        for (const file of datas.attach_files) {
+          try {
+            if (file.isAdd && file.file) {
+              const documentInfo = await uploadFile(file.file);
+              attach_files.push({
+                ...file,
+                file: {
+                  url: documentInfo,
+                  name: `${updatedTask?._id}_atFile_${file.file.filename}`,
+                  type: file.file.type,
+                },
+              });
+            } else {
+              if(file.file){
+                attach_files.push({
+                  ...file
+                });
+              }
+              else {
+                attach_files.push({
+                  ...file,
+                  file: {
+                    url: undefined,
+                    name: undefined,
+                    type: undefined,
+                  },
+                });
+              }
+            }
+          } catch (err: any) {
+            console.error("Error uploading file:", err);
+          }
+        }
+
+        updatedTask.attach_files = attach_files;
+        await updatedTask?.save();
         return {
           data: updatedTask,
           status: "success",
@@ -940,8 +1019,6 @@ const updateTask = async (datas: any) => {
     return createCatchError(err);
   }
 };
-
-
 
 export {
   getProjectCounts,
