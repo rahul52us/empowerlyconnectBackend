@@ -111,6 +111,12 @@ const createUser = async (data: any) => {
 
     const savedDocument = await documentDetails.save();
 
+    const qualifications = new Qualification({
+      user: savedUser._id,
+    });
+
+    const savedQualifications = await qualifications.save()
+
     const { password, ...restUser } = savedUser.toObject();
 
     if (data.pic && data.pic !== "") {
@@ -133,6 +139,7 @@ const createUser = async (data: any) => {
         WorkExperience: savedWorkExperience.toObject(),
         FamilyDetail: savedFamilyDetail.toObject(),
         companyDetail: savedComDetail.toObject(),
+        qualification : savedQualifications.toObject()
       },
     };
   } catch (err: any) {
