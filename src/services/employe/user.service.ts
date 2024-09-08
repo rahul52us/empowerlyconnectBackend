@@ -21,6 +21,7 @@ import {
   createUser,
   getRoleCountOfCompany,
   getCompanyDetailsById,
+  updateQualificationDetails,
 } from "../../repository/employe/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -279,7 +280,31 @@ const updateDocumentService = async (
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
     const { status, data } = await updateDocumentDetails(req.body);
     if (status === "success") {
-      res.status(201).send({
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      res.status(400).send({
+        status: "error",
+        data: data,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateQualifcationService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, data } = await updateQualificationDetails(req.body);
+    if (status === "success") {
+      res.status(200).send({
         status: "success",
         data: data,
       });
@@ -559,6 +584,7 @@ export {
   updateDocumentService,
   updatePermissionsService,
   updateCompanyDetailsService,
+  updateQualifcationService,
   getManagersEmploysService,
   getManagerUsersCountsService,
   getUserInfoWithManagerService,

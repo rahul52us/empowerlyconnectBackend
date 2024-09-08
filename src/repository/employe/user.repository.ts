@@ -12,6 +12,7 @@ import mongoose from "mongoose";
 import User from "../../schemas/User/User";
 import { createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
+import Qualification from "../../schemas/User/Qualifications";
 
 const createUser = async (data: any) => {
   try {
@@ -323,6 +324,14 @@ const getUserById = async (data: any) => {
           localField: "_id",
           foreignField: "user",
           as: "familyDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "qualifications",
+          localField: "_id",
+          foreignField: "user",
+          as: "qualifications",
         },
       },
       {
@@ -674,6 +683,78 @@ async function updateDocumentDetails(data: any) {
 
 
       docum.documents = attach_files;
+      await docum.save();
+      return {
+        statusCode : statusCode.success,
+        status: "success",
+        data: docum,
+      };
+    } else {
+      return {
+        statusCode:statusCode.info,
+        status: "error",
+        data: "Documents do not exist",
+      };
+    }
+  } catch (err) {
+    return {
+      statusCode : statusCode.serverError,
+      status: "error",
+      data: err,
+    };
+  }
+}
+
+async function updateQualificationDetails(data: any) {
+  try {
+    const docum = await Qualification.findOne({ user: data.id });
+    if (docum) {
+      const { qualifications } = data;
+
+      for (const file of data.deleteAttachments) {
+        await deleteFile(file);
+      }
+
+      let attach_files: any = [];
+
+      for (const file of qualifications) {
+        try {
+          if (file.file && file.isAdd) {
+            let filename = `${data.id}_qualification_${file.file.filename}`
+            const documentInfo = await uploadFile({...file.file,filename});
+            delete file.isAdd
+            attach_files.push({
+              ...file,
+              file: {
+                url: documentInfo,
+                name: filename,
+                type: file.file.type,
+              },
+            });
+          } else {
+            if (file.file) {
+              delete file.isAdd
+              attach_files.push({
+                ...file,
+              });
+            } else {
+              delete file.isAdd
+              attach_files.push({
+                ...file,
+                file: {
+                  url: undefined,
+                  name: undefined,
+                  type: undefined,
+                },
+              });
+            }
+          }
+        } catch (err: any) {
+          console.error("Error uploading file:", err);
+        }
+      }
+
+      docum.qualifications = attach_files;
       await docum.save();
       return {
         statusCode : statusCode.success,
@@ -1506,6 +1587,7 @@ export {
   getTotalUsers,
   updateBankDetails,
   updateFamilyDetails,
+  updateQualificationDetails,
   updateWorkExperienceDetails,
   updateDocumentDetails,
   updateCompanyDetails,
