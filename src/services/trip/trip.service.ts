@@ -11,11 +11,18 @@ import {
   getTrips,
   totalTripTypeCount,
   updateTrip,
+  verifyUserTrip,
 } from "../../repository/trip/trip.repository";
 import { generateError } from "../../config/Error/functions";
 import mongoose from "mongoose";
 import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
 import { PaginationLimit } from "../../config/helper/constant";
+import { findUserById } from "../../repository/auth/auth.repository";
+import { getCompanyById } from "../../repository/company/company.respository";
+import { baseDashURL } from "../../config/helper/urls";
+import { createToken, verifyToken } from "../token/token.service";
+import { generateResetPasswordToken } from "../../config/helper/generateToken";
+import SendMail from "../../config/sendMail/sendMail";
 
 export const createTripService = async (
   req: any,
@@ -237,7 +244,56 @@ export const addTripMembersService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    const { status, statusCode, message, data } = await addTripMembers(req.body);
+    const { status, statusCode, message, data, extraData } : any = await addTripMembers(req.body);
+    if(status === "success"){
+      const [company]: any = await Promise.all([
+        getCompanyById(extraData.company),
+      ]);
+
+      if (!data?.user || !company) {
+        return res.status(404).send({
+          status: "error",
+          statusCode: 404,
+          message: "User or Company not found",
+        });
+      }
+
+      let link = `${baseDashURL}/trip/${extraData._id}`;
+      let mailSubject, mailTemplate;
+
+      if (req.body.isActive) {
+        const token = await createToken({
+          metaData: { tripId: extraData._id, type: req.body.type },
+          userId: data.user?._id,
+          token: generateResetPasswordToken(data?.user?._id),
+          type: "trip",
+          company: extraData.company
+        });
+        link = `${baseDashURL}/trip/verify-invitation/${token?.data?.token}`;
+        mailSubject = `Invitation to Join ${extraData.title} Trip`;
+        mailTemplate = "trip/add_member_invitation_template.html";
+      } else {
+        mailSubject = `Welcome to the ${extraData.title} Trip!`;
+        mailTemplate = "trip/add_member_welcome_template.html";
+      }
+
+      const mailData = {
+        tripName: extraData.title,
+        role: req.body.type,
+        companyName: company.company_name,
+        logoUrl: company.logo?.url,
+      };
+
+      // Send an email to the user
+      SendMail(
+        data?.user?.username,
+        data?.user?.username,
+        link,
+        "",
+        mailSubject,
+        mailTemplate,
+        mailData
+      )}
     res.status(statusCode).send({
       status,
       statusCode,
@@ -248,6 +304,80 @@ export const addTripMembersService = async (
     next(err);
   }
 };
+
+
+export const verifyUserTokenTripService = async (
+  req: any,
+  res: any,
+  next: NextFunction
+) => {
+  try {
+    const { data, message, statusCode, status }: any = await verifyToken(
+      req.body
+    );
+    if (data) {
+      const {
+        status,
+        statusCode,
+        data: datas,
+        message,
+      } = await verifyUserTrip({
+        userId: data.userId,
+        tripId: data?.metaData?.tripId,
+        arrayName: data?.metaData?.type,
+        is_active: true
+      });
+
+      if (status === "success") {
+        const userDetails = await findUserById(data.userId);
+        const company = await getCompanyById(req.body.company);
+
+        if (userDetails && company) {
+          let projectLink: string;
+          let mailSubject = `Welcome to the ${datas.title} Trip!`;
+          let mailTemplate = "trip/add_member_welcome_template.html";
+
+
+          projectLink = `${baseDashURL}/trip/${datas._id}`;
+          mailTemplate = mailTemplate.replace("invitation", "welcome");
+          mailSubject = mailSubject.replace("Invitation", "Welcome");
+
+          const mailData = {
+            tripName: datas.title,
+            role: data.metaData?.type,
+            companyName: company.company_name,
+            logoUrl: company.logo?.url,
+          };
+
+          await SendMail(
+            userDetails.username,
+            userDetails.username,
+            projectLink,
+            "",
+            mailSubject,
+            mailTemplate,
+            mailData
+          );
+        }
+      }
+
+      res.status(statusCode).send({
+        data: datas,
+        message,
+        status,
+      });
+    } else {
+      res.status(statusCode).send({
+        data: "Invalid Token",
+        message,
+        status,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 export const calculateTripAmountService = async (
   req: any,

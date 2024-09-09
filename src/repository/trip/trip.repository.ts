@@ -286,6 +286,54 @@ export const getTripCounts = async (data: any) => {
   }
 };
 
+export const verifyUserTrip = async (data: any) => {
+  try {
+    const filterPath = `${data.arrayName}.user`;
+    const updatePath = `${data.arrayName}.$.isActive`;
+
+    // Update the isActive state for the user in the array
+    const updatedTrips = await Trip.findOneAndUpdate(
+      {
+        _id: data.tripId,
+        deletedAt: { $exists: false },
+        [filterPath]: data.userId,
+      },
+      {
+        $set: {
+          [updatePath]: data.is_active,
+        },
+      },
+      {
+        new: true
+      }
+    );
+
+    if (updatedTrips) {
+      return {
+        status: "success",
+        statusCode: 200,
+        data: updatedTrips,
+        message: "User has been updated successfully",
+      };
+    } else {
+      return {
+        data: null,
+        status: "error",
+        statusCode: 300,
+        message: "Failed to update the user",
+      };
+    }
+  } catch (err: any) {
+    return {
+      status: "error",
+      statusCode: 500,
+      data: err?.message,
+      message: err?.message,
+    };
+  }
+};
+
+
 export const totalTripTypeCount = async (data: any) => {
   try {
     const pipeline: any = [];
@@ -363,7 +411,7 @@ export const addTripMembers = async (data: any) => {
       };
     }
 
-    memberList.push({ user, isActive });
+    memberList.push({ user, isActive  : !isActive});
 
     await tripData.save();
 
@@ -375,6 +423,7 @@ export const addTripMembers = async (data: any) => {
         type.charAt(0).toUpperCase() + type.slice(1)
       } added successfully`,
       data: { user: userData, isActive },
+       extraData: tripData,
       statusCode: statusCode.success,
     };
   } catch (err: any) {
