@@ -37,7 +37,7 @@ const createUser = async (data: any) => {
       password: data.password,
       bio: data.bio,
       is_active: true,
-      title: data.title,
+      title: data.title
     });
 
     const savedUser = await createdUser.save();
@@ -119,7 +119,7 @@ const createUser = async (data: any) => {
 
     const { password, ...restUser } = savedUser.toObject();
 
-    if (data.pic && data.pic !== "") {
+    if (data.pic && data.pic !== "" && Object.entries(data?.pic || {}).length) {
       let url = await uploadFile(data.pic);
       savedUser.pic = {
         name: data.pic.filename,

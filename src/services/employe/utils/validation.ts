@@ -20,7 +20,6 @@ export const createUserValidation = Joi.object({
     username: Joi.string().min(4).trim().required().messages(customMessages),
     personalEmail: Joi.string().min(5).trim().required().messages(customMessages),
     code:Joi.string().min(4).required().messages(customMessages),
-    designation:Joi.array().required(),
     pic: Joi.any().allow("").optional(),
     pfUanNo:Joi.string().allow("").optional(),
     aadharNo:Joi.string().allow("").optional(),
@@ -33,7 +32,7 @@ export const createUserValidation = Joi.object({
     weddingDate:Joi.string().allow("").optional(),
     dob:Joi.string().allow("").optional(),
     medicalCertificationDetails:Joi.string().allow("").optional(),
-    nickName : Joi.string().min(2).trim().messages(customMessages),
+    nickName : Joi.string().trim().messages(customMessages),
     mobileNo: Joi.string().pattern(phoneRegExp).message('please provide a valid number').required(),
     emergencyNo: Joi.string().allow("").pattern(phoneRegExp).message('please provide a valid number'),
     password : Joi.string()
