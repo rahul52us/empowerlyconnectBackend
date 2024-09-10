@@ -6,7 +6,8 @@ import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 export const createTrip = async (data: any) => {
   try {
-    const trip = new Trip(data);
+    const {thumbnail, attach_files, ...rest}  = data
+    const trip = new Trip(rest);
     const savedTrip = await trip.save();
 
     if (
@@ -23,6 +24,44 @@ export const createTrip = async (data: any) => {
       savedTrip.thumbnail = data.thumbnail;
       await savedTrip.save();
     }
+
+    let attach_filess : any = []
+    for (const file of data.attach_files) {
+      try {
+        if (file.file) {
+          const documentInfo = await uploadFile(file.file);
+          attach_filess.push({
+            ...file,
+            file: {
+              url: documentInfo,
+              name: `${savedTrip?._id}_atFile_${file.file.filename}`,
+              type: file.file.type,
+            },
+          });
+        } else {
+          if(file.file){
+            attach_filess.push({
+              ...file
+            });
+          }
+          else {
+            attach_filess.push({
+              ...file,
+              file: {
+                url: undefined,
+                name: undefined,
+                type: undefined,
+              },
+            });
+          }
+        }
+      } catch (err: any) {
+        console.error("Error uploading file:", err);
+      }
+    }
+
+    savedTrip.attach_files = attach_filess;
+    await savedTrip.save()
 
     return {
       status: "success",
@@ -72,6 +111,50 @@ export const updateTrip = async (data: any) => {
         };
         await updatedData.save();
       }
+
+
+      for (const file of data.deleteAttachments) {
+        await deleteFile(file);
+      }
+
+      let attach_filess: any = [];
+
+      for (const file of data.attach_files) {
+        try {
+          let filename = `${updatedData?._id}_atFile_${file.file.filename}`
+          if (file.file && file.isAdd) {
+            const documentInfo = await uploadFile({...file.file,filename});
+            attach_filess.push({
+              ...file,
+              file: {
+                url: documentInfo,
+                name: filename,
+                type: file.file.type,
+              },
+            });
+          } else {
+            if (file.file) {
+              attach_filess.push({
+                ...file,
+              });
+            } else {
+              attach_filess.push({
+                ...file,
+                file: {
+                  url: undefined,
+                  name: undefined,
+                  type: undefined,
+                },
+              });
+            }
+          }
+        } catch (err: any) {
+          console.error("Error uploading file:", err);
+        }
+      }
+
+      updatedData.attach_files = attach_filess;
+      await updatedData.save();
 
       return {
         status: "success",

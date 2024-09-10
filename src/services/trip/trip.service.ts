@@ -193,7 +193,6 @@ export const updateTripService = async (
       }
       const sendEmails = async (users: any[], role: string) => {
         for (let user of users) {
-          console.log(user)
           if (user.isAdd) {
             const userDetails = await findUserById(user.user);
             if (userDetails) {

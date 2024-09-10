@@ -41,6 +41,7 @@ interface Trip extends Document {
   participants?: mongoose.Schema.Types.ObjectId[];
   travelDetails?: TravelDetails[];
   additionalExpenses?: AdditionalExpense[];
+  attach_files?:any[]
 }
 
 const UserSchema = new Schema<any>(
@@ -97,6 +98,29 @@ const TripSchema = new Schema<Trip>({
       type: String,
     },
   },
+  attach_files: [
+    {
+      title: {
+        type: String,
+        trim: true,
+      },
+      description: {
+        type: mongoose.Schema.Types.Mixed,
+        trim: true,
+      },
+      file: {
+        name: {
+          type: String,
+        },
+        url: {
+          type: String,
+        },
+        type: {
+          type: String,
+        },
+      },
+    },
+  ],
   currency: { type: String, default: "RS" },
   type: {
     type: String,
