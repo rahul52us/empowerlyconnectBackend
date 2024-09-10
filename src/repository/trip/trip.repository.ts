@@ -686,3 +686,33 @@ export const calculateIndividualTripAmount = async (data: any) => {
     return createCatchError(err);
   }
 };
+
+export const findActiveUserInTrip = async (data: any) => {
+  try {
+    const tripData = await Trip.aggregate([
+      { $match: data.matchConditions },
+    ]);
+    if (tripData.length) {
+      return {
+        status: "success",
+        data: true,
+        message: "Fetch Trip Data successfully",
+        statusCode: statusCode.success,
+      };
+    } else {
+      return {
+        status: "error",
+        data: false,
+        message: "No Such Trip Exists",
+        statusCode: statusCode.info,
+      };
+    }
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+      statusCode: statusCode.serverError,
+    };
+  }
+};

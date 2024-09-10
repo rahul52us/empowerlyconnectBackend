@@ -5,6 +5,7 @@ import {
   calculateTotalTripsAmount,
   calculateTripAmountByTitle,
   createTrip,
+  findActiveUserInTrip,
   getAllDayTripCount,
   getSingleTrips,
   getTripCounts,
@@ -469,3 +470,41 @@ export const calculateIndividualTripAmountService = async (
   }
 };
 
+export const findActiveUserInTripService = async (
+  req: any,
+  res: any,
+  next: NextFunction
+) => {
+  try {
+    let matchConditions: any = {};
+    matchConditions = {
+      company: { $in: await convertIdsToObjects(req.body.company) },
+      deletedAt: { $exists: false },
+      _id: new mongoose.Types.ObjectId(req.params.tripId),
+    };
+
+    let userId = req.body.userId;
+    if (userId) {
+      userId = new mongoose.Types.ObjectId(userId);
+      matchConditions = {
+        ...matchConditions,
+        $or: [
+          { participants: { $elemMatch: { user: userId, isActive: true } } }
+        ],
+      };
+    }
+
+    const { statusCode, status, data, message } = await findActiveUserInTrip(
+      {
+        matchConditions,
+      }
+    );
+    res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
