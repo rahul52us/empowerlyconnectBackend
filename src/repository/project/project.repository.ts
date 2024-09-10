@@ -283,6 +283,17 @@ const getSingleProject = async (data: any) => {
         },
       },
       {
+        $addFields: {
+          project_manager: {
+            $cond: {
+              if: { $eq: ["$project_manager", [{}]] },
+              then: [],
+              else: "$project_manager",
+            },
+          },
+        },
+      },
+      {
         $unwind: {
           path: "$team_members",
           preserveNullAndEmptyArrays: true,
@@ -321,6 +332,17 @@ const getSingleProject = async (data: any) => {
         $replaceRoot: {
           newRoot: {
             $mergeObjects: ["$doc", { team_members: "$team_members" }],
+          },
+        },
+      },
+      {
+        $addFields: {
+          team_members: {
+            $cond: {
+              if: { $eq: ["$team_members", [{}]] },
+              then: [],
+              else: "$team_members",
+            },
           },
         },
       },
@@ -367,6 +389,17 @@ const getSingleProject = async (data: any) => {
         },
       },
       {
+        $addFields: {
+          followers: {
+            $cond: {
+              if: { $eq: ["$followers", [{}]] },
+              then: [],
+              else: "$followers",
+            },
+          },
+        },
+      },
+      {
         $unwind: {
           path: "$customers",
           preserveNullAndEmptyArrays: true,
@@ -405,6 +438,17 @@ const getSingleProject = async (data: any) => {
         $replaceRoot: {
           newRoot: {
             $mergeObjects: ["$doc", { customers: "$customers" }],
+          },
+        },
+      },
+      {
+        $addFields: {
+          customers: {
+            $cond: {
+              if: { $eq: ["$customers", [{}]] },
+              then: [],
+              else: "$customers",
+            },
           },
         },
       },

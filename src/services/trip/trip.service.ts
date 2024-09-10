@@ -16,7 +16,10 @@ import {
 } from "../../repository/trip/trip.repository";
 import { generateError } from "../../config/Error/functions";
 import mongoose from "mongoose";
-import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
+import {
+  convertIdsToObjects,
+  createCatchError,
+} from "../../config/helper/function";
 import { PaginationLimit } from "../../config/helper/constant";
 import { findUserById } from "../../repository/auth/auth.repository";
 import { getCompanyById } from "../../repository/company/company.respository";
@@ -37,7 +40,67 @@ export const createTripService = async (
     req.body.createdBy = userId;
     req.body.companyOrg = companyOrg;
     req.body.company = new mongoose.Types.ObjectId(req.body.company);
-    const { status, data, statusCode } = await createTrip(req.body);
+    const { status, data, statusCode, extraData }: any = await createTrip(
+      req.body
+    );
+
+    if (status === "success") {
+      const company = await getCompanyById(data.company);
+      if (!company) {
+        return res.status(404).send({
+          status: "error",
+          statusCode: 404,
+          message: "Company not found",
+        });
+      }
+      const sendEmails = async (users: any[], role: string) => {
+        for (let user of users) {
+          if (user.isAdd) {
+            const userDetails = await findUserById(user.user);
+            if (userDetails) {
+              let link = `${baseDashURL}/trip/${extraData._id}`;
+              let mailSubject, mailTemplate;
+
+              if (!user.isActive) {
+                const token = await createToken({
+                  metaData: { tripId: extraData._id, type: role },
+                  userId: userDetails._id,
+                  token: generateResetPasswordToken(userDetails?._id),
+                  type: "trip",
+                  company: extraData.company,
+                });
+                link = `${baseDashURL}/trip/verify-invitation/${token?.data?.token}`;
+                mailSubject = `Invitation to Join ${extraData.title} Trip`;
+                mailTemplate = "trip/add_member_invitation_template.html";
+              } else {
+                mailSubject = `Welcome to the ${extraData.title} Trip!`;
+                mailTemplate = "trip/add_member_welcome_template.html";
+              }
+
+              const mailData = {
+                tripName: extraData.title,
+                role: role.split("_").join(" "),
+                companyName: company.company_name,
+                logoUrl: company.logo?.url,
+              };
+
+              await SendMail(
+                userDetails.username,
+                userDetails.username,
+                link,
+                "",
+                mailSubject,
+                mailTemplate,
+                mailData
+              );
+            }
+          }
+        }
+      };
+
+      await Promise.all([sendEmails(req.body.participants, "participants")]);
+    }
+
     res.status(statusCode).send({
       status: status,
       data: data,
@@ -47,23 +110,23 @@ export const createTripService = async (
   }
 };
 
-
-export const getSingleTripService = async(req : any, res : Response, next : NextFunction) => {
-  try
-  {
-    const _id = new mongoose.Types.ObjectId(req.params.id)
-    const {status, statusCode, data, message} =  await getSingleTrips({_id})
+export const getSingleTripService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const _id = new mongoose.Types.ObjectId(req.params.id);
+    const { status, statusCode, data, message } = await getSingleTrips({ _id });
     return res.status(statusCode).send({
       status,
       message,
-      data
-    })
+      data,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
 export const getTripsService = async (
   req: any,
@@ -71,26 +134,29 @@ export const getTripsService = async (
   next: NextFunction
 ) => {
   try {
-
     let matchConditions: any = {
       company: { $in: await convertIdsToObjects(req.body.company) },
       companyOrg: req.bodyData.companyOrg,
-      deletedAt: { $exists: false }
+      deletedAt: { $exists: false },
     };
 
     if (req.query.search?.trim()) {
       matchConditions = { ...matchConditions, code: req.query.search?.trim() };
     }
 
-    if(req.body.userId){
-      matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
+    if (req.body.userId) {
+      matchConditions = {
+        ...matchConditions,
+        "participants.user": {
+          $in: await convertIdsToObjects(req.body.userId),
+        },
+      };
     }
-  }
 
     const { data, status, totalPages } = await getTrips({
       matchConditions,
-      page : req.query.page ? Number(req.query.page) : 1,
-      limit : req.query.limit ?  Number(req.query.limit) : PaginationLimit
+      page: req.query.page ? Number(req.query.page) : 1,
+      limit: req.query.limit ? Number(req.query.limit) : PaginationLimit,
     });
     if (status === "success") {
       res.status(200).send({
@@ -115,7 +181,66 @@ export const updateTripService = async (
 ) => {
   try {
     req.body._id = req.params.id;
-    const { status, data, statusCode, message } = await updateTrip(req.body);
+    const { status, data, statusCode, message , extraData} : any = await updateTrip(req.body);
+    if (status === "success") {
+      const company = await getCompanyById(data.company);
+      if (!company) {
+        return res.status(404).send({
+          status: "error",
+          statusCode: 404,
+          message: "Company not found",
+        });
+      }
+      const sendEmails = async (users: any[], role: string) => {
+        for (let user of users) {
+          console.log(user)
+          if (user.isAdd) {
+            const userDetails = await findUserById(user.user);
+            if (userDetails) {
+              let link = `${baseDashURL}/trip/${extraData._id}`;
+              let mailSubject, mailTemplate;
+
+              if (!user.isActive) {
+                const token = await createToken({
+                  metaData: { tripId: extraData._id, type: role },
+                  userId: userDetails._id,
+                  token: generateResetPasswordToken(userDetails?._id),
+                  type: "trip",
+                  company: extraData.company,
+                });
+                link = `${baseDashURL}/trip/verify-invitation/${token?.data?.token}`;
+                mailSubject = `Invitation to Join ${extraData.title} Trip`;
+                mailTemplate = "trip/add_member_invitation_template.html";
+              } else {
+                mailSubject = `Welcome to the ${extraData.title} Trip!`;
+                mailTemplate = "trip/add_member_welcome_template.html";
+              }
+
+              const mailData = {
+                tripName: extraData.title,
+                role: role.split("_").join(" "),
+                companyName: company.company_name,
+                logoUrl: company.logo?.url,
+              };
+
+              await SendMail(
+                userDetails.username,
+                userDetails.username,
+                link,
+                "",
+                mailSubject,
+                mailTemplate,
+                mailData
+              );
+            }
+          }
+        }
+      };
+
+      await Promise.all([sendEmails(req.body.participants, "participants")]);
+    }
+
+
     return res.status(statusCode).send({
       status: status,
       data: data,
@@ -132,8 +257,7 @@ export const getAllDayTripCountService = async (
   next: NextFunction
 ) => {
   try {
-
-    let matchConditions : any = {}
+    let matchConditions: any = {};
 
     const endDate = new Date();
     const startDate = new Date(endDate);
@@ -144,19 +268,26 @@ export const getAllDayTripCountService = async (
       req.body.endDate = endDate;
     }
 
-    matchConditions =  {
+    matchConditions = {
       company: { $in: await convertIdsToObjects(req.body.company) },
       deletedAt: { $exists: false },
-      companyOrg : req.bodyData.companyOrg,
-      createdAt : { $gte: req.body.startDate, $lte: req.body.endDate }
+      companyOrg: req.bodyData.companyOrg,
+      createdAt: { $gte: req.body.startDate, $lte: req.body.endDate },
+    };
+
+    if (req.body.userId) {
+      matchConditions = {
+        ...matchConditions,
+        "participants.user": {
+          $in: await convertIdsToObjects(req.body.userId),
+        },
+      };
     }
 
-    if(req.body.userId){
-        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
-      }
-    }
-
-    const { status, data } = await getAllDayTripCount({matchConditions,...req.body});
+    const { status, data } = await getAllDayTripCount({
+      matchConditions,
+      ...req.body,
+    });
     if (status === "success") {
       res.status(200).send({
         data: data,
@@ -177,19 +308,26 @@ export const getTripCountService = async (
   next: NextFunction
 ) => {
   try {
-    let matchConditions : any = {}
+    let matchConditions: any = {};
 
-    matchConditions =  {
+    matchConditions = {
       company: { $in: await convertIdsToObjects(req.body.company) },
-      deletedAt: { $exists: false }
+      deletedAt: { $exists: false },
+    };
+
+    if (req.body.userId) {
+      matchConditions = {
+        ...matchConditions,
+        "participants.user": {
+          $in: await convertIdsToObjects(req.body.userId),
+        },
+      };
     }
 
-    if(req.body.userId){
-        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
-      }
-    }
-
-    const { status, data } = await getTripCounts({matchConditions,...req.body});
+    const { status, data } = await getTripCounts({
+      matchConditions,
+      ...req.body,
+    });
     if (status === "success") {
       res.status(200).send({
         data: data,
@@ -199,11 +337,10 @@ export const getTripCountService = async (
     } else {
       throw generateError(data, 400);
     }
-  } catch (err : any) {
-    return createCatchError(err)
+  } catch (err: any) {
+    return createCatchError(err);
   }
 };
-
 
 export const totalTripTypeCountService = async (
   req: any,
@@ -211,32 +348,38 @@ export const totalTripTypeCountService = async (
   next: NextFunction
 ) => {
   try {
-    let matchConditions : any = {}
+    let matchConditions: any = {};
 
-    req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.company = await convertIdsToObjects(req.body.company);
     req.body.companyOrg = req.bodyData.companyOrg;
 
-    matchConditions =  {
+    matchConditions = {
       company: { $in: await convertIdsToObjects(req.body.company) },
-      deletedAt: { $exists: false }
+      deletedAt: { $exists: false },
+    };
+
+    if (req.body.userId) {
+      matchConditions = {
+        ...matchConditions,
+        "participants.user": {
+          $in: await convertIdsToObjects(req.body.userId),
+        },
+      };
     }
 
-    if(req.body.userId){
-        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
-      }
-    }
-
-    const { status, message , statusCode, data } = await totalTripTypeCount({matchConditions,...req.body});
-      res.status(statusCode).send({
-        data: data,
-        message: message,
-        status: status,
-      });
-  } catch (err : any) {
-    return createCatchError(err)
+    const { status, message, statusCode, data } = await totalTripTypeCount({
+      matchConditions,
+      ...req.body,
+    });
+    res.status(statusCode).send({
+      data: data,
+      message: message,
+      status: status,
+    });
+  } catch (err: any) {
+    return createCatchError(err);
   }
 };
-
 
 export const addTripMembersService = async (
   req: any,
@@ -245,8 +388,9 @@ export const addTripMembersService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    const { status, statusCode, message, data, extraData } : any = await addTripMembers(req.body);
-    if(status === "success"){
+    const { status, statusCode, message, data, extraData }: any =
+      await addTripMembers(req.body);
+    if (status === "success") {
       const [company]: any = await Promise.all([
         getCompanyById(extraData.company),
       ]);
@@ -268,7 +412,7 @@ export const addTripMembersService = async (
           userId: data.user?._id,
           token: generateResetPasswordToken(data?.user?._id),
           type: "trip",
-          company: extraData.company
+          company: extraData.company,
         });
         link = `${baseDashURL}/trip/verify-invitation/${token?.data?.token}`;
         mailSubject = `Invitation to Join ${extraData.title} Trip`;
@@ -294,7 +438,8 @@ export const addTripMembersService = async (
         mailSubject,
         mailTemplate,
         mailData
-      )}
+      );
+    }
     res.status(statusCode).send({
       status,
       statusCode,
@@ -305,7 +450,6 @@ export const addTripMembersService = async (
     next(err);
   }
 };
-
 
 export const verifyUserTokenTripService = async (
   req: any,
@@ -326,7 +470,7 @@ export const verifyUserTokenTripService = async (
         userId: data.userId,
         tripId: data?.metaData?.tripId,
         arrayName: data?.metaData?.type,
-        is_active: true
+        is_active: true,
       });
 
       if (status === "success") {
@@ -337,7 +481,6 @@ export const verifyUserTokenTripService = async (
           let projectLink: string;
           let mailSubject = `Welcome to the ${datas.title} Trip!`;
           let mailTemplate = "trip/add_member_welcome_template.html";
-
 
           projectLink = `${baseDashURL}/trip/${datas._id}`;
           mailTemplate = mailTemplate.replace("invitation", "welcome");
@@ -379,31 +522,34 @@ export const verifyUserTokenTripService = async (
   }
 };
 
-
 export const calculateTripAmountService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    let matchConditions: any = {};
 
-    let matchConditions : any = {}
-
-    req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.company = await convertIdsToObjects(req.body.company);
     req.body.companyOrg = req.bodyData.companyOrg;
 
-    matchConditions =  {
+    matchConditions = {
       company: { $in: await convertIdsToObjects(req.body.company) },
-      deletedAt: { $exists: false }
+      deletedAt: { $exists: false },
+    };
+
+    if (req.body.userId) {
+      matchConditions = {
+        ...matchConditions,
+        "participants.user": {
+          $in: await convertIdsToObjects(req.body.userId),
+        },
+      };
     }
 
-    if(req.body.userId){
-        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
-      }
-    }
-
-    req.body.limit = req.body.limit ? req.body.limit : 8
-    const { status, statusCode, message, data } = await calculateTripAmountByTitle({matchConditions,...req.body});
+    req.body.limit = req.body.limit ? req.body.limit : 8;
+    const { status, statusCode, message, data } =
+      await calculateTripAmountByTitle({ matchConditions, ...req.body });
     res.status(statusCode).send({
       status,
       statusCode,
@@ -421,21 +567,26 @@ export const calculateTotalTripsAmountService = async (
   next: NextFunction
 ) => {
   try {
-    let matchConditions : any = {}
+    let matchConditions: any = {};
 
-    req.body.company = await convertIdsToObjects(req.body.company)
+    req.body.company = await convertIdsToObjects(req.body.company);
     req.body.companyOrg = req.bodyData.companyOrg;
 
-    matchConditions =  {
+    matchConditions = {
       company: { $in: await convertIdsToObjects(req.body.company) },
-      deletedAt: { $exists: false }
-    }
+      deletedAt: { $exists: false },
+    };
 
-    if(req.body.userId){
-        matchConditions = {...matchConditions,"participants.user": { $in: await convertIdsToObjects(req.body.userId) },
-      }
+    if (req.body.userId) {
+      matchConditions = {
+        ...matchConditions,
+        "participants.user": {
+          $in: await convertIdsToObjects(req.body.userId),
+        },
+      };
     }
-    const { status, statusCode, message, data } = await calculateTotalTripsAmount({matchConditions, ...req.body});
+    const { status, statusCode, message, data } =
+      await calculateTotalTripsAmount({ matchConditions, ...req.body });
     res.status(statusCode).send({
       status,
       statusCode,
@@ -453,12 +604,12 @@ export const calculateIndividualTripAmountService = async (
   next: NextFunction
 ) => {
   try {
-
-    req.body.company = await convertIdsToObjects(req.body.company)
-    if(req.body.tripId){
-      req.body.tripId = new mongoose.Types.ObjectId(req.body.tripId)
+    req.body.company = await convertIdsToObjects(req.body.company);
+    if (req.body.tripId) {
+      req.body.tripId = new mongoose.Types.ObjectId(req.body.tripId);
     }
-    const { status, statusCode, message, data } = await calculateIndividualTripAmount(req.body);
+    const { status, statusCode, message, data } =
+      await calculateIndividualTripAmount(req.body);
     res.status(statusCode).send({
       status,
       statusCode,
@@ -489,16 +640,14 @@ export const findActiveUserInTripService = async (
       matchConditions = {
         ...matchConditions,
         $or: [
-          { participants: { $elemMatch: { user: userId, isActive: true } } }
+          { participants: { $elemMatch: { user: userId, isActive: true } } },
         ],
       };
     }
 
-    const { statusCode, status, data, message } = await findActiveUserInTrip(
-      {
-        matchConditions,
-      }
-    );
+    const { statusCode, status, data, message } = await findActiveUserInTrip({
+      matchConditions,
+    });
     res.status(statusCode).send({
       message,
       data,

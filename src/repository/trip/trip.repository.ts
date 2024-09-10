@@ -27,6 +27,7 @@ export const createTrip = async (data: any) => {
     return {
       status: "success",
       data: savedTrip,
+      extraData : savedTrip,
       statusCode: statusCode.success,
       message: `${data.title} trip has been created successfully`,
     };
@@ -75,6 +76,7 @@ export const updateTrip = async (data: any) => {
       return {
         status: "success",
         data: updatedData,
+        extraData:updatedData,
         statusCode: statusCode.success,
         message: "Trip Update Successfully",
       };
@@ -152,6 +154,17 @@ export const getSingleTrips = async (data: any) => {
         $replaceRoot: {
           newRoot: {
             $mergeObjects: ["$doc", { participants: "$participants" }],
+          },
+        },
+      },
+      {
+        $addFields: {
+          participants: {
+            $cond: {
+              if: { $eq: ["$participants", [{}]] },
+              then: [],
+              else: "$participants",
+            },
           },
         },
       },
