@@ -6,7 +6,6 @@ import { createCatchError } from "../../config/helper/function";
 import companyHolidays from "../../schemas/company/companyHolidays";
 import companyWorkLocations from "../../schemas/company/companyWorkLocations";
 import companyWorkTiming from "../../schemas/company/companyWorkTiming";
-import { CompanyDetailsI } from "../../schemas/User/CompanyDetails";
 
 export const getOrganisationCompanies = async (data: any) => {
   try {

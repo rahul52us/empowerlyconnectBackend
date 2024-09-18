@@ -40,7 +40,7 @@ const AttendanceRequestSchema = new mongoose.Schema({
   },
   policy : {
     type : mongoose.Schema.Types.ObjectId,
-    ref : ''
+    ref : 'CompanyPolicy'
   },
   officeStartTime: {
     type: String,

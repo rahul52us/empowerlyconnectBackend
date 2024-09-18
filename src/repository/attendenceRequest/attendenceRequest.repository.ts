@@ -37,6 +37,7 @@ export async function findAttendanceRequests(data: any) {
     const { startDate, endDate, user } = data;
 
     const pipeline: any[] = [
+      // Match records based on user and date range
       {
         $match: {
           user: new mongoose.Types.ObjectId(user),
@@ -46,6 +47,7 @@ export async function findAttendanceRequests(data: any) {
           },
         },
       },
+      // Lookup leave requests within the date range
       {
         $lookup: {
           from: "requests",
@@ -71,11 +73,12 @@ export async function findAttendanceRequests(data: any) {
           as: "leaveRequests",
         },
       },
+      // Lookup holiday information from company policies (holidays only)
       {
         $lookup: {
           from: "companypolicies",
           let: {
-            policyId: "$policy",  // Use the policy reference directly
+            policyId: "$policy", // Use the policy reference directly
             date: "$date",
           },
           pipeline: [
@@ -112,14 +115,22 @@ export async function findAttendanceRequests(data: any) {
             {
               $project: {
                 holiday: "$holidays",
-                gracePeriodMinutesLate: 1,
-                gracePeriodMinutesEarly: 1,
               },
             },
           ],
           as: "holidayInfo",
         },
       },
+      // Lookup the policy information (grace periods, timings)
+      {
+        $lookup: {
+          from: "companypolicies",
+          localField: "policy", // Use the policy reference directly
+          foreignField: "_id",
+          as: "policyInfo",
+        },
+      },
+      // Add fields for policy details (grace periods, etc.) and holiday status
       {
         $addFields: {
           isHoliday: { $gt: [{ $size: "$holidayInfo" }, 0] },
@@ -138,7 +149,7 @@ export async function findAttendanceRequests(data: any) {
                 },
               },
               unit: "minute",
-              amount: -330,
+              amount: -330, // Convert from IST to UTC
             },
           },
           officeEndTimeUTC: {
@@ -156,7 +167,7 @@ export async function findAttendanceRequests(data: any) {
                 },
               },
               unit: "minute",
-              amount: -330,
+              amount: -330, // Convert from IST to UTC
             },
           },
           activePunches: {
@@ -166,8 +177,8 @@ export async function findAttendanceRequests(data: any) {
               cond: { $eq: ["$$punch.isActive", true] },
             },
           },
-          gracePeriodMinutesLate: { $arrayElemAt: ["$holidayInfo.gracePeriodMinutesLate", 0] },
-          gracePeriodMinutesEarly: { $arrayElemAt: ["$holidayInfo.gracePeriodMinutesEarly", 0] },
+          gracePeriodMinutesLate: { $arrayElemAt: ["$policyInfo.gracePeriodMinutesLate", 0] },
+          gracePeriodMinutesEarly: { $arrayElemAt: ["$policyInfo.gracePeriodMinutesEarly", 0] },
         },
       },
       {
@@ -182,9 +193,10 @@ export async function findAttendanceRequests(data: any) {
           gracePeriodMinutesEarly: 1,
           isHoliday: 1,
           holidayInfo: 1,
-          leaveRequests: 1,
+          leaveRequests: 1
         },
       },
+      // Add fields for late coming and early going calculations
       {
         $addFields: {
           lateComingMinutes: {
@@ -308,4 +320,5 @@ export async function findAttendanceRequests(data: any) {
     );
   }
 }
+
 

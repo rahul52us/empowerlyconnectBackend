@@ -43,7 +43,7 @@ export const createAttendenceRequestService = async (
   next: NextFunction
 ) => {
   try {
-    const { latitude, longitude, deviceInfo } = req.body;
+    const { latitude, longitude, deviceInfo, policy } = req.body;
     const userId = req.userId;
     const companyDetail = req.bodyData.companyDetail;
 
@@ -82,8 +82,9 @@ export const createAttendenceRequestService = async (
             },
           ],
           date: new Date(),
-          officeStartTime: "12:00",
+          officeStartTime: "08:00",
           officeEndTime: "18:00",
+          policy : policy
         });
 
       res.status(statusCode).send({
@@ -129,7 +130,7 @@ export const getAttendenceRequestsService = async (
       user: new mongoose.Types.ObjectId(userId),
       startDate: startDate,
       endDate: endDate,
-      companyId: companyId,
+      companyId: companyId
     });
 
     res.status(200).send({
