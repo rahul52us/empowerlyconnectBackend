@@ -141,11 +141,11 @@ export const getHolidays = async (data: any) => {
 
 export const getWorkLocations = async (data: any) => {
   try {
-    const workLocations: any = await companyWorkLocations.find(data);
-    if (workLocations) {
+    const policy: any = await CompanyPolicy.findOne({_id : data.policy, company : data.company});
+    if (policy) {
       return {
         status: "success",
-        data: workLocations || [],
+        data: policy.workLocations || [],
         message: "Successfully retrieved Locations",
         statusCode: statusCode.success,
       };
@@ -154,7 +154,7 @@ export const getWorkLocations = async (data: any) => {
         status: "error",
         message: "Policy not found",
         data: "Policy not found",
-        statusCode: statusCode.info,
+        statusCode: statusCode.info
       };
     }
   } catch (err: any) {
@@ -404,12 +404,9 @@ export const updateHolidays = async (data: any) => {
       statusCode: statusCode.success,
     };
   } catch (err: any) {
-    console.error('Unexpected error:', err);
     throw new Error(err);
   }
 };
-
-
 
 export const getWorkTiming = async (data: any) => {
   try {
@@ -436,67 +433,105 @@ export const getWorkTiming = async (data: any) => {
 
 export const updateWorkLocations = async (data: any) => {
   try {
-    const policy: any = await CompanyPolicy.findById(data.policy);
+    // Find the active policy by its _id
+    const policy: any = await CompanyPolicy.findOne({
+      _id: data.policy,
+      is_active: true,
+    });
 
+    // If the policy is not found, return a "policy not found" message
     if (!policy) {
       return {
-        status: "success",
+        status: "error",
         message: "Policy not found",
-        data: null,
+        data: "Policy not found",
         statusCode: statusCode.info,
       };
     }
 
-    if (data?.edit === 1) {
-      const updatedWorkLocations = await companyWorkLocations.findByIdAndUpdate(
-        data._id,
-        { $set: data },
-        { new: true }
-      );
-      if (updatedWorkLocations) {
-        return {
-          status: "success",
-          data: updateWorkLocations,
-          message: "Location have been updated successfully",
-          statusCode: statusCode.success,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "The specified location does not exist",
-          data: null,
-          statusCode: statusCode.info,
-        };
-      }
-    } else if (data?.delete === 1) {
-      const deletedLocation = await companyWorkLocations.findByIdAndDelete(
-        data?._id
-      );
-      if (deletedLocation) {
-        return {
-          status: "success",
-          data: deletedLocation,
-          message: "Locations has been Deleted",
-          statusCode: statusCode.success,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "The specified Locations does not exist",
-          data: null,
-          statusCode: statusCode.info,
-        };
-      }
-    } else {
-      const locations = new companyWorkLocations(data);
-      const savedLocations = await locations.save();
+    // Add a new holiday to the policy's holidays array
+    if (data?.isAdd) {
+      policy.workLocations.push({
+        ipAddress: data.ipAddress,
+        locationName: data.locationName
+      });
+      policy.markModified('workLocations')
+      const savedPolicy = await policy.save();
       return {
         status: "success",
-        data: savedLocations,
-        message: "Location has been added successfully",
+        data: savedPolicy.workLocations,
+        message: "locations has been added successfully",
         statusCode: statusCode.success,
       };
     }
+
+    if (data?.isEdit) {
+      let filterIndex = policy.workLocations.findIndex(
+        (item: any) => data.oldLocation === item.locationName
+      );
+
+      if (filterIndex !== -1) {
+        // Only update the specific holiday found, keeping other fields intact
+        policy.workLocations[filterIndex] = {
+          ...policy.workLocations[filterIndex],
+          ipAddress: data.ipAddress,
+          locationName: data.locationName
+        };
+
+        policy.markModified('workLocations');
+
+        const savedPolicy = await policy.save();
+        return {
+          status: "success",
+          data: savedPolicy.workLocations,
+          message: "locations has been updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          data: "No such workLocations exists",
+          message: "No such workLocations exists",
+          statusCode: statusCode.info,
+        };
+      }
+    }
+
+    // Delete an existing holiday based on the title
+    if (data?.isDelete) {
+      let filterIndex = policy.workLocations.findIndex(
+        (item: any) => data.locationName === item.locationName
+      );
+
+      if (filterIndex !== -1) {
+        // Remove the holiday at the found index
+        policy.workLocations.splice(filterIndex, 1);
+        policy.markModified('workLocations');
+        const savedPolicy = await policy.save();
+
+        return {
+          status: "success",
+          data: savedPolicy.workLocations,
+          message: "location has been deleted successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          data: "No such location exists",
+          message: "No such location exists",
+          statusCode: statusCode.info,
+        };
+      }
+    }
+
+    // If no valid action is provided, return an error
+    return {
+      status: "error",
+      data: "No valid action provided",
+      message: "No valid action provided",
+      statusCode: statusCode.success,
+    };
   } catch (err: any) {
     throw new Error(err);
   }
