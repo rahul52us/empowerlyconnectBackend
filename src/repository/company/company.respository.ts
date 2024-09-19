@@ -164,47 +164,98 @@ export const getWorkLocations = async (data: any) => {
 
 export const updateWorkTiming = async (data: any) => {
   try {
-    if (data.isAdd) {
-      const timing = new companyWorkTiming(data);
-      const savedTiming = await timing.save();
+
+    const policy: any = await CompanyPolicy.findOne({
+      _id: data.policy,
+      is_active: true,
+    });
+
+    // If the policy is not found, return a "policy not found" message
+    if (!policy) {
+      return {
+        status: "error",
+        message: "Policy not found",
+        data: "Policy not found",
+        statusCode: statusCode.info,
+      };
+    }
+
+    if (data?.isAdd) {
+      policy.workTiming.push({
+        startTime: data.startTime,
+        endTime: data.endTime,
+        daysOfWeek: data.daysOfWeek
+      });
+      policy.markModified('workTiming')
+      const savedPolicy = await policy.save();
       return {
         status: "success",
-        data: savedTiming || [],
-        message: "Timing has been created successfully",
+        data: savedPolicy.workTiming,
+        message: "workTiming has been added successfully",
         statusCode: statusCode.success,
       };
-    } else if (data.isEdit) {
-      const updatedData = await companyWorkTiming.findByIdAndUpdate(
-        data._id,
-        {
-          $set: {
-            startTime: data.startTime,
-            endTime: data.endTime,
-            is_active: data.is_active,
-            daysOfWeek: data.daysOfWeek,
-          },
-        },
-        { new: true }
+    }
+
+    if (data?.isEdit) {
+      let filterIndex = policy.workTiming.findIndex(
+        (item: any, index : number) => data.index === index
       );
-      return {
-        status: "success",
-        data: updatedData || null,
-        message: "Timing has been updated successfully",
-        statusCode: statusCode.success,
-      };
-    } else if (data.isDelete) {
-      const updatedData = await companyWorkTiming.findByIdAndUpdate(
-        data._id,
-        { $set: { is_active: false } },
-        { new: true }
+
+      if (filterIndex !== -1) {
+        // Only update the specific holiday found, keeping other fields intact
+        policy.workTiming[filterIndex] = {
+          ...policy.workTiming[filterIndex],
+          startTime: data.startTime,
+          endTime: data.endTime,
+          daysOfWeek: data.daysOfWeek
+        };
+
+        policy.markModified('workTiming');
+
+        const savedPolicy = await policy.save();
+        return {
+          status: "success",
+          data: savedPolicy.workTiming,
+          message: "WorkTiming has been updated successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          data: "No such WorkTiming exists",
+          message: "No such WorkTiming exists",
+          statusCode: statusCode.info,
+        };
+      }
+    }
+    if (data?.isDelete) {
+      let filterIndex = policy.workTiming.findIndex(
+        (_: any, index : number) => data.index === index
       );
-      return {
-        status: "success",
-        data: updatedData || null,
-        message: "Timing has been deleted successfully",
-        statusCode: statusCode.success,
-      };
-    } else {
+
+      if (filterIndex !== -1) {
+        // Remove the holiday at the found index
+        policy.workTiming.splice(filterIndex, 1);
+        policy.markModified('workTiming');
+        const savedPolicy = await policy.save();
+
+        return {
+          status: "success",
+          data: savedPolicy.workTiming,
+          message: "workTiming has been deleted successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          data: "No such workTiming exists",
+          message: "No such workTiming exists",
+          statusCode: statusCode.info,
+        };
+      }
+    }
+
+    else {
       return {
         status: "error",
         data: "No such action exists",
@@ -362,14 +413,22 @@ export const updateHolidays = async (data: any) => {
 
 export const getWorkTiming = async (data: any) => {
   try {
-    const datas = await companyWorkTiming.find(data);
-
-    return {
-      status: "success",
-      data: datas,
-      message: "WorkTiming Retrieved successfully",
-      statusCode: statusCode.success,
-    };
+      const policy =  await CompanyPolicy.findOne({_id : data.policy, company : data.company})
+       if (policy) {
+         return {
+           status: "success",
+           data: policy.workTiming || [],
+           message: "Successfully retrieved workTiming",
+           statusCode: statusCode.success,
+         };
+       } else {
+         return {
+           status: "error",
+           message: "Policy not found",
+           data: "Policy not found",
+           statusCode: statusCode.info,
+         };
+       }
   } catch (err: any) {
     return createCatchError(err);
   }
