@@ -118,13 +118,11 @@ export const getCompanyById = async (id: any): Promise<any | null> => {
 
 export const getHolidays = async (data: any) => {
   try {
-    const holidays: any = await companyHolidays
-      .find(data)
-      .sort({ createdAt: -1 });
-    if (holidays) {
+   const policy =  await CompanyPolicy.findOne({_id : data.policy, company : data.company})
+    if (policy) {
       return {
         status: "success",
-        data: holidays || [],
+        data: policy.holidays || [],
         message: "Successfully retrieved holidays",
         statusCode: statusCode.success,
       };
@@ -194,26 +192,26 @@ export const updateWorkTiming = async (data: any) => {
         message: "Timing has been updated successfully",
         statusCode: statusCode.success,
       };
-    }
-    else if(data.isDelete){
-      const updatedData = await companyWorkTiming.findByIdAndUpdate(data._id, {$set : {is_active : false}}, {new : true})
+    } else if (data.isDelete) {
+      const updatedData = await companyWorkTiming.findByIdAndUpdate(
+        data._id,
+        { $set: { is_active: false } },
+        { new: true }
+      );
       return {
         status: "success",
         data: updatedData || null,
         message: "Timing has been deleted successfully",
         statusCode: statusCode.success,
       };
-    }
-    else {
+    } else {
       return {
         status: "error",
-        data: 'No such action exists',
+        data: "No such action exists",
         message: "No such action exists",
         statusCode: statusCode.success,
       };
     }
-
-
   } catch (err: any) {
     throw new Error(err);
   }
@@ -250,81 +248,117 @@ export const updateHolidayByExcel = async (data: any) => {
 
 export const updateHolidays = async (data: any) => {
   try {
+    // Find the active policy by its _id
     const policy: any = await CompanyPolicy.findOne({
       _id: data.policy,
       is_active: true,
     });
 
+    // If the policy is not found, return a "policy not found" message
     if (!policy) {
       return {
-        status: "success",
+        status: "error",
         message: "Policy not found",
         data: "Policy not found",
         statusCode: statusCode.info,
       };
     }
 
+    // Add a new holiday to the policy's holidays array
     if (data?.isAdd) {
-      const holiday = new companyHolidays({
+      policy.holidays.push({
         title: data.title,
         description: data.description,
-        date: data.date,
+        date: new Date(data.date),
         policy: policy._id,
         company: policy.company,
       });
-      const savedHoliday = await holiday.save();
+      policy.markModified('holidays')
+      const savedPolicy = await policy.save();
       return {
         status: "success",
-        data: savedHoliday,
-        message: "Holiday have been updated successfully",
+        data: savedPolicy.holidays,
+        message: "Holiday has been added successfully",
         statusCode: statusCode.success,
       };
     }
 
+    // Edit an existing holiday based on the title
     if (data?.isEdit) {
-      const holiday = await companyHolidays.findByIdAndUpdate(
-        data._id,
-        { $set: { ...data } },
-        { new: true }
+      let filterIndex = policy.holidays.findIndex(
+        (item: any) => data.oldTitle === item.title
       );
-      return {
-        status: "success",
-        data: holiday,
-        message: "Holiday have been updated successfully",
-        statusCode: statusCode.success,
-      };
-    }
 
-    if (data?.isDelete) {
-      const holiday = await companyHolidays.findById(data._id);
-      if (holiday) {
-        const deletedHoliday = await holiday.deleteOne();
+      if (filterIndex !== -1) {
+        // Only update the specific holiday found, keeping other fields intact
+        policy.holidays[filterIndex] = {
+          ...policy.holidays[filterIndex],
+          title: data.title,
+          description: data.description,
+          date: new Date(data.date)
+        };
+
+        policy.markModified('holidays');
+
+        const savedPolicy = await policy.save();
         return {
           status: "success",
-          data: deletedHoliday,
-          message: "Holiday delete successfully",
+          data: savedPolicy.holidays,
+          message: "Holiday has been updated successfully",
           statusCode: statusCode.success,
         };
       } else {
         return {
           status: "error",
-          data: "No Such holiday exists",
-          message: "No Such holiday exists",
-          statusCode: statusCode.success,
+          data: "No such holiday exists",
+          message: "No such holiday exists",
+          statusCode: statusCode.info,
         };
       }
     }
 
+    // Delete an existing holiday based on the title
+    if (data?.isDelete) {
+      let filterIndex = policy.holidays.findIndex(
+        (item: any) => data.title === item.title
+      );
+
+      if (filterIndex !== -1) {
+        // Remove the holiday at the found index
+        policy.holidays.splice(filterIndex, 1);
+        policy.markModified('holidays');
+        const savedPolicy = await policy.save();
+
+        return {
+          status: "success",
+          data: savedPolicy.holidays,
+          message: "Holiday has been deleted successfully",
+          statusCode: statusCode.success,
+        };
+      } else {
+        return {
+          status: "error",
+          data: "No such holiday exists",
+          message: "No such holiday exists",
+          statusCode: statusCode.info,
+        };
+      }
+    }
+
+    // If no valid action is provided, return an error
     return {
       status: "error",
-      data: "No success action exists",
-      message: "No success action exists",
+      data: "No valid action provided",
+      message: "No valid action provided",
       statusCode: statusCode.success,
     };
   } catch (err: any) {
+    console.error('Unexpected error:', err);
     throw new Error(err);
   }
 };
+
+
 
 export const getWorkTiming = async (data: any) => {
   try {

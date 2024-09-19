@@ -121,8 +121,8 @@ export const updateTrip = async (data: any) => {
 
       for (const file of data.attach_files) {
         try {
-          let filename = `${updatedData?._id}_atFile_${file.file.filename}`
-          if (file.file && file.isAdd) {
+          let filename = `${updatedData?._id}_atFile_${file?.file?.filename}`
+          if (file?.file && file?.isAdd) {
             const documentInfo = await uploadFile({...file.file,filename});
             attach_filess.push({
               ...file,
@@ -133,7 +133,7 @@ export const updateTrip = async (data: any) => {
               },
             });
           } else {
-            if (file.file) {
+            if (file?.file) {
               attach_filess.push({
                 ...file,
               });

@@ -102,7 +102,7 @@ export const getWorkTimingService = async (
   next: NextFunction
 ) => {
   try {
-    const { status, data, statusCode, message } = await getWorkTiming({
+    const { status, data, statusCode, message } : any = await getWorkTiming({
       company: new mongoose.Types.ObjectId(req.query.company),
       policy : new mongoose.Types.ObjectId(req.query.policy),
       is_active : true

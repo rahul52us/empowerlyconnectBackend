@@ -3,7 +3,12 @@ import mongoose, { Document } from "mongoose";
 interface WorkTiming {
   startTime: string;
   endTime: string;
-  daysOfWeek: string[];
+  daysOfWeek: string[]; // ["Monday", "Tuesday", "Wednesday", ...]
+}
+
+interface WorkLocation {
+  ipAddress: string;
+  locationName: string;
 }
 
 interface CompanyPolicyI extends Document {
@@ -13,10 +18,7 @@ interface CompanyPolicyI extends Document {
   officeEndTime: string;
   gracePeriodMinutesLate: number;
   gracePeriodMinutesEarly: number;
-  workLocations: {
-    ipAddress: string;
-    locationName: string;
-  }[];
+  workLocations: WorkLocation[];
   workTiming: WorkTiming[];
   holidays: mongoose.Schema.Types.Mixed;
   ipAddressRange: mongoose.Schema.Types.Mixed;
@@ -25,6 +27,33 @@ interface CompanyPolicyI extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+const workLocationSchema = new mongoose.Schema<WorkLocation>({
+  ipAddress: {
+    type: String,
+    required: true
+  },
+  locationName: {
+    type: String,
+    required: true
+  }
+}, { _id: false }); // Disable the automatic _id field for embedded schemas
+
+const workTimingSchema = new mongoose.Schema<WorkTiming>({
+  startTime: {
+    type: String,
+    required: true
+  },
+  endTime: {
+    type: String,
+    required: true
+  },
+  daysOfWeek: {
+    type: [String],
+    required: true,
+    enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+  }
+}, { _id: false }); // Disable the automatic _id field for embedded schemas
 
 const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
   company: {
@@ -38,12 +67,10 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
     required: true
   },
   officeStartTime: {
-    type: String,
-    required: true
+    type: String
   },
   officeEndTime: {
-    type: String,
-    required: true
+    type: String
   },
   gracePeriodMinutesLate: {
     type: Number,
@@ -55,34 +82,14 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
     required: true,
     default: 20
   },
-  workLocations: [
-    {
-      ipAddress: {
-        type: String,
-        required: true
-      },
-      locationName: {
-        type: String,
-        required: true
-      }
-    }
-  ],
-  workTiming: [
-    {
-      startTime: {
-        type: String,
-        required: true
-      },
-      endTime: {
-        type: String,
-        required: true
-      },
-      daysOfWeek: {
-        type: [String],
-        required: true
-      }
-    }
-  ],
+  workLocations: {
+    type: [workLocationSchema],
+    default: []
+  },
+  workTiming: {
+    type: [workTimingSchema],
+    default: []
+  },
   holidays: {
     type: mongoose.Schema.Types.Mixed,
     default: []
