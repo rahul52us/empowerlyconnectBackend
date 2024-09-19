@@ -37,7 +37,7 @@ const workLocationSchema = new mongoose.Schema<WorkLocation>({
     type: String,
     required: true
   }
-}, { _id: false }); // Disable the automatic _id field for embedded schemas
+}); // Disable the automatic _id field for embedded schemas
 
 const workTimingSchema = new mongoose.Schema<WorkTiming>({
   startTime: {
@@ -53,7 +53,7 @@ const workTimingSchema = new mongoose.Schema<WorkTiming>({
     required: true,
     enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
   }
-}, { _id: false }); // Disable the automatic _id field for embedded schemas
+}); // Disable the automatic _id field for embedded schemas
 
 const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
   company: {
