@@ -195,7 +195,7 @@ const createOrganisationCompany = async (
     let user: any = null;
 
     // Check the Company
-    const checkExistsCompany = await Company.findOne({company_name : { $regex: new RegExp(req.body.username, 'i') }})
+    const checkExistsCompany = await Company.findOne({company_name : { $regex: new RegExp(req.body.companyDetails?.company_name?.trim(), 'i') }})
     if(checkExistsCompany){
       return res.status(statusCode.info).send({
         status: "error",
@@ -204,8 +204,9 @@ const createOrganisationCompany = async (
       });
     }
 
-    const codeCompany = await Company.findOne({companyCode : { $regex: new RegExp(req.body.companyCode, 'i') }});
+    const codeCompany = await Company.findOne({companyCode : { $regex: new RegExp(req.body.companyDetails?.companyCode?.trim(), 'i') }});
       if (codeCompany) {
+        console.log('this is rahul kushwah')
         return res.status(statusCode.info).send({
           status: "error",
           data: `${codeCompany.companyCode} Code is already exists with ${codeCompany.company_name}`,
@@ -214,7 +215,7 @@ const createOrganisationCompany = async (
     }
 
     // Check the User
-    user = await User.findOne({ username: { $regex: new RegExp(req.body.username, 'i') } });
+    user = await User.findOne({ username: { $regex: new RegExp(req.body.username?.trim(), 'i') } });
     if (user) {
       return res.status(statusCode.info).send({
           status: "error",
@@ -222,7 +223,7 @@ const createOrganisationCompany = async (
           message: `${user.username} user is already exists`,
       });
     } else {
-      const codeUser = await User.findOne({ code: req.body.code });
+      const codeUser = await User.findOne({ code: req.body.code?.trim() });
       if (codeUser) {
         return res.status(statusCode.info).send({
           status: "error",
