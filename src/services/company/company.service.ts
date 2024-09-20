@@ -8,6 +8,7 @@ import {
   getOrganisationCompanies,
   getWorkLocations,
   getWorkTiming,
+  updateCompanyPolicy,
   updateHolidayByExcel,
   updateHolidays,
   updateWorkLocations,
@@ -21,6 +22,22 @@ export const getCompanyPoliciesService = async (req : any, res : Response, next 
   try
   {
     const {message, data, status, statusCode} = await getCompanyPolicies({company : new mongoose.Types.ObjectId(req.query.company)})
+    return res.status(statusCode).send({
+      message,
+      data,
+      status
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
+export const updateCompanyPolicyService = async (req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const {status, statusCode, message, data} = await updateCompanyPolicy({...req.body, policy : new mongoose.Types.ObjectId(req.body.policy), company : new mongoose.Types.ObjectId(req.body.company)})
     return res.status(statusCode).send({
       message,
       data,

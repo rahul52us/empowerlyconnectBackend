@@ -79,12 +79,12 @@ const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
   gracePeriodMinutesLate: {
     type: Number,
     required: true,
-    default: 10
+    default: 0
   },
   gracePeriodMinutesEarly: {
     type: Number,
     required: true,
-    default: 20
+    default: 0
   },
   workLocations: {
     type: [workLocationSchema],

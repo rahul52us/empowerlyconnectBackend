@@ -28,6 +28,35 @@ export const getCompanyPolicies = async (data : any) => {
   }
 }
 
+export const updateCompanyPolicy = async (data : any) => {
+  try
+  {
+    const companyPolicy = await CompanyPolicy.findOneAndUpdate({_id : data.policy, company : data.company},{$set : {...data},new : true})
+    if(companyPolicy){
+      return {
+        data : companyPolicy,
+        message : 'Policy has been updated successfully',
+        status : 'success',
+        statusCode:statusCode.success
+      }
+    }
+    else
+    {
+      return {
+        status : 'error',
+        data : 'Policy does not exists',
+        statusCode : statusCode.info,
+        message : 'Policy does not exists'
+      }
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}
+
+
 export const getCompanyCount = async (data: any) => {
   try {
     const pipeline: any = [
