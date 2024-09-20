@@ -5,7 +5,7 @@ import {
   filterCompany,
   updateOrganisationCompany,
 } from "../modules/organisation/Company";
-import { getCompanyDetailsByNameService, getHolidayService, getOrganisationsCompanyService, getWorkLocationservice, getWorkTimingService, updateHolidayExcelService, updateHolidayService, updateWorkLocationExcelService, updateWorkLocationService, updateWorkTimingService } from "../services/company/company.service";
+import { getCompanyDetailsByNameService, getCompanyPoliciesService, getHolidayService, getOrganisationsCompanyService, getWorkLocationservice, getWorkTimingService, updateHolidayExcelService, updateHolidayService, updateWorkLocationExcelService, updateWorkLocationService, updateWorkTimingService } from "../services/company/company.service";
 import authenticate from "../modules/config/authenticate";
 const router = express.Router();
 
@@ -15,6 +15,7 @@ router.put('/:id',authenticate,updateOrganisationCompany)
 router.get('/companies',authenticate,getOrganisationsCompanyService)
 router.get("/search", filterCompany);
 router.get('/details', getCompanyDetailsByNameService)
+router.get('/policies',authenticate,getCompanyPoliciesService)
 router.get('/policy/holidays',authenticate,getHolidayService)
 router.get('/policy/workLocations',authenticate,getWorkLocationservice)
 router.get('/policy/workTiming',authenticate,getWorkTimingService)

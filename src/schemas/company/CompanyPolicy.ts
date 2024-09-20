@@ -12,6 +12,7 @@ interface WorkLocation {
 }
 
 interface CompanyPolicyI extends Document {
+  title : string;
   company: mongoose.Schema.Types.ObjectId;
   createdBy: mongoose.Schema.Types.ObjectId;
   officeStartTime: string;
@@ -37,7 +38,7 @@ const workLocationSchema = new mongoose.Schema<WorkLocation>({
     type: String,
     required: true
   }
-}); // Disable the automatic _id field for embedded schemas
+});
 
 const workTimingSchema = new mongoose.Schema<WorkTiming>({
   startTime: {
@@ -53,9 +54,12 @@ const workTimingSchema = new mongoose.Schema<WorkTiming>({
     required: true,
     enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
   }
-}); // Disable the automatic _id field for embedded schemas
+});
 
 const companyPolicySchema = new mongoose.Schema<CompanyPolicyI>({
+  title : {
+    type : String
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',

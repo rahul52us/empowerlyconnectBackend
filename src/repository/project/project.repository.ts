@@ -1004,9 +1004,9 @@ const updateTask = async (datas: any) => {
 
         for (const file of datas.attach_files) {
           try {
-            let filename = `${updatedTask?._id}_atFile_${file.file.filename}`
-            if (file.isAdd && file.file) {
-              const documentInfo = await uploadFile({...file.file,filename});
+            let filename = `${updatedTask?._id}_atFile_${file?.file?.filename}`
+            if (file?.isAdd && file?.file) {
+              const documentInfo = await uploadFile({...file?.file,filename});
               attach_files.push({
                 ...file,
                 file: {
@@ -1016,7 +1016,7 @@ const updateTask = async (datas: any) => {
                 },
               });
             } else {
-              if(file.file){
+              if(file?.file){
                 attach_files.push({
                   ...file
                 });
@@ -1033,7 +1033,6 @@ const updateTask = async (datas: any) => {
               }
             }
           } catch (err: any) {
-            console.error("Error uploading file:", err);
           }
         }
 

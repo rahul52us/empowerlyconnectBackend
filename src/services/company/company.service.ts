@@ -2,6 +2,7 @@ import { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import {
   getCompanyDetailsByName,
+  getCompanyPolicies,
   getHolidays,
   getOrganisationCompanies,
   getWorkLocations,
@@ -15,6 +16,21 @@ import {
 import { generateError } from "../../config/Error/functions";
 import ExcelJS from "exceljs";
 
+export const getCompanyPoliciesService = async (req : any, res : Response, next : NextFunction) => {
+  try
+  {
+    const {message, data, status, statusCode} = await getCompanyPolicies({company : new mongoose.Types.ObjectId(req.query.company)})
+    return res.status(statusCode).send({
+      message,
+      data,
+      status
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
 
 export const getOrganisationsCompanyService = async (req : any , res : Response, next : NextFunction) => {
   try

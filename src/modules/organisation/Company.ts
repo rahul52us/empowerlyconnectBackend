@@ -2,6 +2,7 @@ import { Response, NextFunction } from "express";
 import User from "../../schemas/User/User";
 import Company from "../../schemas/company/Company";
 import ProfileDetails from "../../schemas/User/ProfileDetails";
+import QualificationDetails from "../../schemas/User/Qualifications";
 import { createValidation } from "./utils/validation";
 import { generateError } from "../config/function";
 import generateToken from "../config/generateToken";
@@ -45,6 +46,20 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
         400
       );
     }
+
+    const existingCompanyCode = await Company.findOne({
+      company_name: new RegExp(
+        req.body.companyDetails?.companyCode?.trim(),
+        "i"
+      ),
+    });
+    if (existingCompanyCode) {
+      throw generateError(
+        `${existingCompanyCode?.companyCode} code is alredy existing with ${existingCompanyCode.company_name} company`,
+        400
+      );
+    }
+
 
     const comp: any = new Company({
       company_name: req.body.companyDetails?.company_name?.trim(),
@@ -106,6 +121,12 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const savedCompanyDetails = await companyDetails.save();
 
+    const qualifications = new QualificationDetails({
+      user: user._id,
+    });
+
+    const savedQualifications = await qualifications.save()
+
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       {
@@ -152,6 +173,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
         workExperience: savedWorkExperience._id,
         companyPolicy: createdCompPolicy._id,
         familyDetails: savedFamilyDetails._id,
+        qualifications:savedQualifications?._id,
         authorization_token: generateToken({ userId: updatedUser._id }),
       },
       statusCode: 201,
@@ -182,27 +204,27 @@ const createOrganisationCompany = async (
       });
     }
 
+    const codeCompany = await Company.findOne({companyCode : { $regex: new RegExp(req.body.companyCode, 'i') }});
+      if (codeCompany) {
+        return res.status(statusCode.info).send({
+          status: "error",
+          data: `${codeCompany.companyCode} Code is already exists with ${codeCompany.company_name}`,
+          message: `${codeCompany.companyCode} Code is already exists with ${codeCompany.company_name}`,
+        });
+    }
+
     // Check the User
     user = await User.findOne({ username: { $regex: new RegExp(req.body.username, 'i') } });
     if (user) {
-      const codeUser = await User.findOne({ code: req.body.code });
-      if (codeUser) {
-        res.status(statusCode.info).send({
-          status: "error",
-          data: `${codeUser.code} Code is already exists with ${user.username}`,
-          message: `${codeUser.code} Code is already exists with ${user.username}`,
-        });
-      } else {
-        res.status(statusCode.info).send({
+      return res.status(statusCode.info).send({
           status: "error",
           data: `${user.username} user is already exists`,
           message: `${user.username} user is already exists`,
-        });
-      }
+      });
     } else {
       const codeUser = await User.findOne({ code: req.body.code });
       if (codeUser) {
-        res.status(statusCode.info).send({
+        return res.status(statusCode.info).send({
           status: "error",
           data: `${codeUser.code} Code is already exists with ${user.username}`,
           message: `${codeUser.code} Code is already exists with ${user.username}`,
@@ -283,6 +305,12 @@ const createOrganisationCompany = async (
     });
 
     await familyDetails.save();
+
+    const qualifications = new QualificationDetails({
+      user: user._id,
+    });
+
+     await qualifications.save()
 
     const companyDetails = new CompanyDetails({
       user: user._id,

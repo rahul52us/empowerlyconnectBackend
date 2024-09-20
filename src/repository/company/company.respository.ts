@@ -3,9 +3,31 @@ import Company from "../../schemas/company/Company";
 import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
 import { createCatchError } from "../../config/helper/function";
-import companyHolidays from "../../schemas/company/companyHolidays";
-import companyWorkLocations from "../../schemas/company/companyWorkLocations";
-import companyWorkTiming from "../../schemas/company/companyWorkTiming";
+
+export const getCompanyPolicies = async (data : any) => {
+  try
+  {
+    const pipeline : any = []
+    pipeline.push({
+      $match : {
+        company : data.company,
+        deletedAt : {$exists: false}
+      }
+    })
+    const result = await CompanyPolicy.aggregate(pipeline)
+    return {
+      status : 'success',
+      data : result,
+      statusCode : statusCode.success,
+      message : 'Retrived Policies Successfully'
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}
+
 
 export const getOrganisationCompanies = async (data: any) => {
   try {
