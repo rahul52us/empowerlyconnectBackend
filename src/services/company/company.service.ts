@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import mongoose from "mongoose";
 import {
+  getCompanyCount,
   getCompanyDetailsByName,
   getCompanyPolicies,
   getHolidays,
@@ -21,6 +22,23 @@ export const getCompanyPoliciesService = async (req : any, res : Response, next 
   {
     const {message, data, status, statusCode} = await getCompanyPolicies({company : new mongoose.Types.ObjectId(req.query.company)})
     return res.status(statusCode).send({
+      message,
+      data,
+      status
+    })
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
+export const getCompanyCountService = async (req : any , res : Response, next : NextFunction) => {
+  try
+  {
+    req.body.companyOrg = req.bodyData.companyOrg
+    const {status, statusCode, data, message} = await getCompanyCount(req.body)
+    res.status(statusCode).send({
       message,
       data,
       status

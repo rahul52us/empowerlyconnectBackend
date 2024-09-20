@@ -28,6 +28,35 @@ export const getCompanyPolicies = async (data : any) => {
   }
 }
 
+export const getCompanyCount = async (data: any) => {
+  try {
+    const pipeline: any = [
+      {
+        $match: {
+          companyOrg: data.companyOrg,
+          deletedAt: { $exists: false }
+        }
+      },
+      {
+        $count: "companyCount"
+      }
+    ];
+
+    const result = await Company.aggregate(pipeline);
+
+    return {
+      status: 'success',
+      data: result.length > 0 ? result[0].companyCount : 0,
+      statusCode: statusCode.success,
+      message: 'Retrieved Company Count Successfully'
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
+
+
 
 export const getOrganisationCompanies = async (data: any) => {
   try {
