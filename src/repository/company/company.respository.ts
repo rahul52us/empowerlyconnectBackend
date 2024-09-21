@@ -28,10 +28,38 @@ export const getCompanyPolicies = async (data : any) => {
   }
 }
 
+export const getIndividualPolicy = async (data : any) => {
+  try
+  {
+    const result = await CompanyPolicy.findOne({_id : data.policy, company : data.company})
+    if(result){
+      return {
+        status : 'success',
+        data : result,
+        statusCode : statusCode.success,
+        message : 'Retrived Policies Successfully'
+      }
+    }
+    else
+    {
+      return {
+        status : 'error',
+        data : 'No Such Policy Exists',
+        statusCode : statusCode.info,
+        message : 'No Such Policy Exists'
+      }
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}
+
 export const updateCompanyPolicy = async (data : any) => {
   try
   {
-    const companyPolicy = await CompanyPolicy.findOneAndUpdate({_id : data.policy, company : data.company},{$set : {...data},new : true})
+    const companyPolicy : any = await CompanyPolicy.findOneAndUpdate({_id : data.policy, company : data.company},{$set : {...data},new : true})
     if(companyPolicy){
       return {
         data : companyPolicy,

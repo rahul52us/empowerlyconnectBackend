@@ -5,6 +5,7 @@ import {
   getCompanyDetailsByName,
   getCompanyPolicies,
   getHolidays,
+  getIndividualPolicy,
   getOrganisationCompanies,
   getWorkLocations,
   getWorkTiming,
@@ -18,71 +19,104 @@ import {
 import { generateError } from "../../config/Error/functions";
 import ExcelJS from "exceljs";
 
-export const getCompanyPoliciesService = async (req : any, res : Response, next : NextFunction) => {
-  try
-  {
-    const {message, data, status, statusCode} = await getCompanyPolicies({company : new mongoose.Types.ObjectId(req.query.company)})
+export const getCompanyPoliciesService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { message, data, status, statusCode } = await getCompanyPolicies({
+      company: new mongoose.Types.ObjectId(req.query.company),
+    });
     return res.status(statusCode).send({
       message,
       data,
-      status
-    })
+      status,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
-export const updateCompanyPolicyService = async (req : any, res : Response, next : NextFunction) => {
-  try
-  {
-    const {status, statusCode, message, data} = await updateCompanyPolicy({...req.body, policy : new mongoose.Types.ObjectId(req.body.policy), company : new mongoose.Types.ObjectId(req.body.company)})
+export const updateCompanyPolicyService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, statusCode, message, data } = await updateCompanyPolicy({
+      ...req.body,
+      policy: new mongoose.Types.ObjectId(req.body.policy),
+      company: new mongoose.Types.ObjectId(req.body.company),
+    });
     return res.status(statusCode).send({
       message,
       data,
-      status
-    })
+      status,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
-export const getCompanyCountService = async (req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.companyOrg = req.bodyData.companyOrg
-    const {status, statusCode, data, message} = await getCompanyCount(req.body)
+export const getIndividualPolicyService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, statusCode, data, message } = await getIndividualPolicy({
+      policy: new mongoose.Types.ObjectId(req.query.policy),
+      company: new mongoose.Types.ObjectId(req.query.company),
+    });
     res.status(statusCode).send({
       message,
       data,
-      status
-    })
+      status,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
-export const getOrganisationsCompanyService = async (req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.companyOrg = req.bodyData.companyOrg
-    const {status, statusCode, data, message} = await getOrganisationCompanies(req.body)
+export const getCompanyCountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.companyOrg = req.bodyData.companyOrg;
+    const { status, statusCode, data, message } = await getCompanyCount(
+      req.body
+    );
     res.status(statusCode).send({
       message,
       data,
-      status
-    })
+      status,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
+};
+
+export const getOrganisationsCompanyService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.companyOrg = req.bodyData.companyOrg;
+    const { status, statusCode, data, message } =
+      await getOrganisationCompanies(req.body);
+    res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
   }
-}
+};
 
 export const getCompanyDetailsByNameService = async (
   req: any,
@@ -115,7 +149,7 @@ export const getHolidayService = async (
   try {
     const { status, data, statusCode, message } = await getHolidays({
       company: new mongoose.Types.ObjectId(req.query.company),
-      policy : new mongoose.Types.ObjectId(req.query.policy)
+      policy: new mongoose.Types.ObjectId(req.query.policy),
     });
     return res.status(statusCode).send({
       message: message,
@@ -135,7 +169,7 @@ export const getWorkLocationservice = async (
   try {
     const { status, data, statusCode, message } = await getWorkLocations({
       company: new mongoose.Types.ObjectId(req.query.company),
-      policy : new mongoose.Types.ObjectId(req.query.policy)
+      policy: new mongoose.Types.ObjectId(req.query.policy),
     });
     return res.status(statusCode).send({
       message: message,
@@ -153,9 +187,9 @@ export const getWorkTimingService = async (
   next: NextFunction
 ) => {
   try {
-    const { status, data, statusCode, message } : any = await getWorkTiming({
+    const { status, data, statusCode, message }: any = await getWorkTiming({
       company: new mongoose.Types.ObjectId(req.query.company),
-      policy : new mongoose.Types.ObjectId(req.query.policy)
+      policy: new mongoose.Types.ObjectId(req.query.policy),
     });
     return res.status(statusCode).send({
       message: message,
@@ -176,7 +210,7 @@ export const updateHolidayService = async (
     const { status, data, statusCode, message } = await updateHolidays({
       ...req.body,
       company: new mongoose.Types.ObjectId(req.body.company),
-      policy : new mongoose.Types.ObjectId(req.body.policy)
+      policy: new mongoose.Types.ObjectId(req.body.policy),
     });
     return res.status(statusCode).send({
       message: message,
@@ -237,7 +271,7 @@ export const updateWorkTimingService = async (
     const { status, data, statusCode, message } = await updateWorkTiming({
       ...req.body,
       company: new mongoose.Types.ObjectId(req.body.company),
-      policy : new mongoose.Types.ObjectId(req.body.policy)
+      policy: new mongoose.Types.ObjectId(req.body.policy),
     });
     return res.status(statusCode).send({
       message: message,
@@ -256,8 +290,8 @@ export const updateWorkLocationService = async (
 ) => {
   try {
     const { status, data, statusCode, message } = await updateWorkLocations({
-      ...req.body ,
-      policy : new mongoose.Types.ObjectId(req.body.policy),
+      ...req.body,
+      policy: new mongoose.Types.ObjectId(req.body.policy),
       company: new mongoose.Types.ObjectId(req.body.company),
     });
     return res.status(statusCode).send({
@@ -306,7 +340,7 @@ export const updateWorkLocationExcelService = async (
       status: status,
     });
   } catch (err: any) {
-    console.log(err?.message)
+    console.log(err?.message);
     next(err);
   }
 };

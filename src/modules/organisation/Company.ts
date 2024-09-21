@@ -206,7 +206,6 @@ const createOrganisationCompany = async (
 
     const codeCompany = await Company.findOne({companyCode : { $regex: new RegExp(req.body.companyDetails?.companyCode?.trim(), 'i') }});
       if (codeCompany) {
-        console.log('this is rahul kushwah')
         return res.status(statusCode.info).send({
           status: "error",
           data: `${codeCompany.companyCode} Code is already exists with ${codeCompany.company_name}`,
