@@ -13,7 +13,7 @@ import DocumentDetails from "../../schemas/User/Document";
 import CompanyPolicy from "../../schemas/company/CompanyPolicy";
 import CompanyDetails from "../../schemas/User/CompanyDetails";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
-import { uploadFile } from "../../repository/uploadDoc.repository";
+import { deleteFile, uploadFile } from "../../repository/uploadDoc.repository";
 import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
 
@@ -362,11 +362,29 @@ const updateOrganisationCompany = async (
       deletedAt: { $exists: false },
     });
     if (comp) {
-      const updatedCompany = await Company.findByIdAndUpdate(
+      const updatedCompany : any = await Company.findByIdAndUpdate(
         _id,
         { $set: req.body.companyDetails },
         { new: true }
       );
+
+      for (const file of req.body.companyDetails.deletedFiles) {
+        await deleteFile(file);
+      }
+
+      if (req.body.companyDetails.logo && req.body.companyDetails.logo !== "" && req.body.companyDetails.isLogoEdit) {
+        try{
+          let url = await uploadFile(req.body.companyDetails.logo);
+          updatedCompany.logo = {
+          name: req.body.companyDetails.logo.filename,
+          url: url,
+          type: req.body.companyDetails.logo.type,
+        };
+        await updatedCompany.save();
+        }
+        catch{}
+      }
+
       res.status(statusCode.success).send({
         message: "Company has been Successfully",
         data: updatedCompany,
