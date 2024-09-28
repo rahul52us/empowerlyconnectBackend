@@ -41,7 +41,7 @@ interface TaskI extends Document {
   createdBy?: mongoose.Schema.Types.ObjectId;
   description?: mongoose.Schema.Types.Mixed;
   team_members?: AssigneeI[];
-  assigner: mongoose.Schema.Types.ObjectId;
+  assigner?: mongoose.Schema.Types.ObjectId[];
   company: mongoose.Schema.Types.ObjectId;
   status: string;
   priority?: string;
@@ -210,11 +210,6 @@ const TaskSchema = new Schema<TaskI>({
     type: [UserSchema],
     default: [],
   },
-  assigner: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
-  },
   reminders: [Date],
   status: {
     type: String,
@@ -239,6 +234,10 @@ const TaskSchema = new Schema<TaskI>({
   comments: [CommentSchema],
   activityLog: [ActivityLogSchema],
   dependencies: {
+    type: [UserSchema],
+    default: [],
+  },
+  assigner: {
     type: [UserSchema],
     default: [],
   },

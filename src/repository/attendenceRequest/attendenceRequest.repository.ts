@@ -32,6 +32,7 @@ export async function createAttendenceRequest(data: any): Promise<any> {
   }
 }
 
+
 export async function findAttendanceRequests(data: any) {
   try {
     const { startDate, endDate, user } = data;
@@ -73,12 +74,12 @@ export async function findAttendanceRequests(data: any) {
           as: "leaveRequests",
         },
       },
-      // Lookup holiday information from company policies (holidays only)
+      // Lookup holiday information from company policies
       {
         $lookup: {
           from: "companypolicies",
           let: {
-            policyId: "$policy", // Use the policy reference directly
+            policyId: "$policy",
             date: "$date",
           },
           pipeline: [
@@ -87,20 +88,15 @@ export async function findAttendanceRequests(data: any) {
             {
               $addFields: {
                 holidaysDateConverted: {
-                  $dateFromString: {
-                    dateString: {
-                      $dateToString: {
-                        format: "%Y-%m-%d",
-                        date: "$holidays.date",
-                      },
-                    },
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: "$holidays.date",
                   },
                 },
                 lookupDate: {
-                  $dateFromString: {
-                    dateString: {
-                      $dateToString: { format: "%Y-%m-%d", date: "$$date" },
-                    },
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: "$$date",
                   },
                 },
               },
@@ -125,7 +121,7 @@ export async function findAttendanceRequests(data: any) {
       {
         $lookup: {
           from: "companypolicies",
-          localField: "policy", // Use the policy reference directly
+          localField: "policy",
           foreignField: "_id",
           as: "policyInfo",
         },
@@ -179,7 +175,34 @@ export async function findAttendanceRequests(data: any) {
           },
           gracePeriodMinutesLate: { $arrayElemAt: ["$policyInfo.gracePeriodMinutesLate", 0] },
           gracePeriodMinutesEarly: { $arrayElemAt: ["$policyInfo.gracePeriodMinutesEarly", 0] },
-        },
+          isSaturday: { $eq: [{ $dayOfWeek: "$date" }, 7] }, // Check if it's Saturday
+          saturdayIndex: {
+            $cond: [
+              { $eq: [{ $dayOfWeek: "$date" }, 7] }, // Check if it's Saturday
+              {
+                $add: [
+                  {
+                    $subtract: [
+                      { $dayOfMonth: "$date" },
+                      { $literal: 1 } // This accounts for the zero-based index
+                    ]
+                  },
+                  { $floor: { $divide: [{ $dayOfMonth: "$date" }, 7] } } // Calculate how many weeks have passed
+                ]
+              },
+              null // Not a Saturday
+            ]
+          },
+
+          saturdays: { $literal: [1, 0, 1, 1, 1] }, // Define the array using $literal
+          saturdaySchedule: {
+            $cond: [
+              { $lt: ["$saturdayIndex", 5] },
+              { $arrayElemAt: ["$saturdays", "$saturdayIndex"] }, // Access the saturdays array
+              0 // Default to non-working if out of bounds
+            ]
+          }
+        }
       },
       {
         $project: {
@@ -193,9 +216,14 @@ export async function findAttendanceRequests(data: any) {
           gracePeriodMinutesEarly: 1,
           isHoliday: 1,
           holidayInfo: 1,
-          leaveRequests: 1
+          leaveRequests: 1,
+          saturdayIndex :1,
+          isSaturday: 1,
+          isSaturdayWorkingDay: { $eq: ["$saturdaySchedule", 1] }, // Check if Saturday is a working day
+          saturdaySchedule: 1,
         },
       },
+
       // Add fields for late coming and early going calculations
       {
         $addFields: {
@@ -277,22 +305,34 @@ export async function findAttendanceRequests(data: any) {
                       then: "Absent",
                       else: {
                         $cond: {
-                          if: {
-                            $and: [
-                              { $lte: ["$lateComingMinutes", 0] },
-                              { $lte: ["$earlyGoingMinutes", 0] },
-                            ],
+                          if: "$isSaturday",
+                          then: {
+                            $cond: {
+                              if: { $eq: ["$isSaturdayWorkingDay", true] },
+                              then: "Working on Saturday",
+                              else: "Off on Saturday",
+                            },
                           },
-                          then: "Present",
                           else: {
                             $cond: {
-                              if: { $gt: ["$lateComingMinutes", 0] },
-                              then: "Late",
+                              if: {
+                                $and: [
+                                  { $lte: ["$lateComingMinutes", 0] },
+                                  { $lte: ["$earlyGoingMinutes", 0] },
+                                ],
+                              },
+                              then: "Present",
                               else: {
                                 $cond: {
-                                  if: { $gt: ["$earlyGoingMinutes", 0] },
-                                  then: "Early",
-                                  else: "On Time",
+                                  if: { $gt: ["$lateComingMinutes", 0] },
+                                  then: "Late",
+                                  else: {
+                                    $cond: {
+                                      if: { $gt: ["$earlyGoingMinutes", 0] },
+                                      then: "Early",
+                                      else: "On Time",
+                                    },
+                                  },
                                 },
                               },
                             },
@@ -312,13 +352,13 @@ export async function findAttendanceRequests(data: any) {
     const attendanceRequests = await AttendanceRequest.aggregate(pipeline);
     return attendanceRequests;
   } catch (error: any) {
-    console.error(
-      `Failed to perform attendance requests aggregation: ${error.message}`
-    );
-    throw new Error(
-      `Failed to perform attendance requests aggregation: ${error.message}`
-    );
+    console.error(`Failed to perform attendance requests aggregation: ${error.message}`);
+    throw new Error(`Failed to perform attendance requests aggregation: ${error.message}`);
   }
 }
+
+
+
+
 
 

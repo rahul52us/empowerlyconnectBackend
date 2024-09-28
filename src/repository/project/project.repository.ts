@@ -751,14 +751,6 @@ const getSingleTask = async (datas: any) => {
         },
       },
       {
-        $lookup: {
-          from: "users",
-          foreignField: "_id",
-          localField: "assigner",
-          as: "assigner",
-        },
-      },
-      {
         $unwind: {
           path: "$dependencies",
           preserveNullAndEmptyArrays: true,
@@ -807,6 +799,60 @@ const getSingleTask = async (datas: any) => {
               if: { $eq: ["$dependencies", [{}]] },
               then: [],
               else: "$dependencies",
+            },
+          },
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$assigner",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { assignerId: "$assigner.user" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$assignerId"] } } },
+            { $project: { username: 1, _id: 1, code: 1, pic: 1, name: 1 } },
+          ],
+          as: "assigner.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$assigner.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          assigner: {
+            $push: {
+              user: "$assigner.user",
+              isActive: "$assigner.isActive",
+            },
+          },
+          doc: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$doc", { assigner: "$assigner" }],
+          },
+        },
+      },
+      {
+        $addFields: {
+          assigner: {
+            $cond: {
+              if: { $eq: ["$assigner", [{}]] },
+              then: [],
+              else: "$assigner",
             },
           },
         },
