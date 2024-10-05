@@ -166,8 +166,9 @@ const getRoleUsersService = async(company : any) => {
 const handleContactServiceMail = (req : any , res : Response) => {
   try
   {
-      console.log('the req body are', req.body)
-      res.status(200).send({
+     SendMail(process.env.WEBSITE_EMAIL!!,'User Information Submission Alert','contact/userInfo.html',{...req.body,reciever_mail : process.env.WEBSITE_EMAIL})
+     SendMail(req.body.email,'Your Information Has Been Successfully Submitted','contact/customerMail.html',{...req.body})
+     res.status(200).send({
         message : 'Mail Send Successfully',
         data : req.body,
         status : 'success'

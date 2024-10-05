@@ -37,7 +37,7 @@ const SendMail = async (
     // Default placeholders
     let personalizedTemplate = template
       .replace('{{buttonText}}', 'Click Here').replace('{{logoUrl}}',process.env.WEB_LOGO || "https://img.freepik.com/free-vector/bird-colorful-logo-gradient-vector_343694-1365.jpg")
-      .replace('{{year}}', new Date().getFullYear().toString());
+      .replace('{{year}}', new Date().getFullYear().toString()).replace('{{companyName}}',process.env.COMPANY_NAME!!);
 
     // Dynamically replace placeholders with values from the `rest` object
     for (const [key, value] of Object.entries(rest)) {
