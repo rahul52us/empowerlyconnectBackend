@@ -82,13 +82,11 @@ export const createTripService = async (
                 role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
+                link : link
               };
 
               await SendMail(
                 userDetails.username,
-                userDetails.username,
-                link,
-                "",
                 mailSubject,
                 mailTemplate,
                 mailData
@@ -220,13 +218,11 @@ export const updateTripService = async (
                 role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
+                link : link
               };
 
               await SendMail(
                 userDetails.username,
-                userDetails.username,
-                link,
-                "",
                 mailSubject,
                 mailTemplate,
                 mailData
@@ -426,14 +422,13 @@ export const addTripMembersService = async (
         role: req.body.type,
         companyName: company.company_name,
         logoUrl: company.logo?.url,
+        link : link,
+        name : data?.user?.username
       };
 
       // Send an email to the user
       SendMail(
         data?.user?.username,
-        data?.user?.username,
-        link,
-        "",
         mailSubject,
         mailTemplate,
         mailData
@@ -490,13 +485,11 @@ export const verifyUserTokenTripService = async (
             role: data.metaData?.type,
             companyName: company.company_name,
             logoUrl: company.logo?.url,
+            link : projectLink,
           };
 
           await SendMail(
             userDetails.username,
-            userDetails.username,
-            projectLink,
-            "",
             mailSubject,
             mailTemplate,
             mailData

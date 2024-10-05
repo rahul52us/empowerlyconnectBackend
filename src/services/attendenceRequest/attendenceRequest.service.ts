@@ -47,15 +47,26 @@ export const createAttendenceRequestService = async (
     const userId = req.userId;
     const companyDetail = req.bodyData.companyDetail;
 
-    const todayStart = new Date().setHours(0, 0, 0, 0);
-    const todayEnd = new Date().setHours(23, 59, 59, 999);
+
+    const nowUTC = new Date();
+    const ISTOffset = 5.5 * 60 * 60 * 1000;
+    const currentISTDate = new Date(nowUTC.getTime() + ISTOffset);
+    const year = currentISTDate.getUTCFullYear();
+    const month = currentISTDate.getUTCMonth();
+    const day = currentISTDate.getUTCDate();
+    const todayStartIST = new Date(Date.UTC(year, month, day, 0, 0, 0));
+    const todayEndIST = new Date(Date.UTC(year, month, day, 23, 59, 59, 999));
+    const todayStartUTC = todayStartIST;
+    const todayEndUTC = todayEndIST;
+
+    const currentISTMongoDBFormat = new Date(currentISTDate).toISOString();
 
     let attendance = await findOneAttendenceRequest({
       user: userId,
       companyDetail: companyDetail,
       date: {
-        $gte: todayStart,
-        $lte: todayEnd,
+        $gte: todayStartUTC.toISOString(),
+        $lte: todayEndUTC.toISOString(),
       },
     });
 
@@ -74,14 +85,14 @@ export const createAttendenceRequestService = async (
           companyDetail: companyDetail,
           punchRecords: [
             {
-              time: new Date(),
+              time: currentISTMongoDBFormat,
               latitude,
               longitude,
               deviceInfo,
               isActive: true,
             },
           ],
-          date: new Date(),
+          date: currentISTMongoDBFormat,
           officeStartTime: "08:00",
           officeEndTime: "18:00",
           policy : policy
@@ -94,7 +105,7 @@ export const createAttendenceRequestService = async (
       });
     } else {
       attendance.punchRecords.push({
-        time: new Date(),
+        time: currentISTMongoDBFormat,
         latitude,
         longitude,
         deviceInfo,
@@ -126,10 +137,15 @@ export const getAttendenceRequestsService = async (
   try {
     const { startDate, endDate, companyId, user } = req.query;
     let userId = user || req.userId;
+    const startDateObject = new Date(startDate);
+    const endDateObject = new Date(endDate);
+    startDateObject.setHours(0, 0, 0, 0);
+    endDateObject.setHours(23, 59, 59, 999);
+
     const attendenceRequests = await findAttendanceRequests({
       user: new mongoose.Types.ObjectId(userId),
-      startDate: startDate,
-      endDate: endDate,
+      startDate: startDateObject,
+      endDate: endDateObject,
       companyId: companyId
     });
 

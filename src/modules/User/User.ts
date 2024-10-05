@@ -27,6 +27,7 @@ import { createToken } from "../../services/token/token.service";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
+
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
   );

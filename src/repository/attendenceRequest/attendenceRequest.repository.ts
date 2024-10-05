@@ -32,29 +32,28 @@ export async function createAttendenceRequest(data: any): Promise<any> {
   }
 }
 
-
 export async function findAttendanceRequests(data: any) {
   try {
     const { startDate, endDate, user } = data;
 
-    const pipeline: any[] = [
-      // Match records based on user and date range
+    const pipeline = [
+      // Match the attendance requests within the specified date range for the given user
       {
         $match: {
           user: new mongoose.Types.ObjectId(user),
           date: {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
+            $gte: startDate,
+            $lte: endDate,
           },
         },
       },
-      // Lookup leave requests within the date range
+      // Lookup to fetch approved leave requests
       {
         $lookup: {
-          from: "requests",
+          from: 'requests',
           let: {
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            startDate,
+            endDate,
             user: new mongoose.Types.ObjectId(user),
           },
           pipeline: [
@@ -62,41 +61,49 @@ export async function findAttendanceRequests(data: any) {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ["$user", "$$user"] },
-                    { $lte: ["$startDate", "$$endDate"] },
-                    { $gte: ["$endDate", "$$startDate"] },
-                    { $eq: ["$status", "approved"] },
+                    { $eq: ['$user', '$$user'] },
+                    { $lte: ['$startDate', '$$endDate'] },
+                    { $gte: ['$endDate', '$$startDate'] },
+                    { $eq: ['$status', 'approved'] },
                   ],
                 },
               },
             },
           ],
-          as: "leaveRequests",
+          as: 'leaveRequests',
         },
       },
-      // Lookup holiday information from company policies
+      // Lookup to fetch holiday information from company policies
       {
         $lookup: {
-          from: "companypolicies",
+          from: 'companypolicies',
           let: {
-            policyId: "$policy",
-            date: "$date",
+            policyId: '$policy',
+            date: '$date',
           },
           pipeline: [
-            { $match: { $expr: { $eq: ["$_id", "$$policyId"] } } },
-            { $unwind: "$holidays" },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', '$$policyId'],
+                },
+              },
+            },
+            {
+              $unwind: '$holidays',
+            },
             {
               $addFields: {
                 holidaysDateConverted: {
                   $dateToString: {
-                    format: "%Y-%m-%d",
-                    date: "$holidays.date",
+                    format: '%Y-%m-%d',
+                    date: '$holidays.date',
                   },
                 },
                 lookupDate: {
                   $dateToString: {
-                    format: "%Y-%m-%d",
-                    date: "$$date",
+                    format: '%Y-%m-%d',
+                    date: '$$date',
                   },
                 },
               },
@@ -104,48 +111,48 @@ export async function findAttendanceRequests(data: any) {
             {
               $match: {
                 $expr: {
-                  $eq: ["$holidaysDateConverted", "$lookupDate"],
+                  $eq: ['$holidaysDateConverted', '$lookupDate'],
                 },
               },
             },
             {
               $project: {
-                holiday: "$holidays",
+                holiday: '$holidays',
               },
             },
           ],
-          as: "holidayInfo",
+          as: 'holidayInfo',
         },
       },
-      // Lookup the policy information (grace periods, timings)
+      // Lookup to fetch general policy information
       {
         $lookup: {
-          from: "companypolicies",
-          localField: "policy",
-          foreignField: "_id",
-          as: "policyInfo",
+          from: 'companypolicies',
+          localField: 'policy',
+          foreignField: '_id',
+          as: 'policyInfo',
         },
       },
-      // Add fields for policy details (grace periods, etc.) and holiday status
+      // Add additional fields for further processing
       {
         $addFields: {
-          isHoliday: { $gt: [{ $size: "$holidayInfo" }, 0] },
+          isHoliday: { $gt: [{ $size: '$holidayInfo' }, 0] },
           officeStartTimeUTC: {
             $dateAdd: {
               startDate: {
                 $dateFromString: {
                   dateString: {
                     $concat: [
-                      { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-                      "T",
-                      "$officeStartTime",
-                      ":00",
+                      { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+                      'T',
+                      '$officeStartTime',
+                      ':00',
                     ],
                   },
                 },
               },
-              unit: "minute",
-              amount: -330, // Convert from IST to UTC
+              unit: 'minute',
+              amount: 0, // No change
             },
           },
           officeEndTimeUTC: {
@@ -154,60 +161,57 @@ export async function findAttendanceRequests(data: any) {
                 $dateFromString: {
                   dateString: {
                     $concat: [
-                      { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-                      "T",
-                      "$officeEndTime",
-                      ":00",
+                      { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+                      'T',
+                      '$officeEndTime',
+                      ':00',
                     ],
                   },
                 },
               },
-              unit: "minute",
-              amount: -330, // Convert from IST to UTC
+              unit: 'minute',
+              amount: 0, // No change
             },
           },
           activePunches: {
             $filter: {
-              input: "$punchRecords",
-              as: "punch",
-              cond: { $eq: ["$$punch.isActive", true] },
+              input: '$punchRecords',
+              as: 'punch',
+              cond: { $eq: ['$$punch.isActive', true] },
             },
           },
-          gracePeriodMinutesLate: { $arrayElemAt: ["$policyInfo.gracePeriodMinutesLate", 0] },
-          gracePeriodMinutesEarly: { $arrayElemAt: ["$policyInfo.gracePeriodMinutesEarly", 0] },
-          isSaturday: { $eq: [{ $dayOfWeek: "$date" }, 7] }, // Check if it's Saturday
+          // Additional fields for grace periods
+          gracePeriodMinutesLate: {
+            $arrayElemAt: ['$policyInfo.gracePeriodMinutesLate', 0],
+          },
+          gracePeriodMinutesEarly: {
+            $arrayElemAt: ['$policyInfo.gracePeriodMinutesEarly', 0],
+          },
+          isSaturday: { $eq: [{ $dayOfWeek: '$date' }, 7] },
+          isSunday: { $eq: [{ $dayOfWeek: '$date' }, 1] },
+          sundayPolicy: { $arrayElemAt: [[true], 0] },
           saturdayIndex: {
             $cond: [
-              { $eq: [{ $dayOfWeek: "$date" }, 7] }, // Check if it's Saturday
+              { $eq: [{ $dayOfWeek: '$date' }, 7] },
               {
-                $add: [
+                $subtract: [
                   {
-                    $subtract: [
-                      { $dayOfMonth: "$date" },
-                      { $literal: 1 } // This accounts for the zero-based index
-                    ]
+                    $ceil: { $divide: [{ $dayOfMonth: '$date' }, 7] },
                   },
-                  { $floor: { $divide: [{ $dayOfMonth: "$date" }, 7] } } // Calculate how many weeks have passed
-                ]
+                  1,
+                ],
               },
-              null // Not a Saturday
-            ]
+              null,
+            ],
           },
-
-          saturdays: { $literal: [1, 0, 1, 1, 1] }, // Define the array using $literal
-          saturdaySchedule: {
-            $cond: [
-              { $lt: ["$saturdayIndex", 5] },
-              { $arrayElemAt: ["$saturdays", "$saturdayIndex"] }, // Access the saturdays array
-              0 // Default to non-working if out of bounds
-            ]
-          }
-        }
+          saturdaysSchedule: [1, 1, 1, 1, 1], // Example schedule for Saturdays
+        },
       },
+      // Project fields for final output
       {
         $project: {
-          punchInTime: { $arrayElemAt: ["$activePunches.time", 0] },
-          punchOutTime: { $arrayElemAt: ["$activePunches.time", -1] },
+          punchInTime: { $arrayElemAt: ['$activePunches.time', 0] },
+          punchOutTime: { $arrayElemAt: ['$activePunches.time', -1] },
           officeStartTimeUTC: 1,
           officeEndTimeUTC: 1,
           punchRecords: 1,
@@ -217,33 +221,49 @@ export async function findAttendanceRequests(data: any) {
           isHoliday: 1,
           holidayInfo: 1,
           leaveRequests: 1,
-          saturdayIndex :1,
           isSaturday: 1,
-          isSaturdayWorkingDay: { $eq: ["$saturdaySchedule", 1] }, // Check if Saturday is a working day
-          saturdaySchedule: 1,
-        },
-      },
-
-      // Add fields for late coming and early going calculations
-      {
-        $addFields: {
-          lateComingMinutes: {
+          isSunday: 1,
+          sundayPolicy: 1,
+          isSaturdayWorkingDay: {
             $cond: [
               {
-                $gt: [
-                  { $subtract: ["$punchInTime", "$officeStartTimeUTC"] },
-                  { $multiply: ["$gracePeriodMinutesLate", 60000] },
+                $and: [
+                  { $eq: ['$isSaturday', true] },
+                  { $gte: ['$saturdayIndex', 0] },
+                  { $lt: ['$saturdayIndex', 5] },
                 ],
               },
               {
+                $eq: [
+                  { $arrayElemAt: ['$saturdaysSchedule', '$saturdayIndex'] },
+                  1,
+                ],
+              },
+              false,
+            ],
+          },
+        },
+      },
+      // Add fields to calculate late and early leave
+      {
+        $addFields: {
+          lateComingMinutes: {
+            $cond: {
+              if: {
+                $gt: [
+                  { $subtract: ['$punchInTime', '$officeStartTimeUTC'] },
+                  { $multiply: ['$gracePeriodMinutesLate', 60000] },
+                ],
+              },
+              then: {
                 $divide: [
                   {
                     $subtract: [
-                      "$punchInTime",
+                      '$punchInTime',
                       {
                         $add: [
-                          "$officeStartTimeUTC",
-                          { $multiply: ["$gracePeriodMinutesLate", 60000] },
+                          '$officeStartTimeUTC',
+                          { $multiply: ['$gracePeriodMinutesLate', 60000] },
                         ],
                       },
                     ],
@@ -251,92 +271,105 @@ export async function findAttendanceRequests(data: any) {
                   60000,
                 ],
               },
-              0,
-            ],
+              else: 0,
+            },
           },
           earlyGoingMinutes: {
-            $cond: [
-              {
+            $cond: {
+              if: {
                 $gt: [
                   {
                     $subtract: [
-                      "$officeEndTimeUTC",
-                      { $multiply: ["$gracePeriodMinutesEarly", 60000] },
+                      '$officeEndTimeUTC',
+                      { $multiply: ['$gracePeriodMinutesEarly', 60000] },
                     ],
                   },
-                  "$punchOutTime",
+                  '$punchOutTime',
                 ],
               },
-              {
+              then: {
                 $divide: [
                   {
                     $subtract: [
                       {
                         $subtract: [
-                          "$officeEndTimeUTC",
-                          { $multiply: ["$gracePeriodMinutesEarly", 60000] },
+                          '$officeEndTimeUTC',
+                          { $multiply: ['$gracePeriodMinutesEarly', 60000] },
                         ],
                       },
-                      "$punchOutTime",
+                      '$punchOutTime',
                     ],
                   },
                   60000,
                 ],
               },
-              0,
-            ],
+              else: 0,
+            },
           },
+          // Determine attendance status
           status: {
             $cond: {
-              if: "$isHoliday",
-              then: "Holiday",
+              if: '$isHoliday',
+              then: 'Holiday',
               else: {
                 $cond: {
-                  if: { $gt: [{ $size: "$leaveRequests" }, 0] },
-                  then: { $arrayElemAt: ["$leaveRequests.leaveType", 0] },
+                  if: { $gt: [{ $size: '$leaveRequests' }, 0] },
+                  then: { $arrayElemAt: ['$leaveRequests.leaveType', 0] },
                   else: {
                     $cond: {
                       if: {
                         $or: [
-                          { $eq: ["$punchInTime", null] },
-                          { $eq: ["$punchOutTime", null] },
+                          { $eq: ['$punchInTime', null] },
+                          { $eq: ['$punchOutTime', null] },
                         ],
                       },
-                      then: "Absent",
+                      then: 'Absent',
                       else: {
                         $cond: {
-                          if: "$isSaturday",
+                          if: '$isSunday',
                           then: {
                             $cond: {
-                              if: { $eq: ["$isSaturdayWorkingDay", true] },
-                              then: "Working on Saturday",
-                              else: "Off on Saturday",
-                            },
-                          },
-                          else: {
-                            $cond: {
-                              if: {
-                                $and: [
-                                  { $lte: ["$lateComingMinutes", 0] },
-                                  { $lte: ["$earlyGoingMinutes", 0] },
-                                ],
-                              },
-                              then: "Present",
+                              if: { $eq: ['$sundayPolicy', true] },
+                              then: 'Weekend Leave (Sunday)',
                               else: {
                                 $cond: {
-                                  if: { $gt: ["$lateComingMinutes", 0] },
-                                  then: "Late",
+                                  if: '$isSaturday',
+                                  then: {
+                                    $cond: {
+                                      if: { $eq: ['$isSaturdayWorkingDay', true] },
+                                      then: 'Working on Saturday',
+                                      else: 'Off on Saturday',
+                                    },
+                                  },
                                   else: {
                                     $cond: {
-                                      if: { $gt: ["$earlyGoingMinutes", 0] },
-                                      then: "Early",
-                                      else: "On Time",
+                                      if: {
+                                        $and: [
+                                          { $gt: ['$lateComingMinutes', 0] },
+                                          { $gt: ['$earlyGoingMinutes', 0] },
+                                        ],
+                                      },
+                                      then: 'Late and Early Leave',
+                                      else: {
+                                        $cond: {
+                                          if: { $gt: ['$lateComingMinutes', 0] },
+                                          then: 'Late',
+                                          else: {
+                                            $cond: {
+                                              if: { $gt: ['$earlyGoingMinutes', 0] },
+                                              then: 'Early',
+                                              else: 'Present',
+                                            },
+                                          },
+                                        },
+                                      },
                                     },
                                   },
                                 },
                               },
                             },
                           },
+                          else: 'Present',
                         },
                       },
                     },
@@ -351,12 +384,11 @@ export async function findAttendanceRequests(data: any) {
 
     const attendanceRequests = await AttendanceRequest.aggregate(pipeline);
     return attendanceRequests;
-  } catch (error: any) {
-    console.error(`Failed to perform attendance requests aggregation: ${error.message}`);
-    throw new Error(`Failed to perform attendance requests aggregation: ${error.message}`);
+  } catch (error) {
+    console.error('Error fetching attendance requests:', error);
+    throw new Error('Could not fetch attendance requests');
   }
 }
-
 
 
 

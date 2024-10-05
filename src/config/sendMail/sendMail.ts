@@ -10,13 +10,12 @@ interface RestOptions {
 }
 
 const SendMail = async (
-  names: string,
-  username: string,
-  link: string,
-  message: string,
+  sendTo: string,
   subject: string,
   fileName: string,
-  rest: RestOptions = {}
+  rest: RestOptions,
+  attachmentBase64String? : any,
+  cc? : any[]
 ) => {
   try {
     // Create a transporter object using the default SMTP transport
@@ -37,12 +36,7 @@ const SendMail = async (
 
     // Default placeholders
     let personalizedTemplate = template
-      .replace('{{name}}', names)
-      .replace('{{link}}', link)
-      .replace('{{message}}', message)
-      .replace('{{logoUrl}}', rest.logoUrl || "https://media.istockphoto.com/id/1345681613/vector/creative-people-logo-vector-illustration-design-editable-resizable-eps-10.jpg?s=612x612&w=0&k=20&c=9XUHICA1ljbxBcLw8ERp0kDDxLNQ8Bp2yR4aUSS6SBs=")
-      .replace('{{subject}}', subject)
-      .replace('{{buttonText}}', 'Click Here')
+      .replace('{{buttonText}}', 'Click Here').replace('{{logoUrl}}',process.env.WEB_LOGO || "https://img.freepik.com/free-vector/bird-colorful-logo-gradient-vector_343694-1365.jpg")
       .replace('{{year}}', new Date().getFullYear().toString());
 
     // Dynamically replace placeholders with values from the `rest` object
@@ -51,13 +45,33 @@ const SendMail = async (
       personalizedTemplate = personalizedTemplate.replace(new RegExp(placeholder, 'g'), String(value));
     }
 
+
+
     // Message options
-    const messageTemplate = {
+    const messageTemplate : any = {
       from: process.env.WELCOME_REGISTER_EMAIL_USERNAME,
-      to: username,
+      to: sendTo,
       subject: subject,
       html: personalizedTemplate,
     };
+
+    if (cc) {
+      messageTemplate.cc = cc;
+    }
+
+    if (attachmentBase64String) {
+      const base64Content = attachmentBase64String.split(';base64,').pop();
+      const fileBuffer = Buffer.from(base64Content, 'base64');
+
+      messageTemplate.attachments = [
+        {
+          filename: 'attachment.xlsx',
+          content: fileBuffer,
+          encoding: 'base64',
+          contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      ]
+    }
 
     // Send the email
     await transporter.sendMail(messageTemplate);

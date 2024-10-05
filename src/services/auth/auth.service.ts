@@ -95,13 +95,18 @@ const forgotPasswordService = async (
       throw generateError(`Cannot send the mail. Please try again later`, 400);
     }
 
+    const mailData = {
+      name : user?.name,
+      message : "We received a request to reset your password. If you didn't initiate this request, please disregard this email for security.",
+      link :  `${baseURL}/reset-password/${resetData.token}`,
+      subject : 'Reset Your Password'
+    };
+
       const sendMail: any = await SendMail(
-      user.name,
       user.username,
-      `${baseURL}/reset-password/${resetData.token}`,
-      "We received a request to reset your password. If you didn't initiate this request, please disregard this email for security.",
       'Reset Your Password',
-      'forgot_email_templates.html'
+      'forgot_email_templates.html',
+        mailData
     );
 
     if (!sendMail.success) {
@@ -158,4 +163,24 @@ const getRoleUsersService = async(company : any) => {
   }
 }
 
-export { loginUserService, changePasswordService, forgotPasswordService, getRoleUsersService };
+const handleContactServiceMail = (req : any , res : Response) => {
+  try
+  {
+      console.log('the req body are', req.body)
+      res.status(200).send({
+        message : 'Mail Send Successfully',
+        data : req.body,
+        status : 'success'
+      })
+  }
+  catch(err : any)
+  {
+    res.status(500).send({
+      message : err?.message,
+      data : err?.message,
+      status : 'error'
+    })
+  }
+}
+
+export { loginUserService, changePasswordService, forgotPasswordService, getRoleUsersService, handleContactServiceMail };

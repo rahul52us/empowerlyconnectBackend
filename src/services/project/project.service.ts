@@ -148,13 +148,11 @@ export const verifyUserTokenProjectService = async (
             role: data.metaData?.type,
             companyName: company.company_name,
             logoUrl: company.logo?.url,
+            link : projectLink
           };
 
           await SendMail(
             userDetails.username,
-            userDetails.username,
-            projectLink,
-            "",
             mailSubject,
             mailTemplate,
             mailData
@@ -230,13 +228,11 @@ export const createProjectService = async (
                 role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
+                link : projectLink
               };
 
               await SendMail(
                 userDetails.username,
-                userDetails.username,
-                projectLink,
-                "",
                 mailSubject,
                 mailTemplate,
                 mailData
@@ -313,13 +309,12 @@ export const updateProjectService = async (
                 role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
+                username : userDetails.username,
+                name :  userDetails.name
               };
 
               await SendMail(
                 userDetails.username,
-                userDetails.username,
-                projectLink,
-                "",
                 mailSubject,
                 mailTemplate,
                 mailData
@@ -401,18 +396,20 @@ export const addProjectMembersService = async (
       role: req.body.type,
       companyName: company.company_name,
       logoUrl: company.logo?.url,
+      username : currentUser?.username,
+      name : currentUser?.name
     };
 
     // Send an email to the user
-    SendMail(
+
+    await SendMail(
       currentUser.username,
-      currentUser.username,
-      projectLink,
-      "",
       mailSubject,
       mailTemplate,
       mailData
-    )}
+    );
+
+   }
 
     res.status(statusCode).send({
       status,
