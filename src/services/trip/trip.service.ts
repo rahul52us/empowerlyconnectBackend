@@ -145,11 +145,15 @@ export const getTripsService = async (
     if (req.body.userId) {
       matchConditions = {
         ...matchConditions,
-        "participants.user": {
-          $in: await convertIdsToObjects(req.body.userId),
+        participants: {
+          $elemMatch: {
+            user: { $in: await convertIdsToObjects(req.body.userId) },
+            isActive: true
+          },
         },
       };
     }
+
 
     const { data, status, totalPages } = await getTrips({
       matchConditions,
@@ -273,8 +277,11 @@ export const getAllDayTripCountService = async (
     if (req.body.userId) {
       matchConditions = {
         ...matchConditions,
-        "participants.user": {
-          $in: await convertIdsToObjects(req.body.userId),
+        participants: {
+          $elemMatch: {
+            user: { $in: await convertIdsToObjects(req.body.userId) },
+            isActive: true
+          },
         },
       };
     }
@@ -313,8 +320,11 @@ export const getTripCountService = async (
     if (req.body.userId) {
       matchConditions = {
         ...matchConditions,
-        "participants.user": {
-          $in: await convertIdsToObjects(req.body.userId),
+        participants: {
+          $elemMatch: {
+            user: { $in: await convertIdsToObjects(req.body.userId) },
+            isActive: true
+          },
         },
       };
     }
@@ -356,8 +366,11 @@ export const totalTripTypeCountService = async (
     if (req.body.userId) {
       matchConditions = {
         ...matchConditions,
-        "participants.user": {
-          $in: await convertIdsToObjects(req.body.userId),
+        participants: {
+          $elemMatch: {
+            user: { $in: await convertIdsToObjects(req.body.userId) },
+            isActive: true
+          },
         },
       };
     }
@@ -533,8 +546,11 @@ export const calculateTripAmountService = async (
     if (req.body.userId) {
       matchConditions = {
         ...matchConditions,
-        "participants.user": {
-          $in: await convertIdsToObjects(req.body.userId),
+        participants: {
+          $elemMatch: {
+            user: { $in: await convertIdsToObjects(req.body.userId) },
+            isActive: true
+          },
         },
       };
     }
@@ -572,11 +588,15 @@ export const calculateTotalTripsAmountService = async (
     if (req.body.userId) {
       matchConditions = {
         ...matchConditions,
-        "participants.user": {
-          $in: await convertIdsToObjects(req.body.userId),
+        participants: {
+          $elemMatch: {
+            user: { $in: await convertIdsToObjects(req.body.userId) },
+            isActive: true
+          },
         },
       };
     }
+
     const { status, statusCode, message, data } =
       await calculateTotalTripsAmount({ matchConditions, ...req.body });
     res.status(statusCode).send({
