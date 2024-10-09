@@ -148,7 +148,8 @@ export const verifyUserTokenProjectService = async (
             role: data.metaData?.type,
             companyName: company.company_name,
             logoUrl: company.logo?.url,
-            link : projectLink
+            link : projectLink,
+            name : userDetails?.name
           };
 
           await SendMail(
@@ -310,7 +311,8 @@ export const updateProjectService = async (
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
                 username : userDetails.username,
-                name :  userDetails.name
+                name :  userDetails.name,
+                link:projectLink
               };
 
               await SendMail(
@@ -397,7 +399,8 @@ export const addProjectMembersService = async (
       companyName: company.company_name,
       logoUrl: company.logo?.url,
       username : currentUser?.username,
-      name : currentUser?.name
+      name : currentUser?.name,
+      link:projectLink
     };
 
     // Send an email to the user
