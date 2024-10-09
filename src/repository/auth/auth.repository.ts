@@ -1,7 +1,6 @@
 import generateToken from "../../config/helper/generateToken";
 import { generateError } from "../../config/Error/functions";
 import User from "../../schemas/User/User";
-import mongoose from "mongoose";
 
 const findUserByUserName = async (data: any) => {
   try {
@@ -33,9 +32,9 @@ const loginUser = async (data: any): Promise<any> => {
   try {
     const query: any = {};
     if (data.loginType === "code") {
-      query.code = new RegExp(data.code, "i");
+      query.code = data.code
     } else {
-      query.username = new RegExp(data.username, "i");
+      query.username = data.username
     }
 
     const existUser = await User.findOne(query);
