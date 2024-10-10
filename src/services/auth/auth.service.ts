@@ -7,7 +7,6 @@ import { generateResetPasswordToken } from "../../config/helper/generateToken";
 import { FORGOT_PASSWORD_EMAIL_TOKEN_TYPE } from "../../config/sendMail/utils";
 import Token from "../../schemas/Token/Token";
 import { baseURL } from "../../config/helper/urls";
-import mongoose from "mongoose";
 
 const loginUserService = async (
   req: Request,

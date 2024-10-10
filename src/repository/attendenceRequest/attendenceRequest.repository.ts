@@ -43,7 +43,7 @@ export async function findAttendanceRequests(data: any) {
           user: new mongoose.Types.ObjectId(user),
           date: {
             $gte: startDate,
-            $lte: endDate,
+            $lte: endDate
           },
         },
       },
