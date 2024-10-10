@@ -136,6 +136,7 @@ export const getAttendenceRequestsService = async (
 ) => {
   try {
     const { startDate, endDate, companyId, user } = req.query;
+
     let userId = user || req.userId;
     const startDateObject = new Date(startDate);
     const endDateObject = new Date(endDate);

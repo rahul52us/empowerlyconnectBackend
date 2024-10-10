@@ -82,7 +82,8 @@ export const createTripService = async (
                 role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
-                link : link
+                link : link,
+                name : userDetails?.name || userDetails?.username
               };
 
               await SendMail(
@@ -222,7 +223,8 @@ export const updateTripService = async (
                 role: role.split("_").join(" "),
                 companyName: company.company_name,
                 logoUrl: company.logo?.url,
-                link : link
+                link : link,
+                name : userDetails?.name || userDetails?.username
               };
 
               await SendMail(

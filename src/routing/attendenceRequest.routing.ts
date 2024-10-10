@@ -5,5 +5,5 @@ import { createAttendenceRequestService, getAttendenceRequestsService } from "..
 const router = express();
 
 router.put("/", authenticate, createAttendenceRequestService);
-router.get('/',authenticate,getAttendenceRequestsService)
+router.get('/',getAttendenceRequestsService)
 export default router;
