@@ -96,6 +96,11 @@ export const updateBookCategory = async (data: any) => {
             await deleteFile(
               updatedCategory?.coverImage.name
             );
+            updatedCategory.coverImage = {
+              name: undefined,
+              url: undefined,
+              type: undefined,
+            };
             await updatedCategory.save()
         }
 

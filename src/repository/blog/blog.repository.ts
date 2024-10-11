@@ -13,7 +13,7 @@ const createBlog = async (data: any) => {
       tags: data.tags,
       status: data.status,
       createdBy: data.createdBy,
-      company: data.company,
+      company: data.company
     });
 
     const savedBlog = await createdBlog.save();

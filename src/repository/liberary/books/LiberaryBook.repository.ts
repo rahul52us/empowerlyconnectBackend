@@ -144,6 +144,11 @@ export const updateBook = async (data: any) => {
           await deleteFile(
             liberaryBookData?.coverImage.name
           );
+          liberaryBookData.coverImage = {
+            name: undefined,
+            url: undefined,
+            type: undefined,
+          };
           await liberaryBookData.save()
       }
 

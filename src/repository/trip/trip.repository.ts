@@ -1,4 +1,4 @@
-import { createCatchError } from "../../config/helper/function";
+import { createCatchError, generateFileName } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
 import { TripModel as Trip } from "../../schemas/trip/trip.schema";
 import { findUserById } from "../auth/auth.repository";
@@ -15,6 +15,7 @@ export const createTrip = async (data: any) => {
       data?.thumbnail?.buffer &&
       data.thumbnail?.trim !== ""
     ) {
+      data.thumbnail.filename = generateFileName(data.thumbnail.filename)
       let url = await uploadFile(data.thumbnail);
       data.thumbnail = {
         name: data.thumbnail.filename,
@@ -102,12 +103,12 @@ export const updateTrip = async (data: any) => {
         data.thumbnail?.buffer &&
         data.thumbnail
       ) {
-        const { filename, type } = data.thumbnail;
+        data.thumbnail.filename = generateFileName(data.thumbnail.filename)
         const url = await uploadFile(data.thumbnail);
         updatedData.thumbnail = {
-          name: filename,
+          name: data.thumbnail.filename,
           url,
-          type,
+          type : data.thumbnail.type,
         };
         await updatedData.save();
       }
