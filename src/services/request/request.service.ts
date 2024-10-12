@@ -83,31 +83,41 @@ export const createRequestService = async (
   try {
     const { user, sendTo, reason, status, startDate, endDate }: any = req.body;
     const userId = new mongoose.Types.ObjectId(user);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+
+    const ISTOffset = 5.5 * 60 * 60 * 1000;
+
+    const startUTC = new Date(startDate);
+    const endUTC = new Date(endDate);
+
+    const startIST = new Date(startUTC.getTime() + ISTOffset);
+    const endIST = new Date(endUTC.getTime() + ISTOffset);
+
+    const nowUTC = new Date();
+    const currentISTDate = new Date(nowUTC.getTime() + ISTOffset);
+
+    const currentISTMongoDBFormat = new Date(currentISTDate).toISOString();
+
     const approvals = [
       {
         reason,
         status,
         user: userId,
         createdBy: req.userId,
+        createdAt: currentISTMongoDBFormat,
       },
     ];
 
-    // Check the existing request within the date range
     const existingRequest = await checkRequests({
       user: userId,
       $or: [
-        { startDate: { $lte: end }, endDate: { $gte: start } },
-        { startDate: { $lte: start }, endDate: { $gte: end } },
+        { startDate: { $lte: endIST }, endDate: { $gte: startIST } },
       ],
     });
 
     if (existingRequest) {
       return res.status(300).send({
         status: "error",
-        message:
-          "There is already a request within the selected date range. Please choose different dates.",
+        message: "There is already a request within the selected date range. Please choose different dates.",
       });
     }
 
@@ -116,6 +126,9 @@ export const createRequestService = async (
       user: userId,
       sendTo,
       approvals,
+      startDate: startIST,
+      endDate: endIST,
+      createdAt: currentISTMongoDBFormat,
     };
 
     // Create the request
@@ -133,6 +146,12 @@ export const createRequestService = async (
     next(err);
   }
 };
+
+
+
+
+
+
 // UPDATE REQUEST SERVICE
 export const updateRequestService = async (
   req: any,
