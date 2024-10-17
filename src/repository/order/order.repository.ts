@@ -74,3 +74,42 @@ export const createOrder = async(data : any) => {
         throw new Error(err?.message)
     }
 }
+
+export const getAllOrders = async (data : any) => {
+    try
+    {
+        const pipeline : any = [{
+            $match : {...data.matchConditions}
+        }]
+
+        pipeline.push(
+            {
+                $lookup: {
+                  from: "users",
+                  let: { userId: "$user" },
+                  pipeline: [
+                    { $match: { $expr: { $eq: ["$_id", "$$userId"] } } },
+                    { $project: { username: 1, _id: 1, code: 1, pic: 1, name: 1 } },
+                  ],
+                  as: "user",
+                },
+              },
+        )
+
+        const orderdetails = await Order.aggregate(pipeline)
+
+        return {
+            status : 'success',
+            data : orderdetails,
+            statusCode : 200
+        }
+    }
+    catch(err : any)
+    {
+        return {
+            status : 'error',
+            data : err?.message,
+            statusCode : 500
+        }
+    }
+}
