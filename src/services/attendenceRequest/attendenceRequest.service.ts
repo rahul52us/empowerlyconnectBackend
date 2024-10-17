@@ -47,7 +47,6 @@ export const createAttendenceRequestService = async (
     const userId = req.userId;
     const companyDetail = req.bodyData.companyDetail;
 
-
     const nowUTC = new Date();
     const ISTOffset = 5.5 * 60 * 60 * 1000;
     const currentISTDate = new Date(nowUTC.getTime() + ISTOffset);
@@ -95,7 +94,7 @@ export const createAttendenceRequestService = async (
           date: currentISTMongoDBFormat,
           officeStartTime: "08:00",
           officeEndTime: "18:00",
-          policy : policy
+          policy: policy,
         });
 
       res.status(statusCode).send({
@@ -135,19 +134,20 @@ export const getAttendenceRequestsService = async (
   next: NextFunction
 ) => {
   try {
-    const { startDate, endDate, companyId, user } = req.query;
+    let { startDate, endDate, companyId, user } = req.query;
 
     let userId = user || req.userId;
     const startDateObject = new Date(startDate);
     const endDateObject = new Date(endDate);
-    startDateObject.setHours(0, 0, 0, 0);
-    endDateObject.setHours(23, 59, 59, 999);
+
+    startDateObject.setUTCHours(0, 0, 0, 0);
+    endDateObject.setUTCHours(23, 59, 59, 999);
 
     const attendenceRequests = await findAttendanceRequests({
       user: new mongoose.Types.ObjectId(userId),
       startDate: startDateObject,
       endDate: endDateObject,
-      companyId: companyId
+      companyId: companyId,
     });
 
     res.status(200).send({
