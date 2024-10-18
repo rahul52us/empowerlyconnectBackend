@@ -1,9 +1,11 @@
 import { Response } from "express";
 import {
   createOrder,
+  createOrderPayment,
   findOrder,
   findOrderAndUpdate,
   getAllOrders,
+  verifyOrderPayment,
 } from "../../repository/order/order.repository";
 import mongoose from "mongoose";
 import { convertIdsToObjects } from "../../config/helper/function";
@@ -70,3 +72,41 @@ export const getUserOrderService = async (req: any, res: Response) => {
     });
   }
 };
+
+export const createOrderPaymentService = async (req: any, res: Response) => {
+  try
+  {
+    const {status, statusCode, data, message} = await createOrderPayment(req.body)
+    res.status(statusCode).send({
+      status,
+      message,
+      data
+    })
+  }
+  catch(err : any)
+  {
+    return res.status(500).send({
+      message : err?.message,
+      status : 'error'
+    })
+  }
+}
+
+export const verifyOrderPaymentService = async (req : any ,res : Response) => {
+  try
+  {
+    const {status, statusCode, message, data} = await verifyOrderPayment(req.body)
+    res.status(statusCode).send({
+      message,
+      data,
+      status
+    })
+  }
+  catch(err : any){
+    res.status(500).send({
+      status : 'error',
+      data : err?.message,
+      message : err?.message
+    })
+  }
+}
