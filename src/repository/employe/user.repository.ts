@@ -13,6 +13,7 @@ import User from "../../schemas/User/User";
 import { createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
 import Qualification from "../../schemas/User/Qualifications";
+import SalaryStructure from "../../schemas/salaryStructure/SalaryStructure.schema";
 
 const createUser = async (data: any) => {
   try {
@@ -147,6 +148,66 @@ const createUser = async (data: any) => {
       status: "error",
       data: err,
     };
+  }
+};
+
+
+export const getSalaryStructure = async (data: any) => {
+  try {
+    const salaryStructures = await SalaryStructure.aggregate([
+      { $match: { user: data.user } },
+
+      { $sort: { effectiveFrom: -1 } },
+
+      {
+        $group: {
+          _id: "$user",
+          currentSalaryStructure: { $first: "$$ROOT" },
+          historicalSalaryStructures: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          currentSalaryStructure: 1,
+          historicalSalaryStructures: 1,
+        },
+      },
+    ]);
+
+    if (salaryStructures.length === 0) {
+      return {
+        status : 'success', data : null, message : 'no such salary details exists', statusCode : 200};
+    }
+
+    return {
+      status : 'success', data : salaryStructures[0], message : 'no such salary details exists', statusCode : 200};
+  } catch (err: any) {
+    return {
+      status : 'error', data : err?.message, message : err?.message , statusCode : 500};
+  }
+};
+
+export const updateSalaryStructure = async (data: any) => {
+  try {
+    const updatedSalaryStructure = await SalaryStructure.findOneAndUpdate(
+      { user: data.user, _id: data.id },
+      { $set: data },
+      { upsert: true, new: true }
+    );
+    return {
+      data : updatedSalaryStructure,
+      message : 'Salary Structure has been successfully',
+      statusCode : 200,
+      status : 'success'
+    }
+  } catch (err: any) {
+    return {
+      status : 'error',
+      data : err?.message,
+      message : err?.message,
+      statusCode : 500
+    }
   }
 };
 

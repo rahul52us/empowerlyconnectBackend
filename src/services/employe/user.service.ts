@@ -22,12 +22,16 @@ import {
   getRoleCountOfCompany,
   getCompanyDetailsById,
   updateQualificationDetails,
+  updateSalaryStructure,
+  getSalaryStructure,
 } from "../../repository/employe/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
 import { PaginationLimit } from "../../config/helper/constant";
-import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
-
+import {
+  convertIdsToObjects,
+  createCatchError,
+} from "../../config/helper/function";
 
 // create the new User of the particular User
 const createUserservice = async (
@@ -62,6 +66,49 @@ const createUserservice = async (
   }
 };
 
+// Update Salary Structure Service
+export const UpdateSalaryStructureService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { data, status, statusCode, message } = await updateSalaryStructure({
+      ...req.body,
+      id: new mongoose.Types.ObjectId(req.params.id),
+      user : new mongoose.Types.ObjectId(req.body.user)
+    });
+    return res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getSalaryStructureService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { data, status, statusCode, message } = await getSalaryStructure({
+      ...req.body,
+      user : new mongoose.Types.ObjectId(req.body.user)
+    });
+    return res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+
 // update the User profile by the user id
 const updateUserProfileService = async (
   req: any,
@@ -88,7 +135,6 @@ const updateUserProfileService = async (
     next(err);
   }
 };
-
 
 // Get the Users of the particular company
 const getAllEmploysService = async (
@@ -179,7 +225,7 @@ const getTotalUsersService = async (
   try {
     const { status, data } = await getTotalUsers({
       companyOrg: new mongoose.Types.ObjectId(req.bodyData.companyOrg),
-      company : await convertIdsToObjects(req.body.company)
+      company: await convertIdsToObjects(req.body.company),
     });
     if (status === "success") {
       res.status(200).send({
@@ -193,7 +239,6 @@ const getTotalUsersService = async (
     next(err);
   }
 };
-
 
 // update the bank details of the particular user
 const updateBankDetialsService = async (
@@ -352,7 +397,10 @@ const updatePermissionsService = async (
 ) => {
   try {
     req.body.id = new mongoose.Types.ObjectId(req.params.id);
-    const { status, data } = await updatePermissions({id : req.body.id, permissions : req.body.permissions});
+    const { status, data } = await updatePermissions({
+      id: req.body.id,
+      permissions: req.body.permissions,
+    });
     if (status === "success") {
       res.status(201).send({
         status: "success",
@@ -384,7 +432,7 @@ export const getUserRoleUser = async (
       data,
     });
   } catch (err: any) {
-    return createCatchError(err)
+    return createCatchError(err);
   }
 };
 
@@ -451,7 +499,7 @@ const getUserInfoWithManagerService = async (
       });
     }
   } catch (err: any) {
-    return createCatchError(err)
+    return createCatchError(err);
   }
 };
 
@@ -461,12 +509,11 @@ const getUserInfoWithManagerActionService = async (
   next: NextFunction
 ) => {
   try {
-
     const { data, status } = await getUserInfoWithManagersAction({
       userId: new mongoose.Types.ObjectId(req.params.id),
-      company : new mongoose.Types.ObjectId(req.query.company),
-      page : req.query.page ? Number(req.query.page) : 1,
-      limit : req.query.limit ? Number(req.query.limit) : PaginationLimit
+      company: new mongoose.Types.ObjectId(req.query.company),
+      page: req.query.page ? Number(req.query.page) : 1,
+      limit: req.query.limit ? Number(req.query.limit) : PaginationLimit,
     });
 
     if (status === "success") {
@@ -482,7 +529,7 @@ const getUserInfoWithManagerActionService = async (
       });
     }
   } catch (err: any) {
-    next(err)
+    next(err);
   }
 };
 
@@ -508,68 +555,73 @@ const getManagerUsersCountsService = async (
       });
     }
   } catch (err: any) {
-    next(err)
+    next(err);
   }
 };
 
-
-const getManagersOfUserService = async (req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    const user = new mongoose.Types.ObjectId(req.params.userId)
-    const {status, data} = await getManagersOfUser({user})
-    if(status === "success"){
+const getManagersOfUserService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = new mongoose.Types.ObjectId(req.params.userId);
+    const { status, data } = await getManagersOfUser({ user });
+    if (status === "success") {
       res.status(200).send({
-        status : status,
-        data : data
-      })
-    }
-    else {
+        status: status,
+        data: data,
+      });
+    } else {
       res.status(400).send({
         data,
-        status
-      })
+        status,
+      });
     }
+  } catch (err) {
+    next(err);
   }
-  catch(err)
-  {
-    next(err)
-  }
-}
+};
 
-const getRoleCountOfCompanyService = async(req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.company = new mongoose.Types.ObjectId(req.query.company)
-    const {data, status, statusCode, message} = await getRoleCountOfCompany(req.body)
+const getRoleCountOfCompanyService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.company = new mongoose.Types.ObjectId(req.query.company);
+    const { data, status, statusCode, message } = await getRoleCountOfCompany(
+      req.body
+    );
     return res.status(statusCode).send({
       data,
       status,
-      message
-    })
+      message,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
-const getCompanyDetailsByIdService = async(req : any , res : Response, next : NextFunction) => {
-  try
-  {
-    req.body.id = new mongoose.Types.ObjectId(req.params.id)
-    const {data, status, statusCode, message} = await getCompanyDetailsById(req.body)
+const getCompanyDetailsByIdService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.body.id = new mongoose.Types.ObjectId(req.params.id);
+    const { data, status, statusCode, message } = await getCompanyDetailsById(
+      req.body
+    );
     return res.status(statusCode).send({
       data,
       status,
-      message
-    })
+      message,
+    });
+  } catch (err: any) {
+    next(err);
   }
-  catch(err : any)
-  {
-    next(err)
-  }
-}
+};
 
 export {
   createUserservice,
@@ -590,5 +642,5 @@ export {
   getUserInfoWithManagerService,
   getUserInfoWithManagerActionService,
   getManagersOfUserService,
-  getRoleCountOfCompanyService
+  getRoleCountOfCompanyService,
 };

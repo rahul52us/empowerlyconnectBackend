@@ -1,58 +1,72 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from "mongoose";
 
-interface Component {
-  name: string;
-  monthlyValue: number;
-  yearlyValue: number;
-  frequency: 'Monthly' | 'Yearly';
-}
-
-interface SalaryStructureDocument extends Document {
-  components: Component[];
-  gross: {
-    monthlyValue: number;
-    yearlyValue: number;
-  };
-  ctc: {
-    monthlyValue: number;
-    yearlyValue: number;
-  };
-  inHandSalary: {
-    monthlyValue: number;
-    yearlyValue: number;
-  };
-  remark : String;
-  effectiveFrom: Date;
-  disbursementFrom: Date;
-  createdAt:Date;
-  updatedAt:Date;
-}
-
-const componentSchema = new Schema<Component>({
-  name: { type: String, required: true },
-  monthlyValue: { type: Number, required: true },
-  yearlyValue: { type: Number, required: true },
-  frequency: { type: String, enum: ['Monthly', 'Yearly'], required: true },
-});
-
-const salaryStructureSchema = new Schema<SalaryStructureDocument>({
-  components: [componentSchema],
-  gross: {
-    monthlyValue: { type: Number, required: true },
-    yearlyValue: { type: Number, required: true },
+const SalaryStructureSchema = new mongoose.Schema({
+  user : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'User',
+    required : true
+  },
+  effectiveFrom: {
+    type: Date
+  },
+  disbursementFrom: {
+    type: Date
+  },
+  salaryComponents: [
+    {
+      head: {
+        type: String
+      },
+      monthlyValue: {
+        type: String
+      },
+      yearlyValue: {
+        type: String
+      },
+      frequency: {
+        type: String,
+        enum: ["Monthly", "Yearly"]
+      },
+    },
+  ],
+  benefits: [
+    {
+      head: {
+        type: String
+      },
+      monthlyValue: {
+        type: String
+      },
+      yearlyValue: {
+        type: String
+      },
+      frequency: {
+        type: String,
+        enum: ["Monthly", "Yearly"]
+      },
+    },
+  ],
+  grossSalary: {
+    monthly: {
+      type: String
+    },
+    yearly: {
+      type: String
+    },
   },
   ctc: {
-    monthlyValue: { type: Number, required: true },
-    yearlyValue: { type: Number, required: true },
+    monthly: {
+      type: String
+    },
+    yearly: {
+      type: String
+    },
   },
   inHandSalary: {
-    monthlyValue: { type: Number, required: true },
-    yearlyValue: { type: Number, required: true },
+    type: String
   },
-  effectiveFrom: { type: Date, required: true },
-  disbursementFrom: { type: Date, required: true },
-  remark : {
-    type : String
+  remarks: {
+    type: String,
   },
   createdAt: {
     type: Date,
@@ -61,9 +75,8 @@ const salaryStructureSchema = new Schema<SalaryStructureDocument>({
   updatedAt: {
     type: Date,
   }
-}
-);
+});
 
-const SalaryStructureSchema = mongoose.model<SalaryStructureDocument>('SalaryStructure', salaryStructureSchema);
+const SalaryStructure = mongoose.model("SalaryStructure", SalaryStructureSchema);
 
-export default SalaryStructureSchema;
+export default SalaryStructure

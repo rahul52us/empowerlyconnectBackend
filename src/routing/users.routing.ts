@@ -22,6 +22,8 @@ import {
   getRoleCountOfCompanyService,
   getCompanyDetailsByIdService,
   updateQualifcationService,
+  UpdateSalaryStructureService,
+  getSalaryStructureService,
 } from "../services/employe/user.service";
 
 const router = express.Router();
@@ -32,12 +34,14 @@ router.get('/details/:id',authenticate,getCompanyDetailsByIdService)
 router.get("/:_id", authenticate, getUserByIdService);
 router.post("/", authenticate, getAllEmploysService);
 router.get("/managers/:id", authenticate, getManagersEmploysService);
+router.post('/salaryStructure',authenticate,getSalaryStructureService)
 router.post("/total/count", authenticate, getTotalUsersService);
 router.get("/designation/count", authenticate, getCountDesignationStatusService);
 router.put("/bankDetails/:id",authenticate,updateBankDetialsService)
 router.put('/companyDetails/:id',authenticate,updateCompanyDetailsService)
 router.put('/familyDetails/:id',authenticate,updateFamilyDetailsService)
 router.put('/workExperience/:id',authenticate,updateWorkExperienceService)
+router.put('/salaryStructure/:id',authenticate,UpdateSalaryStructureService)
 router.put('/updateDocuments/:id',authenticate,updateDocumentService)
 router.put('/qualifications/:id',authenticate,updateQualifcationService)
 router.put('/permissions/:id',authenticate,updatePermissionsService)
