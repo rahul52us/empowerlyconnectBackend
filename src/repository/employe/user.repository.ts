@@ -38,7 +38,7 @@ const createUser = async (data: any) => {
       password: data.password,
       bio: data.bio,
       is_active: true,
-      title: data.title
+      title: data.title,
     });
 
     const savedUser = await createdUser.save();
@@ -46,7 +46,6 @@ const createUser = async (data: any) => {
     if (!savedUser) {
       throw generateError(`cannot create the user`, 400);
     }
-
 
     const comDetails = new CompanyDetails({
       user: savedUser._id,
@@ -116,7 +115,7 @@ const createUser = async (data: any) => {
       user: savedUser._id,
     });
 
-    const savedQualifications = await qualifications.save()
+    const savedQualifications = await qualifications.save();
 
     const { password, ...restUser } = savedUser.toObject();
 
@@ -140,7 +139,7 @@ const createUser = async (data: any) => {
         WorkExperience: savedWorkExperience.toObject(),
         FamilyDetail: savedFamilyDetail.toObject(),
         companyDetail: savedComDetail.toObject(),
-        qualification : savedQualifications.toObject()
+        qualification: savedQualifications.toObject(),
       },
     };
   } catch (err: any) {
@@ -151,13 +150,12 @@ const createUser = async (data: any) => {
   }
 };
 
-
 export const getSalaryStructure = async (data: any) => {
   try {
     const salaryStructures = await SalaryStructure.aggregate([
       { $match: { user: data.user } },
 
-      { $sort: { effectiveFrom: -1 } },
+      { $sort: { createdAt : -1 } },
 
       {
         $group: {
@@ -177,47 +175,86 @@ export const getSalaryStructure = async (data: any) => {
 
     if (salaryStructures.length === 0) {
       return {
-        status : 'success', data : null, message : 'no such salary details exists', statusCode : 200};
+        status: "success",
+        data: null,
+        message: "no such salary details exists",
+        statusCode: 200,
+      };
     }
 
     return {
-      status : 'success', data : salaryStructures[0], message : 'no such salary details exists', statusCode : 200};
+      status: "success",
+      data: salaryStructures[0],
+      message: "no such salary details exists",
+      statusCode: 200,
+    };
   } catch (err: any) {
     return {
-      status : 'error', data : err?.message, message : err?.message , statusCode : 500};
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+      statusCode: 500,
+    };
   }
 };
 
 export const updateSalaryStructure = async (data: any) => {
   try {
-    const updatedSalaryStructure = await SalaryStructure.findOneAndUpdate(
-      { user: data.user, _id: data.id },
-      { $set: data },
-      { upsert: true, new: true }
-    );
-    return {
-      data : updatedSalaryStructure,
-      message : 'Salary Structure has been successfully',
-      statusCode : 200,
-      status : 'success'
+    const id = data.id;
+
+    let updatedSalaryStructure;
+
+    const existingSalaryStructure = await SalaryStructure.findOne({
+      user: data.user,
+      _id: id,
+    });
+
+    if (existingSalaryStructure) {
+      updatedSalaryStructure = await SalaryStructure.findOneAndUpdate(
+        { user: data.user, _id: id },
+        { $set: {...data, updatedAt : new Date()} },
+        { new: true }
+      );
+
+      return {
+        data: updatedSalaryStructure,
+        message: "Salary Structure has been successfully updated",
+        statusCode: 200,
+        status: "success",
+      };
+    } else {
+      updatedSalaryStructure = await SalaryStructure.create({
+        user: data.user,
+        ...data,
+        createdAt : new Date()
+      });
+
+      return {
+        data: updatedSalaryStructure,
+        message: "Salary Structure has been successfully created",
+        statusCode: 201,
+        status: "success",
+      };
     }
   } catch (err: any) {
     return {
-      status : 'error',
-      data : err?.message,
-      message : err?.message,
-      statusCode : 500
-    }
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+      statusCode: 500,
+    };
   }
 };
 
 const updateUserProfileDetails = async (data: any) => {
   try {
-    const {pic, ...rest} = data
-    const users : any = await User.findByIdAndUpdate(data.userId, { $set: {...rest} });
+    const { pic, ...rest } = data;
+    const users: any = await User.findByIdAndUpdate(data.userId, {
+      $set: { ...rest },
+    });
     const pUsers = await ProfileDetails.findOneAndUpdate(
       { user: data.userId },
-      { $set: {...rest} }
+      { $set: { ...rest } }
     );
     if (!pUsers && !users) {
       return {
@@ -236,12 +273,7 @@ const updateUserProfileDetails = async (data: any) => {
       await users.save();
     }
 
-    if (
-      pic &&
-      pic?.isAdd === 1 &&
-      pic?.filename &&
-      pic?.buffer
-    ) {
+    if (pic && pic?.isAdd === 1 && pic?.filename && pic?.buffer) {
       const { filename, type } = pic;
       const url = await uploadFile(pic);
       users.pic = {
@@ -251,7 +283,6 @@ const updateUserProfileDetails = async (data: any) => {
       };
       await users.save();
     }
-
 
     return {
       status: "success",
@@ -270,7 +301,7 @@ const getUsers = async (data: any) => {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      company: {$in : data.company},
+      company: { $in: data.company },
     };
 
     const pipeline: any = [
@@ -351,7 +382,6 @@ const getUsers = async (data: any) => {
     };
   }
 };
-
 
 const getUserById = async (data: any) => {
   try {
@@ -484,7 +514,7 @@ const getTotalUsers = async (data: any) => {
       {
         $match: {
           ...data,
-          company : {$in : data.company},
+          company: { $in: data.company },
           is_active: true,
           deletedAt: { $exists: false },
         },
@@ -500,11 +530,11 @@ const getTotalUsers = async (data: any) => {
     return {
       status: "success",
       data: result.length > 0 ? result[0].count : 0,
-      message : 'Retrieved Users Counts Successfully',
-      statusCode : statusCode.success
+      message: "Retrieved Users Counts Successfully",
+      statusCode: statusCode.success,
     };
   } catch (err) {
-    return createCatchError(err)
+    return createCatchError(err);
   }
 };
 
@@ -570,7 +600,7 @@ const updatePermissions = async (data: any) => {
   try {
     const updatedData: any = await User.findByIdAndUpdate(
       data.id,
-      {permissions : data.permissions},
+      { permissions: data.permissions },
       {
         new: true,
       }
@@ -591,7 +621,6 @@ const updatePermissions = async (data: any) => {
     throw new Error(err);
   }
 };
-
 
 const updateFamilyDetails = async (data: any) => {
   try {
@@ -705,7 +734,6 @@ async function updateDocumentDetails(data: any) {
     if (docum) {
       const { documents } = data;
 
-
       for (const file of data.deleteAttachments) {
         await deleteFile(file);
       }
@@ -715,9 +743,9 @@ async function updateDocumentDetails(data: any) {
       for (const file of documents) {
         try {
           if (file.file && file.isAdd) {
-            let filename = `${data.id}_document_${file.file.filename}`
-            const documentInfo = await uploadFile({...file.file,filename});
-            delete file.isAdd
+            let filename = `${data.id}_document_${file.file.filename}`;
+            const documentInfo = await uploadFile({ ...file.file, filename });
+            delete file.isAdd;
             attach_files.push({
               ...file,
               file: {
@@ -728,12 +756,12 @@ async function updateDocumentDetails(data: any) {
             });
           } else {
             if (file.file) {
-              delete file.isAdd
+              delete file.isAdd;
               attach_files.push({
                 ...file,
               });
             } else {
-              delete file.isAdd
+              delete file.isAdd;
               attach_files.push({
                 ...file,
                 file: {
@@ -749,24 +777,23 @@ async function updateDocumentDetails(data: any) {
         }
       }
 
-
       docum.documents = attach_files;
       await docum.save();
       return {
-        statusCode : statusCode.success,
+        statusCode: statusCode.success,
         status: "success",
         data: docum,
       };
     } else {
       return {
-        statusCode:statusCode.info,
+        statusCode: statusCode.info,
         status: "error",
         data: "Documents do not exist",
       };
     }
   } catch (err) {
     return {
-      statusCode : statusCode.serverError,
+      statusCode: statusCode.serverError,
       status: "error",
       data: err,
     };
@@ -788,9 +815,9 @@ async function updateQualificationDetails(data: any) {
       for (const file of qualifications) {
         try {
           if (file.file && file.isAdd) {
-            let filename = `${data.id}_qualification_${file.file.filename}`
-            const documentInfo = await uploadFile({...file.file,filename});
-            delete file.isAdd
+            let filename = `${data.id}_qualification_${file.file.filename}`;
+            const documentInfo = await uploadFile({ ...file.file, filename });
+            delete file.isAdd;
             attach_files.push({
               ...file,
               file: {
@@ -801,12 +828,12 @@ async function updateQualificationDetails(data: any) {
             });
           } else {
             if (file.file) {
-              delete file.isAdd
+              delete file.isAdd;
               attach_files.push({
                 ...file,
               });
             } else {
-              delete file.isAdd
+              delete file.isAdd;
               attach_files.push({
                 ...file,
                 file: {
@@ -825,20 +852,20 @@ async function updateQualificationDetails(data: any) {
       docum.qualifications = attach_files;
       await docum.save();
       return {
-        statusCode : statusCode.success,
+        statusCode: statusCode.success,
         status: "success",
         data: docum,
       };
     } else {
       return {
-        statusCode:statusCode.info,
+        statusCode: statusCode.info,
         status: "error",
         data: "Documents do not exist",
       };
     }
   } catch (err) {
     return {
-      statusCode : statusCode.serverError,
+      statusCode: statusCode.serverError,
       status: "error",
       data: err,
     };
@@ -965,7 +992,7 @@ const getManagerUsersCounts = async (data: any) => {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      company: {$in : data.company},
+      company: { $in: data.company },
     };
 
     const pipeline: any = [
@@ -1139,14 +1166,14 @@ export const getUserInfoWithManagers = async (data: any) => {
 
 export const getUserInfoWithManagersAction = async (data: any) => {
   try {
-    const page = data.page
-    const limit = data.limit
+    const page = data.page;
+    const limit = data.limit;
     const skip = (page - 1) * limit;
 
     const pipeline: any = [
       {
         $match: {
-          _id: data.userId
+          _id: data.userId,
         },
       },
       {
@@ -1210,7 +1237,7 @@ export const getUserInfoWithManagersAction = async (data: any) => {
                 username: 1,
                 code: 1,
                 title: 1,
-                pic:1
+                pic: 1,
               },
             },
           ],
@@ -1223,9 +1250,9 @@ export const getUserInfoWithManagersAction = async (data: any) => {
           username: 1,
           code: 1,
           title: 1,
-          pic:1,
-          'designation.title': 1,
-          'department.title': 1,
+          pic: 1,
+          "designation.title": 1,
+          "department.title": 1,
           profiledetails: 1,
           managerDetails: 1,
         },
@@ -1290,9 +1317,9 @@ export const getUserInfoWithManagersAction = async (data: any) => {
           "userDetails.username": 1,
           "userDetails.code": 1,
           "userDetails.title": 1,
-          'companydetail.designation': 1,
-          'companydetail.department': 1,
-          'companydetail.doj': 1,
+          "companydetail.designation": 1,
+          "companydetail.department": 1,
+          "companydetail.doj": 1,
         },
       },
       { $skip: skip },
@@ -1304,17 +1331,15 @@ export const getUserInfoWithManagersAction = async (data: any) => {
       User.aggregate(userPipeline),
     ]);
 
-    if(users.length && userDetails.length)
-    {
+    if (users.length && userDetails.length) {
       return {
         status: "success",
         data: { userDetails, users, page, limit },
       };
-    }
-    else {
+    } else {
       return {
         status: "error",
-        data: 'User does not exists',
+        data: "User does not exists",
       };
     }
   } catch (err: any) {
@@ -1366,28 +1391,28 @@ const getManagersOfUser = async (data: any) => {
               as: "manager",
               in: {
                 _id: "$$manager._id",
-                username: "$$manager.username"
-              }
-            }
-          }
-        }
-      }
+                username: "$$manager.username",
+              },
+            },
+          },
+        },
+      },
     ];
 
     const managers = await User.aggregate(pipeline);
     return {
-      status: 'success',
+      status: "success",
       data: managers,
     };
   } catch (err: any) {
     return {
-      status: 'error',
-      message: err?.message || 'An unknown error occurred',
+      status: "error",
+      message: err?.message || "An unknown error occurred",
     };
   }
 };
 
-export const getRoleCountOfCompany = async(data:any) => {
+export const getRoleCountOfCompany = async (data: any) => {
   try {
     const { company } = data;
 
@@ -1395,8 +1420,8 @@ export const getRoleCountOfCompany = async(data:any) => {
 
     pipeline.push({
       $match: {
-        deletedAt: { $exists: false }
-      }
+        deletedAt: { $exists: false },
+      },
     });
 
     pipeline.push({
@@ -1414,8 +1439,8 @@ export const getRoleCountOfCompany = async(data:any) => {
 
     pipeline.push({
       $match: {
-        "companydetail.company": company
-      }
+        "companydetail.company": company,
+      },
     });
 
     pipeline.push({
@@ -1429,67 +1454,66 @@ export const getRoleCountOfCompany = async(data:any) => {
     pipeline.push({
       $group: {
         _id: "$lastDetail.eType",
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     });
 
     const result = await User.aggregate(pipeline);
     return {
-      status: 'success',
+      status: "success",
       data: result,
-      message: 'Retrieved Role Counts Successfully',
-      statusCode: 200
+      message: "Retrieved Role Counts Successfully",
+      statusCode: 200,
     };
   } catch (err: any) {
     return createCatchError(err);
   }
 };
 
-const getCompanyDetailsById = async (data : any) => {
-  try
-  {
-    const pipeline : any = [
+const getCompanyDetailsById = async (data: any) => {
+  try {
+    const pipeline: any = [
       {
         $match: {
           _id: data.id,
-          deletedAt: { $exists: false }
-        }
+          deletedAt: { $exists: false },
+        },
       },
       {
         $lookup: {
           from: "companydetails",
           localField: "_id",
           foreignField: "user",
-          as: "companydetails"
-        }
+          as: "companydetails",
+        },
       },
       {
         $unwind: {
           path: "$companydetails",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $unwind: {
           path: "$companydetails.details",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $lookup: {
           from: "departments",
           localField: "companydetails.details.designation",
           foreignField: "_id",
-          as: "designationDetails"
-        }
+          as: "designationDetails",
+        },
       },
       {
         $lookup: {
           from: "departmentcategories",
           localField: "companydetails.details.department",
           foreignField: "_id",
-          as: "departmentDetails"
-        }
+          as: "departmentDetails",
+        },
       },
       {
         $lookup: {
@@ -1497,32 +1521,32 @@ const getCompanyDetailsById = async (data : any) => {
           let: { managerIds: "$companydetails.details.managers" },
           pipeline: [
             { $match: { $expr: { $in: ["$_id", "$$managerIds"] } } },
-            { $project: { username: 1, code: 1, _id: 1 } }
+            { $project: { username: 1, code: 1, _id: 1 } },
           ],
-          as: "managerDetails"
-        }
+          as: "managerDetails",
+        },
       },
       {
         $lookup: {
           from: "companypolicies",
           localField: "companydetails.company",
           foreignField: "company",
-          as: "companyPolicy"
-        }
+          as: "companyPolicy",
+        },
       },
       {
         $unwind: {
           path: "$companyPolicy",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $addFields: {
           "companydetails.details.designationDetails": {
-            $arrayElemAt: ["$designationDetails", 0]
+            $arrayElemAt: ["$designationDetails", 0],
           },
           "companydetails.details.departmentDetails": {
-            $arrayElemAt: ["$departmentDetails", 0]
+            $arrayElemAt: ["$departmentDetails", 0],
           },
           "companydetails.details.managerDetails": "$managerDetails",
           "companydetails.details.workLocationDetails": {
@@ -1535,13 +1559,13 @@ const getCompanyDetailsById = async (data : any) => {
                     $filter: {
                       input: "$companyPolicy.workLocations",
                       as: "workLoc",
-                      cond: { $eq: ["$$workLoc._id", "$$locId"] }
-                    }
+                      cond: { $eq: ["$$workLoc._id", "$$locId"] },
+                    },
                   },
-                  0
-                ]
-              }
-            }
+                  0,
+                ],
+              },
+            },
           },
           "companydetails.details.workTimingDetails": {
             $map: {
@@ -1553,21 +1577,21 @@ const getCompanyDetailsById = async (data : any) => {
                     $filter: {
                       input: "$companyPolicy.workTiming",
                       as: "workTime",
-                      cond: { $eq: ["$$workTime._id", "$$timeId"] }
-                    }
+                      cond: { $eq: ["$$workTime._id", "$$timeId"] },
+                    },
                   },
-                  0
-                ]
-              }
-            }
-          }
-        }
+                  0,
+                ],
+              },
+            },
+          },
+        },
       },
       {
         $group: {
           _id: {
             userId: "$_id",
-            detailId: "$companydetails.details._id"
+            detailId: "$companydetails.details._id",
           },
           profileDetails: { $first: "$profiledetails" },
           companydetails: { $first: "$companydetails" },
@@ -1584,20 +1608,20 @@ const getCompanyDetailsById = async (data : any) => {
               eType: "$companydetails.details.eType",
               description: "$companydetails.details.description",
               workTiming: "$companydetails.details.workTimingDetails",
-              createdAt: "$companydetails.details.createdAt"
-            }
-          }
-        }
+              createdAt: "$companydetails.details.createdAt",
+            },
+          },
+        },
       },
       {
         $group: {
           _id: "$_id.userId",
           companydetails: { $first: "$companydetails" },
-          details: { $first: "$details" }
-        }
+          details: { $first: "$details" },
+        },
       },
       {
-        $unwind: "$details"
+        $unwind: "$details",
       },
       {
         $replaceRoot: {
@@ -1606,44 +1630,38 @@ const getCompanyDetailsById = async (data : any) => {
             profileDetails: "$profileDetails",
             companydetails: "$companydetails",
             bankDetails: "$bankDetails",
-            details: "$details"
-          }
-        }
+            details: "$details",
+          },
+        },
       },
       {
         $group: {
           _id: "$_id",
-          details: { $push: "$details" }
-        }
-      }
-    ]
+          details: { $push: "$details" },
+        },
+      },
+    ];
 
-    const result = await User.aggregate(pipeline)
-    if(result.length){
+    const result = await User.aggregate(pipeline);
+    if (result.length) {
       return {
-        data : result[0],
-        message : 'Retrived User Details',
-        statusCode : 200,
-        status : 'success'
-      }
-    }
-    else
-    {
+        data: result[0],
+        message: "Retrived User Details",
+        statusCode: 200,
+        status: "success",
+      };
+    } else {
       return {
-        data : 'User does not exists',
-        message : 'User does not exists',
-        statusCode : 300,
-        status: 'error'
-      }
+        data: "User does not exists",
+        message: "User does not exists",
+        statusCode: 300,
+        status: "error",
+      };
     }
+  } catch (err: any) {
+    return createCatchError(err);
   }
-  catch(err : any)
-  {
-    return createCatchError(err)
-  }
-}
-
-
+};
 
 export {
   createUser,
@@ -1661,5 +1679,5 @@ export {
   updateCompanyDetails,
   updatePermissions,
   getManagerUsersCounts,
-  getManagersOfUser
+  getManagersOfUser,
 };

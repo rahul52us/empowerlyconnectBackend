@@ -73,16 +73,21 @@ export const UpdateSalaryStructureService = async (
   next: NextFunction
 ) => {
   try {
-    const { data, status, statusCode, message } = await updateSalaryStructure({
-      ...req.body,
-      id: new mongoose.Types.ObjectId(req.params.id),
-      user : new mongoose.Types.ObjectId(req.body.user)
-    });
-    return res.status(statusCode).send({
-      message,
-      data,
-      status,
-    });
+    const id = req.params.id;
+const { data, status, statusCode, message } = await updateSalaryStructure({
+  ...req.body,
+  ...(id && id?.trim() && id !== "undefined" ? { id: new mongoose.Types.ObjectId(id) } : {}),
+  user: new mongoose.Types.ObjectId(req.body.user),
+});
+
+
+
+return res.status(statusCode).send({
+  message,
+  data,
+  status,
+});
+
   } catch (err: any) {
     next(err);
   }
