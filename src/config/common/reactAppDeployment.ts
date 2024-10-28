@@ -132,9 +132,14 @@ const localBuildDir = path.join(
   __dirname,
   "..",
   "..",
+  "..",
+  "..",
   "empowerlyconnectFrontend",
   "build"
 );
+
+console.log(localBuildDir)
+
 const remoteDir = "/home/u260162515/public_html";
 
 // Deployment process
@@ -154,5 +159,6 @@ const deploy = async () => {
   }
 };
 
+export default deploy
 // Run the deployment
 // deploy();
