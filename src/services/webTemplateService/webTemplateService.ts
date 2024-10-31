@@ -1,22 +1,65 @@
-import { Response } from "express"
-import { createWebTemplate } from "../../repository/websiteTemplate/websiteTemplate.repository"
+import { Response } from "express";
+import {
+  checkWebTemplate,
+  createWebTemplate,
+  getWebTemplate,
+} from "../../repository/websiteTemplate/websiteTemplate.repository";
 
-export const createWebTemplateService = async(req : any , res : Response) => {
-    try
-    {
-        const {status, statusCode, data, message} =await createWebTemplate(req.body)
-        res.status(statusCode).send({
-            message,
-            data,
-            status
-        })
+export const createWebTemplateService = async (req: any, res: Response) => {
+  try {
+    const { status, data, statusCode, message } = await checkWebTemplate({
+      name: req.body?.webInfo?.metaData?.name,
+    });
+    if (status === "success") {
+      res.status(statusCode).send({
+        message,
+        data,
+        status,
+      });
+    } else {
+      const { webInfo, sectionsLayout, webType, colorSetting } = req.body;
+      const { status, statusCode, data, message } = await createWebTemplate({
+        sectionsLayout,
+        webInfo: { sections: webInfo, colorSetting },
+        webType,
+        name: webInfo?.metaData?.name,
+        user: req.userId,
+        company: req.bodyData.companyDetail,
+      });
+      res.status(statusCode).send({
+        message,
+        data,
+        status,
+      });
     }
-    catch(err : any)
-    {
-        res.status(500).send({
-            message : err?.message,
-            data : err?.message,
-            status : 'error'
-        })
-    }
+  } catch (err: any) {
+    res.status(500).send({
+      message: err?.message,
+      data: err?.message,
+      status: "error",
+    });
+  }
+};
+
+
+export const getWebTemplateService = async (req : any, res : Response) => {
+  try
+  {
+    const { status, data, statusCode, message } = await getWebTemplate({
+      name: req.params?.slug?.split('-').join(' '),
+    });
+      res.status(statusCode).send({
+        message,
+        data,
+        status,
+      });
+  }
+  catch(err : any)
+  {
+    res.status(500).send({
+      message: err?.message,
+      data: err?.message,
+      status: "error",
+    });
+  }
 }
