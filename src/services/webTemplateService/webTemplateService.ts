@@ -26,7 +26,7 @@ export const createWebTemplateService = async (req: any, res: Response) => {
         webType,
         name: webInfo?.metaData?.name,
         user: req.userId,
-        company: req.bodyData.companyDetail,
+        company: req.bodyData.companyDetail || req.userId,
       });
       res.status(statusCode).send({
         message,
