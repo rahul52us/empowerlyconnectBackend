@@ -4,6 +4,7 @@ interface WebsiteTemplateI extends Document {
   user: mongoose.Schema.Types.ObjectId;
   company: mongoose.Schema.Types.ObjectId;
   webType?: string;
+  status?:string;
   deletedAt?: Date;
   is_active: boolean;
   name: string;
@@ -14,7 +15,7 @@ interface WebsiteTemplateI extends Document {
 }
 
 const WebsiteTemplate = new Schema<WebsiteTemplateI>({
-  name: { type: String, required: true },
+  name: { type: String, required: true, index  : true },
   webType: { type: String, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   company: {
@@ -22,6 +23,7 @@ const WebsiteTemplate = new Schema<WebsiteTemplateI>({
     required: true,
     ref: "Company",
   },
+  status : {type : String, default : 'inProgress'},
   is_active: { type: Boolean, default: true },
   sectionsLayout: { type: mongoose.Schema.Types.Mixed, default: [] },
   webInfo: { type: mongoose.Schema.Types.Mixed, default: {} },

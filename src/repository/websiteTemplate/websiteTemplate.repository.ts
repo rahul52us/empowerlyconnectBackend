@@ -54,6 +54,7 @@ export const getWebTemplate = async (datas: any) => {
   try {
     const template = await WebsiteTemplate.findOne({
       name: { $regex: new RegExp(`^${datas?.name?.trim()}$`, "i") },
+      // status : 'approved'
     });
     if (template) {
       return {
@@ -61,6 +62,35 @@ export const getWebTemplate = async (datas: any) => {
         data: template,
         statusCode: 200,
         message: "Retrieve Template Successfully",
+      };
+    } else {
+      return {
+        status: "error",
+        data: "Template does not exists",
+        statusCode: 400,
+        message: "Template does not exists",
+      };
+    }
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err?.message,
+      statusCode: 400,
+      message: err?.message,
+    };
+  }
+};
+
+export const updateWebTemplate = async (datas: any) => {
+  try {
+    const template = await WebsiteTemplate.findById(datas.id);
+    if (template) {
+      const temp = await WebsiteTemplate.findByIdAndUpdate(datas.id, {$set : {...datas}})
+      return {
+        status: "success",
+        data: temp,
+        statusCode: 200,
+        message: "Update Template Successfully",
       };
     } else {
       return {

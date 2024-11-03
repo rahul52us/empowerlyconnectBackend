@@ -27,9 +27,7 @@ app.use('/notes', express.static(path.join(__dirname, 'src', '../public/notes'))
 
 // Enable CORS for all routes and all origins
 const corsOptions = {
-  origin: process.env.NODE_ENV === "production"
-      ? process.env.FRONTEND_BASE_PROD_URL
-      : "*",
+  origin: "*",
   methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
   credentials: true, // Allow cookies to be sent
   allowedHeaders: ["Content-Type", "Authorization"]

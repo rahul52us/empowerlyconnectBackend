@@ -3,7 +3,9 @@ import {
   checkWebTemplate,
   createWebTemplate,
   getWebTemplate,
+  updateWebTemplate,
 } from "../../repository/websiteTemplate/websiteTemplate.repository";
+import mongoose from "mongoose";
 
 export const createWebTemplateService = async (req: any, res: Response) => {
   try {
@@ -63,3 +65,29 @@ export const getWebTemplateService = async (req : any, res : Response) => {
     });
   }
 }
+
+export const updateWebTemplateService = async (req: any, res: Response) => {
+  try {
+      const { webInfo, sectionsLayout, webType, colorSetting } = req.body;
+      const { status, statusCode, data, message } = await updateWebTemplate({
+        sectionsLayout,
+        webInfo: { sections: webInfo, colorSetting },
+        webType,
+        name: webInfo?.metaData?.name,
+        user: req.userId,
+        company: req.bodyData.companyDetail,
+        id : new mongoose.Types.ObjectId(req.body.id)
+      });
+      res.status(statusCode).send({
+        message,
+        data,
+        status,
+      });
+  } catch (err: any) {
+    res.status(500).send({
+      message: err?.message,
+      data: err?.message,
+      status: "error",
+    });
+  }
+};
