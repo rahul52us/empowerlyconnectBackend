@@ -29,10 +29,10 @@ app.use('/notes', express.static(path.join(__dirname, 'src', '../public/notes'))
 const corsOptions = {
   origin: "*",
   methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
-  credentials: true, // Allow cookies to be sent
+  credentials: false, // Temporarily disable credentials
   allowedHeaders: ["Content-Type", "Authorization"]
 };
-app.use(cors(corsOptions));
+
 
 // createSubdomain()
 // deploy()
