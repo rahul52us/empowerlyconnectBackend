@@ -1,51 +1,40 @@
 import mongoose from "mongoose";
 
-const QuizSchema = new mongoose.Schema({
-  company: {
+const QuizQuestionSchema = new mongoose.Schema({
+  category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Company",
-    required: true,
+    ref: "QuizCategory"
   },
-  class: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Class",
+  explanation: {
+    type: String,
+    trim: true,
   },
-  section: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Section",
+  difficultyLevel: {
+    type: String,
+    enum: ["Easy", "Medium", "Hard"],
+    default: "Medium",
   },
+  tags: [{
+    type: String,
+    trim: true,
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  title: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  thumbnail: {
-    name : {
-      type : String
-    },
-    url : {
-      type : String
-    },
-    type : {
-      type : String
-    }
-  },
-  description: {
-    type: String,
-    trim: true,
-  },
   createdAt: {
     type: Date,
-    default: new Date(),
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
   },
+  deletedAt:{
+    type : Date
+  }
 });
 
-export default mongoose.model("Quiz", QuizSchema);
+QuizQuestionSchema.index({ question: "text", tags: "text" });
+
+export default mongoose.model("Quiz", QuizQuestionSchema);

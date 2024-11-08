@@ -8,7 +8,7 @@ const customMessages = {
   "number.min": "{#label} should be at least {#limit}",
   "number.max": "{#label} should be at most {#limit}",
   "array.min": "{#label} should have at least {#limit} items",
-  "array.max": "{#label} should not be greatuer than {#limit} items",
+  "array.max": "{#label} should not be greater than {#limit} items",
 };
 
 const createBlogValidation = Joi.object({

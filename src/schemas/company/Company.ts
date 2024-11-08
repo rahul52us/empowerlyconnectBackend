@@ -1,8 +1,22 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
+
+interface addressInfo  {
+  address?:string;
+  country?:string;
+  state?:string;
+  city?:string;
+  pinCode?:string
+}
 
 interface CompanyI extends Document {
   company_name: string;
-  verified_email_allowed: boolean;
+  companyCode:string;
+  companyOrg:mongoose.Schema.Types.ObjectId,
+  companyType:string;
+  verified_email_allowed:boolean;
+  policy:mongoose.Schema.Types.ObjectId;
+  createdBy : mongoose.Schema.Types.ObjectId;
+  activeUser:mongoose.Schema.Types.ObjectId;
   is_active?: boolean;
   logo?: string;
   bio?: string;
@@ -25,6 +39,7 @@ interface CompanyI extends Document {
   deletedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  addressInfo?:addressInfo[]
 }
 
 const companySchema = new mongoose.Schema<CompanyI>({
@@ -34,16 +49,39 @@ const companySchema = new mongoose.Schema<CompanyI>({
     index: true,
     trim: true,
   },
+  companyOrg : {
+    type : mongoose.Schema.Types.ObjectId,
+  },
+  policy:{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'CompanyPolicy'
+  },
+  companyCode : {
+    type : String,
+    required : true
+  },
+  companyType:{
+    type : String,
+    default : 'company'
+  },
   is_active: {
     type: Boolean,
-    default: true,
+    default: false
   },
   verified_email_allowed: {
     type: Boolean,
     default: false,
   },
   logo: {
-    type: String,
+    name : {
+      type : String
+    },
+    url : {
+      type : String
+    },
+    type : {
+      type : String
+    }
   },
   bio: {
     type: String,
@@ -75,29 +113,22 @@ const companySchema = new mongoose.Schema<CompanyI>({
   otherLinks: {
     type: [{ type: String }],
   },
-  address1: {
-    type: String,
-    trim: true,
+  addressInfo: {
+    type: [{
+      address : String,
+      country: String,
+      state:String,
+      city: String,
+      pinCode: String
+    }]
   },
-  address2: {
-    type: String,
-    trim: true,
+  activeUser : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : 'User'
   },
-  country: {
-    type: String,
-    trim: true,
-  },
-  state: {
-    type: String,
-    trim: true,
-  },
-  pinCode: {
-    type: String,
-    trim: true,
-  },
-  city: {
-    type: String,
-    trim: true,
+  createdBy : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'User'
   },
   deletedAt: {
     type: Date,

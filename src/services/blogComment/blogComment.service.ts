@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import {
   createBlogComment,
   getBlogComments,
-} from "../../repository/blogComment.repository";
+} from "../../repository/blog/blogComment.repository";
 
 export const createBlogCommentService = async (
   req: any,
@@ -12,7 +12,7 @@ export const createBlogCommentService = async (
   try {
     const { status, data } = await createBlogComment({
       user: req.userId,
-      company: req.bodyData.company,
+      company: req.body.company,
       blog: req.params.blogId,
       content: req.body.content,
       parentComment: req.body.parentComment,

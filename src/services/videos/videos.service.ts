@@ -17,7 +17,7 @@ export const createVideoCategoryService = async (
 ) => {
   try {
     req.body.createdBy = req.userId;
-    req.body.company = req.bodyData.company;
+    req.body.company = req.body.company;
     const result = videoCreateCategoryValidation.validate(req.body);
     if (result.error) {
       throw generateValidationError(result.error.details, 422);

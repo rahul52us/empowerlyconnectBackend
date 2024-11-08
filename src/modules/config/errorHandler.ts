@@ -10,7 +10,7 @@ const errorMiddleware = (
     message: err.message || "Internal Server Error",
     data: err.data || "Internal Server Error",
     statusCode: err.statusCode || 500,
-    success: err.success || false,
+    status: err.status || 'error',
   });
 };
 

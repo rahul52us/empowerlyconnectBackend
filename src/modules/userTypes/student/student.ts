@@ -5,8 +5,8 @@ import {
   getStudentsValidation,
 } from "./utils/validation";
 import { generateError } from "../../../modules/config/function";
-import User from "../../../schemas/User";
-import ProfileDetails from "../../../schemas/ProfileDetails";
+import User from "../../../schemas/User/User";
+import ProfileDetails from "../../../schemas/User/ProfileDetails";
 import Student from "../../../schemas/UserTypes/StudentSchema";
 import MarkSheet from "../../../schemas/MarkSheet/markSheet";
 

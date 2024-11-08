@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
-import User from "../../schemas/User";
+import User from "../../schemas/User/User";
 import { generateError } from "../config/function";
-import dotenv from "dotenv";
+import dotenv, { populate } from "dotenv";
 import {
   UserValidation,
   forgotEmailValidation,
@@ -13,22 +13,36 @@ import generateToken, {
 } from "../config/generateToken";
 import Company from "../../schemas/company/Company";
 import Token from "../../schemas/Token/Token";
-import ProfileDetails from "../../schemas/ProfileDetails";
+import ProfileDetails from "../../schemas/User/ProfileDetails";
 import SendMail from "../config/sendMail/sendMail";
 import {
   FORGOT_PASSWORD_EMAIL_TOKEN_TYPE,
   REGISTER_NEW_USER_TOKEN_TYPE,
 } from "../config/sendMail/utils";
+import CompanyDetails from "../../schemas/User/CompanyDetails";
+import {baseURL} from '../../config/helper/urls'
+import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
+import { statusCode } from "../../config/helper/statusCode";
+import { createToken } from "../../services/token/token.service";
 
 dotenv.config();
 const MeUser = async (req: any, res: Response): Promise<any> => {
+
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
   );
+  const companyDetail = await CompanyDetails.findById(req.bodyData.companyDetail)
+  .populate({
+      path: 'company',
+      populate: {
+          path: 'policy'
+      }
+  });
+
   return res.status(200).send({
     message: `get successfully data`,
-    data: { ...req.bodyData, profile_details },
-    statusCode: 201,
+    data: { ...req.bodyData, profile_details, companyDetail },
+    statusCode: 200,
     success: true,
   });
 };
@@ -50,7 +64,7 @@ const createUser = async (
       throw generateError(`${existUser.username} user already exists`, 400);
     }
 
-    if (req.body.role !== "admin") {
+    if (req.body.role !== "superadmin") {
       const selectedCompany = await Company.findOne({
         _id: req.body.company?.trim(),
         is_active: true,
@@ -80,15 +94,16 @@ const createUser = async (
 
       if (selectedCompany.verified_email_allowed) {
         const token = generateResetPasswordToken(savedUser._id);
-        const storeToken = new Token({
+
+        await createToken({
           userId: savedUser._id,
           token: token,
-          type: REGISTER_NEW_USER_TOKEN_TYPE,
-        });
+          type: REGISTER_NEW_USER_TOKEN_TYPE
+        })
         const sendMail: any = await SendMail(
           savedUser.name,
           savedUser.username,
-          `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
+          `${baseURL}/verify-account/${token}`,
           "Register New User",
           "Register_email_templates.html"
         );
@@ -96,7 +111,6 @@ const createUser = async (
         if (!sendMail.success) {
           await savedUser.deleteOne();
           await profileDetail.deleteOne();
-          await storeToken.deleteOne();
           throw generateError(
             `Failed to send mail to ${req.body.username} please try again later`,
             400
@@ -144,7 +158,7 @@ const createUser = async (
       const sendMail: any = await SendMail(
         createdUser.username,
         createdUser.username,
-        `${process.env.FRONTEND_BASE_URL}/verify-account/${token}`,
+        `${baseURL}/verify-account/${token}`,
         "Verify Your Account",
         "Register_email_templates.html"
       );
@@ -186,7 +200,7 @@ const VerifyEmailToken = async (
         { new: true }
       );
       if (updatedData) {
-        if (updatedData.role !== "admin") {
+        if (updatedData.role !== "superadmin") {
           await token.deleteOne();
         }
         res.status(200).send({
@@ -283,7 +297,7 @@ const resetPassword = async (
     await SendMail(
       user.name,
       user.username,
-      `${process.env.FRONTEND_BASE_URL}`,
+      `${baseURL}`,
       "Password Changed Successfully!",
       "reset_email_templates.html"
     );
@@ -307,32 +321,52 @@ const getUsersByCompany = async (
   next: NextFunction
 ) => {
   try {
-    const { is_active, position } = req.body;
+    const { is_active, designation, company } = req.body;
+    try {
+      const users = await User.aggregate([
+        {
+          $lookup: {
+            from: "companydetails",
+            localField: "companyDetail",
+            foreignField: "_id",
+            as: "companyDetails"
+          }
+        },
+        { $unwind: "$companyDetails" },
+        {
+          $lookup: {
+            from: "companies",
+            localField: "companyDetails.company",
+            foreignField: "_id",
+            as: "company"
+          }
+        },
+        { $unwind: "$company" },
+        {
+          $match: {
+            "company._id": {$in : await convertIdsToObjects(company)},
+            "companyOrg" : new mongoose.Types.ObjectId(req.bodyData.companyOrg)
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            username: 1,
+            code: 1
+          }
+        }
+      ]);
 
-    const query: any = {
-      company: req.bodyData.company,
-    };
-
-    if (is_active !== undefined) {
-      query.is_active = is_active;
+      res.status(statusCode.success).send({
+        message: "Fetch Users Successfully",
+        data: users,
+        status : 'success'
+      });
     }
-
-    if (position && position.length !== 0) {
-      query.position = { $in: position };
+    catch(err)
+    {
+      return createCatchError(err)
     }
-
-    const users = await User.find(query).select("-password");
-
-    if (!users) {
-      throw generateError("Something went wrong while fetching the users", 400);
-    }
-
-    res.status(200).send({
-      message: "Fetch Users Successfully",
-      data: users,
-      statusCode: 200,
-      success: true,
-    });
   } catch (err) {
     next(err);
   }

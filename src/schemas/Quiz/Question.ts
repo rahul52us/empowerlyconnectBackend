@@ -1,58 +1,66 @@
 import mongoose from "mongoose";
 
-export const AnswerSchema = new mongoose.Schema({
-  answerType: {
-    type: String,
-    enum: ["text", "img", "video"],
+const QuizQuestionSchema = new mongoose.Schema({
+  quiz: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Quiz"
   },
-  answer: {
-    type: String,
-    trim: true,
-  },
-  description: {
+  question: {
     type: String,
     trim: true,
+    required: true,
   },
-  correct: {
-    type: Boolean,
-    default:false,
-    required : true
+  questionType: {
+    type: String,
+    enum: ["text", "image", "video"],
+    default: "text",
   },
-});
-
-export const Answer = mongoose.model("Answer", AnswerSchema);
-
-export const QuestionSchema = new mongoose.Schema(
-  {
-    company: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Company",
-      required: true,
-    },
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "QuizCategory",
-    },
-    questionType: {
-      type: String,
-      enum: ["text", "img", "video"],
-      default: "text",
-    },
-    question: {
+  answers: [{
+    answer: {
       type: String,
       trim: true,
-    },
-    answers: [{
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'Answer'
-    }],
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true,
     },
+    correct: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    description : {
+      type : mongoose.Schema.Types.Mixed
+    }
+  }],
+  explanation: {
+    type: String,
+    trim: true,
   },
-  { timestamps: true }
-);
+  difficultyLevel: {
+    type: String,
+    enum: ["Easy", "Medium", "Hard"],
+    default: "Medium",
+  },
+  tags: [{
+    type: String,
+    trim: true,
+  }],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+  },
+  deletedAt : {
+    type : Date
+  }
+});
 
-export default mongoose.model("Question", QuestionSchema);
+// Indexes for optimized querying
+QuizQuestionSchema.index({ question: "text", tags: "text" });
+
+export default mongoose.model("QuizQuestion", QuizQuestionSchema);

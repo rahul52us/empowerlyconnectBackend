@@ -1,10 +1,7 @@
 import * as Joi from "joi";
 
 const videoCreateCategoryValidation = Joi.object({
-  company: Joi.any().required().allow(null).messages({
-    "any.required": "Company is required",
-    "string.empty": "Company is required",
-  }),
+  company: Joi.any().allow(),
 
   thumbnail: Joi.any().allow(),
 

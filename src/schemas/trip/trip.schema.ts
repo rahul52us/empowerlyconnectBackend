@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from "mongoose";
 
 interface TravelDetails {
   country?: string;
-  fromState?:string;
-  toState?:string;
+  fromState?: string;
+  toState?: string;
   fromCity?: string;
   toCity?: string;
   startDate?: Date;
@@ -28,25 +28,42 @@ interface Trip extends Document {
   description: string;
   thumbnail?: string;
   isActive?: boolean;
-  country?:string;
-  currency?:string;
+  country?: string;
+  currency?: string;
   type: string;
   status: string;
   createdBy: mongoose.Schema.Types.ObjectId;
   company: mongoose.Schema.Types.ObjectId;
+  companyOrg: mongoose.Schema.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date | null;
   participants?: mongoose.Schema.Types.ObjectId[];
   travelDetails?: TravelDetails[];
   additionalExpenses?: AdditionalExpense[];
+  attach_files?:any[]
 }
 
+const UserSchema = new Schema<any>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { _id: false }
+);
+
 const TravelDetailsSchema = new Schema<TravelDetails>({
-  fromState:{type : String},
-  toState:{type : String},
+  fromState: { type: String },
+  toState: { type: String },
   fromCity: { type: String },
-  toCity: { type: String},
+  toCity: { type: String },
   startDate: { type: Date },
   endDate: { type: Date },
   travelMode: { type: String },
@@ -67,21 +84,44 @@ const AdditionalExpenseSchema = new Schema<AdditionalExpense>({
 const TripSchema = new Schema<Trip>({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  country : {
-    type : String
+  country: {
+    type: String,
   },
   thumbnail: {
-    name : {
-      type : String
+    name: {
+      type: String,
     },
-    url : {
-      type : String
+    url: {
+      type: String,
     },
-    type : {
-      type : String
-    }
+    type: {
+      type: String,
+    },
   },
-  currency:{type : String, default : 'RS'},
+  attach_files: [
+    {
+      title: {
+        type: String,
+        trim: true,
+      },
+      description: {
+        type: mongoose.Schema.Types.Mixed,
+        trim: true,
+      },
+      file: {
+        name: {
+          type: String,
+        },
+        url: {
+          type: String,
+        },
+        type: {
+          type: String,
+        },
+      },
+    },
+  ],
+  currency: { type: String, default: "RS" },
   type: {
     type: String,
     enum: ["individual", "group"],
@@ -98,10 +138,18 @@ const TripSchema = new Schema<Trip>({
     ref: "Company",
     required: true,
   },
+  companyOrg: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required: true,
+  },
   createdAt: { type: Date, default: new Date() },
   updatedAt: { type: Date },
   deletedAt: { type: Date },
-  participants: { type: [mongoose.Schema.Types.ObjectId] },
+  participants: {
+    type: [UserSchema],
+    default: []
+  },
   travelDetails: { type: [TravelDetailsSchema] },
   additionalExpenses: { type: [AdditionalExpenseSchema] },
 });
