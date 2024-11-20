@@ -30,7 +30,7 @@ const createBlog = async (data: any) => {
 
 const getBlogs = async (data: any) => {
   try {
-    const blogs = await Blog.find() // {company : {$in : data.company}}
+    const blogs = await Blog.find() //// {company : {$in : data.company}}
       .populate({
         path: "createdBy",
         select: "name username _id pic position createdAt",
