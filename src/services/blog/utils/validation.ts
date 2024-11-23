@@ -12,14 +12,16 @@ const customMessages = {
 };
 
 const createBlogValidation = Joi.object({
-  coverImage: Joi.string().trim().messages(customMessages),
+  subTitle : Joi.string().trim().messages(customMessages),
+  isPrivate : Joi.valid(true,false),
+  coverImage: Joi.any().messages(customMessages),
   title: Joi.string().trim().min(3).required().messages(customMessages),
   content: Joi.string().trim().messages(customMessages),
   company : Joi.string().trim().required().messages(customMessages),
   tags: Joi.array().messages(customMessages),
-  status: Joi.valid("published", "draft").messages(customMessages),
+  status: Joi.valid("published", "draft").optional().messages(customMessages),
 }).options({
-  abortEarly: false,
+  abortEarly: false
 });
 
 const getBlogByIdValidation = Joi.object({

@@ -7,8 +7,11 @@ interface Reaction {
 
 interface Blog extends Document {
   title: string;
-  coverImage: string;
+  coverImage: any;
+  subTitle:string;
   content: string;
+  isPrivate: boolean;
+  isActive:boolean;
   createdBy: mongoose.Types.ObjectId;
   company: mongoose.Types.ObjectId;
   tags: string[];
@@ -26,12 +29,28 @@ const blogSchema = new Schema<Blog>(
       required: true,
       index:true
     },
+    subTitle : {
+      type : String,
+      required : true
+    },
     coverImage: {
-      type: String,
+      name: {
+        type: String,
+      },
+      url: {
+        type: String,
+      },
+      type: {
+        type: String,
+      },
     },
     content: {
       type: String,
       required: true,
+    },
+    isPrivate : {
+      type : Boolean,
+      default : false
     },
     tags: [String], // Tags array
     status:{
@@ -68,6 +87,10 @@ const blogSchema = new Schema<Blog>(
       ref: "Company",
       required: true,
     },
+    isActive : {
+      type : Boolean,
+      default : false
+    },
     createdAt:{
       type : Date,
       default : new Date()
@@ -75,8 +98,7 @@ const blogSchema = new Schema<Blog>(
     updatedAt:{
       type : Date
     }
-  },
-  { timestamps: true }
+  }
 );
 
 const BlogModel = mongoose.model<Blog>("Blog", blogSchema);

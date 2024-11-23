@@ -34,7 +34,7 @@ const loginUser = async (data: any): Promise<any> => {
     if (data.loginType === "code") {
       query.code = data.code
     } else {
-      query.username = data.username
+      query.username = { $regex: `^${data.username}$`, $options: 'i' };
     }
 
     const existUser = await User.findOne(query);

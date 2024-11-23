@@ -3,13 +3,15 @@ import { generateError } from "../../config/Error/functions";
 import Blog from "../../schemas/Blog/BlogSchema";
 import { statusCode } from "../../config/helper/statusCode";
 import { createCatchError } from "../../config/helper/function";
+import { deleteFile, uploadFile } from "../uploadDoc.repository";
 
 const createBlog = async (data: any) => {
   try {
     const createdBlog = new Blog({
-      coverImage: data.coverImage,
+      subTitle: data.subTitle,
       title: data.title,
       content: data.content,
+      isPrivate:data.isPrivate,
       tags: data.tags,
       status: data.status,
       createdBy: data.createdBy,
@@ -17,6 +19,18 @@ const createBlog = async (data: any) => {
     });
 
     const savedBlog = await createdBlog.save();
+
+    if (data.coverImage && data.coverImage !== "" && data?.coverImage?.buffer) {
+      let url = await uploadFile(data.coverImage);
+      savedBlog.coverImage = {
+        name: data.coverImage.filename,
+        url: url,
+        type: data.coverImage.type,
+      };
+      await savedBlog.save();
+    }
+
+
     return {
       status : 'success',
       statusCode : statusCode.success,
@@ -28,18 +42,67 @@ const createBlog = async (data: any) => {
   }
 };
 
+
+const updateBlog = async (data: any) => {
+  try {
+
+    const { coverImage, ...rest } = data;
+      const updatedBlog: any = await Blog.findByIdAndUpdate(
+        data.id,
+        { $set: rest },
+        { new: true }
+      );
+
+      if (data?.coverImage?.isDeleted === 1 && updatedBlog.coverImage?.name) {
+        await deleteFile(updatedBlog.coverImage.name);
+        updatedBlog.logo = {
+          name: undefined,
+          url: undefined,
+          type: undefined,
+        };
+        await updatedBlog.save();
+      }
+
+      if (
+        data.coverImage &&
+        data.coverImage?.isAdd === 1 &&
+        data.coverImage?.filename &&
+        data.coverImage?.buffer
+      ) {
+        const { filename, type } = data.coverImage;
+        const url = await uploadFile(data.coverImage);
+        updatedBlog.coverImage = {
+          name: filename,
+          url,
+          type,
+        };
+        await updatedBlog.save();
+      }
+
+
+    return {
+      status : 'success',
+      statusCode : statusCode.success,
+      data : updatedBlog,
+      message : `${data.title} blog has been updated successfully`
+    }
+  } catch (err: any) {
+    return createCatchError(err)
+  }
+};
+
 const getBlogs = async (data: any) => {
   try {
     const blogs = await Blog.find() //// {company : {$in : data.company}}
       .populate({
         path: "createdBy",
-        select: "name username _id pic position createdAt",
+        select: "name username _id pic position createdAt" ,
       })
       .populate({
         path: "comments",
         select: "_id",
       })
-      .select("title coverImage createdAt tags createdBy comments reactions")
+      .select("title coverImage subTitle isPrivate createdAt tags createdBy comments reactions")
       .sort({ createdAt: -1 })
       .skip((data.page - 1) * data.limit)
       .limit(data.limit);
@@ -103,6 +166,8 @@ const getBlogById = async (data: any) => {
           tags: 1,
           status: 1,
           createdAt: 1,
+          subTitle :1,
+          isPrivate:1,
           createdBy: {
             name: 1,
             username: 1,
@@ -126,4 +191,4 @@ const getBlogById = async (data: any) => {
   }
 };
 
-export { createBlog, getBlogs, getBlogById };
+export { createBlog, updateBlog, getBlogs, getBlogById };

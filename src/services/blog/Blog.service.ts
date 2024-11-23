@@ -2,6 +2,7 @@ import {
   createBlog,
   getBlogById,
   getBlogs,
+  updateBlog,
 } from "../../repository/blog/blog.repository";
 import { generateError } from "../../config/Error/functions";
 import {
@@ -9,8 +10,6 @@ import {
   getBlogByIdValidation,
 } from "./utils/validation";
 import { NextFunction, Response } from "express";
-import mongoose from "mongoose";
-import { createBlogComment } from "../../repository/blog/blogComment.repository";
 import { convertIdsToObjects } from "../../config/helper/function";
 
 const createBlogService = async (
@@ -26,6 +25,27 @@ const createBlogService = async (
 
     const { status, statusCode, data, message } = await createBlog({
       ...value,
+      createdBy: req.userId,
+      company: req.body.company,
+    });
+    res.status(statusCode).send({
+      data: data,
+      success: status,
+      message: message,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+const updateBlogService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, statusCode, data, message } = await updateBlog({
+      ...req.body,
       createdBy: req.userId,
       company: req.body.company,
     });
@@ -91,4 +111,4 @@ const getBlogByIdService = async (
   }
 };
 
-export { createBlogService, getBlogsService, getBlogByIdService };
+export { createBlogService, updateBlogService, getBlogsService, getBlogByIdService };
