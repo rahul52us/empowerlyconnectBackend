@@ -91,6 +91,52 @@ const updateBlog = async (data: any) => {
   }
 };
 
+
+const blogStatusCounts = async ({company} : any) => {
+  try {
+    const countsBlog = await Blog.aggregate([
+      {
+        $match: { company: {$in : company} },
+      },
+      {
+        $facet: {
+          privateBlogs: [
+            { $match: { isPrivate: true } },
+            { $count: "count" },
+          ],
+          publicBlogs: [
+            { $match: { isPrivate: false } },
+            { $count: "count" },
+          ],
+          deletedBlogs: [
+            { $match: { isActive: false } },
+            { $count: "count" },
+          ],
+        },
+      },
+      {
+        $project: {
+          privateBlogs: { $arrayElemAt: ["$privateBlogs.count", 0] },
+          publicBlogs: { $arrayElemAt: ["$publicBlogs.count", 0] },
+          deletedBlogs: { $arrayElemAt: ["$deletedBlogs.count", 0] },
+        },
+      },
+    ]);
+
+    return {
+      status: "success",
+      statusCode: statusCode.success,
+      data: countsBlog[0],
+      message: "Blog counts retrieved successfully",
+    };
+  } catch (err: any) {
+    return createCatchError(err);
+  }
+};
+
+
+
+
 const getBlogs = async (data: any) => {
   try {
     const blogs = await Blog.find() //// {company : {$in : data.company}}
@@ -191,4 +237,4 @@ const getBlogById = async (data: any) => {
   }
 };
 
-export { createBlog, updateBlog, getBlogs, getBlogById };
+export { createBlog, updateBlog, getBlogs, getBlogById, blogStatusCounts };

@@ -1,4 +1,5 @@
 import {
+  blogStatusCounts,
   createBlog,
   getBlogById,
   getBlogs,
@@ -59,6 +60,28 @@ const updateBlogService = async (
   }
 };
 
+const getBlogCountService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const company = await convertIdsToObjects(req.body.company);
+    const { status, statusCode, data, message } = await blogStatusCounts({
+      company
+    });
+    res.status(statusCode).send({
+      data: data,
+      success: status,
+      message: message,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+
+
 const getBlogsService = async (req: any, res: Response, next: NextFunction) => {
   try {
     let page = req.query.page || 1;
@@ -111,4 +134,4 @@ const getBlogByIdService = async (
   }
 };
 
-export { createBlogService, updateBlogService, getBlogsService, getBlogByIdService };
+export { createBlogService, updateBlogService, getBlogsService, getBlogByIdService, getBlogCountService };
