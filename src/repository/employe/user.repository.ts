@@ -383,6 +383,86 @@ const getUsers = async (data: any) => {
   }
 };
 
+const getCompanyDetailsByUserId = async (data: any) => {
+  try {
+    const result = await CompanyDetails.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(data.userId),
+        },
+      },
+      {
+        $unwind: "$details",
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "details.managers",
+          foreignField: "_id",
+          as: "details.managersDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "details.designation",
+          foreignField: "_id",
+          as: "details.designationDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "departmentcategories",
+          localField: "details.department",
+          foreignField: "_id",
+          as: "details.departmentDetails",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          user: 1,
+          company: 1,
+          companyOrg: 1,
+          "details.doj": 1,
+          "details.confirmationDate": 1,
+          "details.noticePeriod": 1,
+          "details.eCode": 1,
+          "details.eType": 1,
+          "details.eCategory": 1,
+          "details.description": 1,
+          "details.createdAt": 1,
+          // Only include specific fields from managersDetails
+          "details.managersDetails": {
+            name: 1,
+            title: 1,
+            role: 1,
+            username: 1,
+            code: 1,
+          },
+          "details.departmentDetails": 1,
+          "details.designationDetails": 1,
+        },
+      },
+    ]);
+
+    return {
+      status: "success",
+      data: result,
+      statusCode: 200,
+    };
+  } catch (error: any) {
+    return {
+      status: "error",
+      data: error?.message,
+      statusCode: 500,
+    };
+  }
+};
+
+
+
+
 const getUserById = async (data: any) => {
   try {
     const pipeline: any = [
@@ -1669,6 +1749,7 @@ export {
   getCompanyDetailsById,
   getUsers,
   getUserById,
+  getCompanyDetailsByUserId,
   getCountDesignationStatus,
   getTotalUsers,
   updateBankDetails,

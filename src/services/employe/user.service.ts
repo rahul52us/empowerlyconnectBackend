@@ -24,6 +24,7 @@ import {
   updateQualificationDetails,
   updateSalaryStructure,
   getSalaryStructure,
+  getCompanyDetailsByUserId,
 } from "../../repository/employe/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -174,7 +175,32 @@ const getAllEmploysService = async (
   }
 };
 
+// get the company details by the particular id
+
+const getCompanyDetailsByUserIdService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, data } = await getCompanyDetailsByUserId({
+      userId: new mongoose.Types.ObjectId(req.params.id),
+    });
+    if (status === "success") {
+      res.status(200).send({
+        status: "success",
+        data: data,
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 // get the user details by the particular id
+
 const getUserByIdService = async (
   req: any,
   res: Response,
@@ -648,4 +674,5 @@ export {
   getUserInfoWithManagerActionService,
   getManagersOfUserService,
   getRoleCountOfCompanyService,
+  getCompanyDetailsByUserIdService
 };

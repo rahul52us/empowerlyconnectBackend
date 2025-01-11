@@ -1,6 +1,7 @@
 import {
   blogStatusCounts,
   createBlog,
+  deleteBlog,
   getBlogById,
   getBlogs,
   updateBlog,
@@ -12,6 +13,7 @@ import {
 } from "./utils/validation";
 import { NextFunction, Response } from "express";
 import { convertIdsToObjects } from "../../config/helper/function";
+import mongoose from "mongoose";
 
 const createBlogService = async (
   req: any,
@@ -50,6 +52,23 @@ const updateBlogService = async (
       createdBy: req.userId,
       company: req.body.company,
     });
+    res.status(statusCode).send({
+      data: data,
+      success: status,
+      message: message,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+const deleteBlogService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, statusCode, data, message } = await deleteBlog({id : new mongoose.Types.ObjectId(req.params.id), deleted : req.body.deleted});
     res.status(statusCode).send({
       data: data,
       success: status,
@@ -134,4 +153,4 @@ const getBlogByIdService = async (
   }
 };
 
-export { createBlogService, updateBlogService, getBlogsService, getBlogByIdService, getBlogCountService };
+export { createBlogService, updateBlogService, deleteBlogService, getBlogsService, getBlogByIdService, getBlogCountService };

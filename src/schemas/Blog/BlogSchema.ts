@@ -89,7 +89,7 @@ const blogSchema = new Schema<Blog>(
     },
     isActive : {
       type : Boolean,
-      default : false
+      default : true
     },
     createdAt:{
       type : Date,

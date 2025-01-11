@@ -91,6 +91,49 @@ const updateBlog = async (data: any) => {
   }
 };
 
+const deleteBlog = async (data: any) => {
+  try {
+    const blogData = await Blog.findById(data.id);
+    if (blogData) {
+      if (data.deleted) {
+        if (blogData.coverImage.name) {
+          await deleteFile(blogData.coverImage.name);
+        }
+        await blogData.deleteOne();
+        return {
+          status: 'success',
+          statusCode: statusCode.success,
+          data: 'Blog has been deleted successfully',
+          message: 'Blog has been deleted successfully',
+        };
+      } else {
+        blogData.isActive = false;
+        await blogData.save();
+        return {
+          status: 'success',
+          statusCode: statusCode.success,
+          data: 'Blog has been temporarily deleted successfully',
+          message: 'Blog has been temporarily deleted successfully',
+        };
+      }
+    } else {
+      return {
+        status: 'error',
+        statusCode: statusCode.info,
+        data: 'Blog does not exist',
+        message: 'Blog does not exist',
+      };
+    }
+  } catch (err: any) {
+    return {
+      status: 'error',
+      statusCode: statusCode.serverError,
+      data: err?.message,
+      message: err?.message,
+    };
+  }
+};
+
 
 const blogStatusCounts = async ({company} : any) => {
   try {
@@ -101,11 +144,11 @@ const blogStatusCounts = async ({company} : any) => {
       {
         $facet: {
           privateBlogs: [
-            { $match: { isPrivate: true } },
+            { $match: { isPrivate: true, isActive : true } },
             { $count: "count" },
           ],
           publicBlogs: [
-            { $match: { isPrivate: false } },
+            { $match: { isPrivate: false , isActive : true} },
             { $count: "count" },
           ],
           deletedBlogs: [
@@ -139,7 +182,7 @@ const blogStatusCounts = async ({company} : any) => {
 
 const getBlogs = async (data: any) => {
   try {
-    const blogs = await Blog.find() //// {company : {$in : data.company}}
+    const blogs = await Blog.find({isActive : true}) //// {company : {$in : data.company}}
       .populate({
         path: "createdBy",
         select: "name username _id pic position createdAt" ,
@@ -237,4 +280,4 @@ const getBlogById = async (data: any) => {
   }
 };
 
-export { createBlog, updateBlog, getBlogs, getBlogById, blogStatusCounts };
+export { createBlog, updateBlog, deleteBlog, getBlogs, getBlogById, blogStatusCounts };
