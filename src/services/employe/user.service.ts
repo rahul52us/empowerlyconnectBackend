@@ -25,7 +25,7 @@ import {
   updateSalaryStructure,
   getSalaryStructure,
   getCompanyDetailsByUserId,
-} from "../../repository/employe/user.repository";
+} from "../../repository/user/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
 import { PaginationLimit } from "../../config/helper/constant";
@@ -48,7 +48,6 @@ const createUserservice = async (
     const { status, data } = await createUser({
       ...value,
       company: req.body.company,
-      companyOrg: req.bodyData.companyOrg,
       createdBy: req.userId,
     });
 
@@ -143,7 +142,7 @@ const updateUserProfileService = async (
 };
 
 // Get the Users of the particular company
-const getAllEmploysService = async (
+const getAllUserService = async (
   req: any,
   res: Response,
   next: NextFunction
@@ -658,7 +657,7 @@ export {
   createUserservice,
   updateUserProfileService,
   getCompanyDetailsByIdService,
-  getAllEmploysService,
+  getAllUserService,
   getUserByIdService,
   getCountDesignationStatusService,
   getTotalUsersService,

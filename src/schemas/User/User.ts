@@ -8,8 +8,7 @@ export interface UserInterface extends Document {
   pic: any;
   bio?: string;
   designation?: string[];
-  companyDetail: Schema.Types.ObjectId;
-  companyOrg: Schema.Types.ObjectId;
+  company: Schema.Types.ObjectId;
   profile_details: Schema.Types.ObjectId;
   is_active: boolean;
   role: string;
@@ -27,7 +26,7 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
   name: { type: String, trim: true },
   username: { type: String, required: true, index: true, trim: true },
   code : {type : String, index : true},
-  companyOrg : {type : Schema.Types.ObjectId, ref:'Company'},
+  company : {type : Schema.Types.ObjectId, ref:'Company'},
   pic: {
     name: {
       type: String,
@@ -39,13 +38,12 @@ const UserSchema: Schema<UserInterface> = new Schema<UserInterface>({
       type: String,
     },
   },
-  companyDetail: { type: Schema.Types.ObjectId, ref: "CompanyDetail" },
   bio: { type: String, trim: true },
   profile_details: { type: Schema.Types.ObjectId, ref: "ProfileDetails" },
   is_active: { type: Boolean, default: false },
   role: {
     type: String,
-    enum: ["user", "admin", "superadmin", "manager", "customer", "support"],
+    enum: ["user", "admin", "superadmin"],
     default: "user"
   },
   permissions : {

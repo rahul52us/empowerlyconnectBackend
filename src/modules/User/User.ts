@@ -31,17 +31,10 @@ const MeUser = async (req: any, res: Response): Promise<any> => {
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
   );
-  const companyDetail = await CompanyDetails.findById(req.bodyData.companyDetail)
-  .populate({
-      path: 'company',
-      populate: {
-          path: 'policy'
-      }
-  });
 
   return res.status(200).send({
     message: `get successfully data`,
-    data: { ...req.bodyData, profile_details, companyDetail },
+    data: { ...req.bodyData, profile_details },
     statusCode: 200,
     success: true,
   });

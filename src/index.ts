@@ -10,7 +10,6 @@ import * as path from "path";
 import { setupSocket } from "./modules/chatSocket/chatSocket";
 import { statusCode } from "./config/helper/statusCode";
 // import deploy from "./config/common/reactAppDeployment";
-import { createSubdomain } from "./config/common/generateSubdomain";
 
 dotenv.config();
 
@@ -34,9 +33,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// createSubdomain()
-// deploy()
-// Import routing function
 importRoutings(app);
 
 app.use('/', (req: Request, res: Response) => {

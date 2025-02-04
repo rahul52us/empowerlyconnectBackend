@@ -32,7 +32,7 @@ const createUser = async (data: any) => {
 
     const createdUser = new User({
       username: data.username,
-      companyOrg: data.companyOrg,
+      company: data.company,
       name: data.name,
       code: data.code,
       password: data.password,
@@ -47,75 +47,15 @@ const createUser = async (data: any) => {
       throw generateError(`cannot create the user`, 400);
     }
 
-    const comDetails = new CompanyDetails({
-      user: savedUser._id,
-      company: data.company,
-      companyOrg: data.companyOrg,
-      department: data.department,
-      designation: data.designation,
-      position: data.position,
-      eType: data.eType,
-      eCategory: data.eCategory,
-      workingLocation: data.workingLocation,
-      workTiming: data.workTiming,
-      is_active: true,
-    });
-
-    const savedComDetail = await comDetails.save();
-    savedUser.companyDetail = await savedComDetail._id;
-
     const profile = new ProfileDetails({
       user: savedUser._id,
-      language: data.language,
-      nickName: data.nickName,
-      mobileNo: data.mobileNo,
-      emergencyNo: data.emergencyNo,
-      addressInfo: data.addressInfo,
-      healthCardNo: data.healthCardNo,
-      insuranceCardNo: data.insuranceCardNo,
-      maritalStatus: data.maritalStatus,
-      medicalCertificationDetails: data.medicalCertificationDetails,
-      weddingDate: data.weddingDate,
-      dob: data.dob,
-      aadharNo: data.aadharNo,
-      panNo: data.panNo,
-      pfUanNo: data.pfUanNo,
-      personalEmail: data.personalEmail,
-      refferedBy: data.refferedBy,
-      bloodGroup: data.bloodGroup,
+      personalInfo : { ...data }
     });
 
     const savedProfile = await profile.save();
     savedUser.profile_details = savedProfile._id;
     await savedUser.save();
 
-    const BankDetail = new BankDetails({
-      user: savedUser._id,
-    });
-    const savedBank = await BankDetail.save();
-
-    const WorkExperienceDetail = new WorkExperience({
-      user: savedUser._id,
-    });
-
-    const savedWorkExperience = await WorkExperienceDetail.save();
-
-    const FamilyDetail = new FamilyDetails({
-      user: savedUser._id,
-    });
-    const savedFamilyDetail = await FamilyDetail.save();
-
-    const documentDetails = new DocumentDetails({
-      user: savedUser._id,
-    });
-
-    const savedDocument = await documentDetails.save();
-
-    const qualifications = new Qualification({
-      user: savedUser._id,
-    });
-
-    const savedQualifications = await qualifications.save();
 
     const { password, ...restUser } = savedUser.toObject();
 
@@ -133,13 +73,7 @@ const createUser = async (data: any) => {
       status: "success",
       data: {
         ...restUser,
-        profile_details: savedProfile.toObject(),
-        bankDetail: savedBank.toObject(),
-        documentDetail: savedDocument.toObject(),
-        WorkExperience: savedWorkExperience.toObject(),
-        FamilyDetail: savedFamilyDetail.toObject(),
-        companyDetail: savedComDetail.toObject(),
-        qualification: savedQualifications.toObject(),
+        profile_details: savedProfile.toObject()
       },
     };
   } catch (err: any) {

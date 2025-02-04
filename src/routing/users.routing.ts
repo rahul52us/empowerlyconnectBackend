@@ -3,7 +3,6 @@ import authenticate from "../modules/config/authenticate";
 import {
   updateBankDetialsService,
   createUserservice,
-  getAllEmploysService,
   getCountDesignationStatusService,
   getUserByIdService,
   getTotalUsersService,
@@ -25,6 +24,7 @@ import {
   UpdateSalaryStructureService,
   getSalaryStructureService,
   getCompanyDetailsByUserIdService,
+  getAllUserService,
 } from "../services/employe/user.service";
 
 const router = express.Router();
@@ -34,7 +34,7 @@ router.put("/profile/:id", authenticate, updateUserProfileService);
 router.get('/details/:id',authenticate,getCompanyDetailsByIdService)
 router.get("/:_id", authenticate, getUserByIdService);
 router.get('/companydetails/:id',authenticate,getCompanyDetailsByUserIdService)
-router.post("/", authenticate, getAllEmploysService);
+router.post("/", authenticate, getAllUserService);
 router.get("/managers/:id", authenticate, getManagersEmploysService);
 router.post('/salaryStructure',authenticate,getSalaryStructureService)
 router.post("/total/count", authenticate, getTotalUsersService);

@@ -14,7 +14,6 @@ interface CompanyI extends Document {
   companyOrg:mongoose.Schema.Types.ObjectId,
   companyType:string;
   verified_email_allowed:boolean;
-  policy:mongoose.Schema.Types.ObjectId;
   createdBy : mongoose.Schema.Types.ObjectId;
   activeUser:mongoose.Schema.Types.ObjectId;
   is_active?: boolean;
@@ -51,10 +50,6 @@ const companySchema = new mongoose.Schema<CompanyI>({
   },
   companyOrg : {
     type : mongoose.Schema.Types.ObjectId,
-  },
-  policy:{
-    type : mongoose.Schema.Types.ObjectId,
-    ref : 'CompanyPolicy'
   },
   companyCode : {
     type : String,
