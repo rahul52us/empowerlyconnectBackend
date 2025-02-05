@@ -19,7 +19,6 @@ import {
   FORGOT_PASSWORD_EMAIL_TOKEN_TYPE,
   REGISTER_NEW_USER_TOKEN_TYPE,
 } from "../config/sendMail/utils";
-import CompanyDetails from "../../schemas/User/CompanyDetails";
 import {baseURL} from '../../config/helper/urls'
 import { convertIdsToObjects, createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
@@ -30,11 +29,13 @@ const MeUser = async (req: any, res: Response): Promise<any> => {
 
   const profile_details = await ProfileDetails.findById(
     req.bodyData.profile_details
-  );
+  )
+
+  const companyDetails = await Company.findById(req.bodyData?.company)
 
   return res.status(200).send({
     message: `get successfully data`,
-    data: { ...req.bodyData, profile_details },
+    data: { ...req.bodyData, profile_details, companyDetails },
     statusCode: 200,
     success: true,
   });

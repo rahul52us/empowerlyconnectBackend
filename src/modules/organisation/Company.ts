@@ -11,11 +11,11 @@ import WorkExperience from "../../schemas/User/WorkExperience";
 import BankDetails from "../../schemas/User/BankDetails";
 import DocumentDetails from "../../schemas/User/Document";
 import CompanyPolicy from "../../schemas/company/CompanyPolicy";
-import CompanyDetails from "../../schemas/User/CompanyDetails";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
 import { deleteFile, uploadFile } from "../../repository/uploadDoc.repository";
 import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
+import companyDetails from "../../schemas/company/companyDetails";
 
 const createCompany = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -112,14 +112,7 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
 
     const savedFamilyDetails = await familyDetails.save();
 
-    const companyDetails = new CompanyDetails({
-      user: user._id,
-      company: createdComp._id,
-      companyOrg: createdComp._id,
-      is_active: true,
-    });
 
-    const savedCompanyDetails = await companyDetails.save();
 
     const qualifications = new QualificationDetails({
       user: user._id,
@@ -135,7 +128,6 @@ const createCompany = async (req: any, res: Response, next: NextFunction) => {
           code : req.body.code,
           profile_details: createdProfileDetails._id,
           companyOrg: createdComp._id,
-          companyDetail: savedCompanyDetails._id,
           password: req.body.password,
         },
       },
@@ -312,14 +304,7 @@ const createOrganisationCompany = async (
 
      await qualifications.save()
 
-    const companyDetails = new CompanyDetails({
-      user: user._id,
-      company: createdComp._id,
-      companyOrg: companyOrg,
-      is_active: true,
-    });
 
-    const savedCompanyDetails = await companyDetails.save();
 
     await User.findByIdAndUpdate(
       user._id,
@@ -327,7 +312,6 @@ const createOrganisationCompany = async (
         $set: {
           profile_details: createdProfileDetails._id,
           companyOrg: companyOrg,
-          companyDetail: savedCompanyDetails._id,
           password: req.body.password,
         },
       },
@@ -431,3 +415,40 @@ export {
   createOrganisationCompany,
   updateOrganisationCompany,
 };
+
+// Update CompanyDetails
+
+export const updatedCompanyDetails = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+     let dt = await companyDetails.findOneAndUpdate({company : req.body.company},{$set : {...req.body}})
+     res.status(200).send({
+      message: `Details has been updated`,
+      data: `Details has been updated`,
+      statusCode: 200,
+      success: true
+    });
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}
+
+
+export const getCompanyDetails = async(req : any , res : Response, next : NextFunction) => {
+  try
+  {
+     let dt = await companyDetails.findOne({company : req.params.company})
+     res.status(200).send({
+      message: `Details has been updated`,
+      data: dt,
+      statusCode: 200,
+      success: true
+    });
+  }
+  catch(err : any)
+  {
+    next(err)
+  }
+}

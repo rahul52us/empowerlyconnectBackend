@@ -10,6 +10,7 @@ import {
   getWorkLocations,
   getWorkTiming,
   updateCompanyPolicy,
+  updatedCompanyDetails,
   updateHolidayByExcel,
   updateHolidays,
   updateWorkLocations,
@@ -18,6 +19,28 @@ import {
 } from "../../repository/company/company.respository";
 import { generateError } from "../../config/Error/functions";
 import ExcelJS from "exceljs";
+
+
+export const updateCompanyService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { message, data, status, statusCode } = await updatedCompanyDetails({
+      ...req.body,
+      company: new mongoose.Types.ObjectId(req.query.company)
+    });
+    return res.status(statusCode).send({
+      message,
+      data,
+      status,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
 
 export const getCompanyPoliciesService = async (
   req: any,

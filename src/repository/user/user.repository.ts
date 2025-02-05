@@ -6,7 +6,6 @@ import { generateError } from "../../config/Error/functions";
 import { deleteFile, uploadFile } from "../uploadDoc.repository";
 import FamilyDetails from "../../schemas/User/FamilyDetails";
 import Documents from "../../schemas/User/Document";
-import CompanyDetails from "../../schemas/User/CompanyDetails";
 import { updateUserRoleService } from "../../services/auth/auth.service";
 import mongoose from "mongoose";
 import User from "../../schemas/User/User";
@@ -14,6 +13,7 @@ import { createCatchError } from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
 import Qualification from "../../schemas/User/Qualifications";
 import SalaryStructure from "../../schemas/salaryStructure/SalaryStructure.schema";
+import companyDetails from "../../schemas/company/companyDetails";
 
 const createUser = async (data: any) => {
   try {
@@ -235,9 +235,22 @@ const getUsers = async (data: any) => {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      company: { $in: data.company },
+      // company: { $in: data.company },
     };
 
+    // Adding condition for search if it's available
+    if (data.search) {
+      const searchRegex = new RegExp(data.search.trim(), "i");
+      matchConditions = {
+        ...matchConditions,
+        $or: [
+          { "username": { $regex: searchRegex } },
+          { "code": { $regex: searchRegex } },
+        ],
+      };
+    }
+
+    // Define the pipeline with $lookup to get profileDetails
     const pipeline: any = [
       {
         $match: {
@@ -246,53 +259,37 @@ const getUsers = async (data: any) => {
       },
       {
         $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "userData",
+          from: "profiledetails", // The name of the ProfileDetails collection
+          localField: "profile_details", // field in User model
+          foreignField: "_id", // field in ProfileDetails model
+          as: "profileDetails", // Alias for the populated data
         },
       },
       {
-        $unwind: "$userData",
+        $unwind: "$profileDetails", // If you want to flatten the array of profileDetails
       },
       {
-        $lookup: {
-          from: "profiledetails",
-          localField: "userData.profile_details",
-          foreignField: "_id",
-          as: "profileDetails",
+        $sort: {
+          createdAt: -1,
         },
+      },
+      {
+        $skip: (data.page - 1) * data.limit,
+      },
+      {
+        $limit: Number(data.limit),
       },
     ];
 
-    pipeline.push({
-      $sort: {
-        createdAt: -1,
-      },
-    });
-
-    if (data.search) {
-      const searchRegex = new RegExp(data.search.trim(), "i");
-      pipeline.push({
-        $match: {
-          $or: [
-            { "userData.username": { $regex: searchRegex } },
-            { "userData.code": { $regex: searchRegex } },
-          ],
-        },
-      });
-    }
-
-    let documentPipeline: any = [
-      ...pipeline,
-      { $skip: (data.page - 1) * data.limit },
-      { $limit: Number(data.limit) },
-    ];
-
+    // Execute the main aggregation for the data
     const [resultData, countDocuments]: any = await Promise.all([
-      CompanyDetails.aggregate(documentPipeline),
-      CompanyDetails.aggregate([
-        ...pipeline,
+      User.aggregate(pipeline),
+      User.aggregate([
+        {
+          $match: {
+            ...matchConditions,
+          },
+        },
         {
           $group: {
             _id: null,
@@ -317,9 +314,10 @@ const getUsers = async (data: any) => {
   }
 };
 
+
 const getCompanyDetailsByUserId = async (data: any) => {
   try {
-    const result = await CompanyDetails.aggregate([
+    const result = await companyDetails.aggregate([
       {
         $match: {
           user: new mongoose.Types.ObjectId(data.userId),
@@ -524,7 +522,7 @@ const getCountDesignationStatus = async (data: any) => {
 
 const getTotalUsers = async (data: any) => {
   try {
-    const result = await CompanyDetails.aggregate([
+    const result = await companyDetails.aggregate([
       {
         $match: {
           ...data,
@@ -888,7 +886,7 @@ async function updateQualificationDetails(data: any) {
 
 async function updateCompanyDetails(data: any) {
   try {
-    const docum = await CompanyDetails.findOne({ user: data.id });
+    const docum = await companyDetails.findOne({ user: data.id });
     if (docum) {
       docum.details.push(data.details);
       await docum.save();
@@ -974,8 +972,8 @@ export const getManagerUsers = async (data: any) => {
     ];
 
     const [resultData, countDocuments]: any = await Promise.all([
-      CompanyDetails.aggregate(documentPipeline),
-      CompanyDetails.aggregate([
+      companyDetails.aggregate(documentPipeline),
+      companyDetails.aggregate([
         ...pipeline,
         {
           $group: {
@@ -1058,7 +1056,7 @@ const getManagerUsersCounts = async (data: any) => {
       },
     ];
 
-    const resultData = await CompanyDetails.aggregate(pipeline).exec();
+    const resultData = await companyDetails.aggregate(pipeline).exec();
 
     return {
       status: "success",

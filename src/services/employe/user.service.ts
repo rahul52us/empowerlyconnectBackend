@@ -33,6 +33,7 @@ import {
   convertIdsToObjects,
   createCatchError,
 } from "../../config/helper/function";
+import ProfileDetails from "../../schemas/User/ProfileDetails";
 
 // create the new User of the particular User
 const createUserservice = async (
@@ -41,15 +42,16 @@ const createUserservice = async (
   next: NextFunction
 ) => {
   try {
-    const { error, value } = createUserValidation.validate(req.body);
-    if (error) {
-      throw generateError(error.details, 422);
-    }
     const { status, data } = await createUser({
-      ...value,
+      ...req.body,
       company: req.body.company,
       createdBy: req.userId,
     });
+
+    const pUsers = await ProfileDetails.findOneAndUpdate(
+          { user: data.userId },
+          { $set: { personalInfo : {...req.body} } }
+        );
 
     if (status === "success") {
       res.status(200).send({

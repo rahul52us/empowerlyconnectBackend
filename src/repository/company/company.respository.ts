@@ -3,6 +3,25 @@ import Company from "../../schemas/company/Company";
 import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
 import { createCatchError } from "../../config/helper/function";
+import companyDetails from "../../schemas/company/companyDetails";
+
+export const updatedCompanyDetails = async(data : any) => {
+  try
+  {
+     await companyDetails.findByIdAndUpdate(data.company,{$set : {...data}})
+     return {
+      status : 'success',
+      data : 'Update Company Details Successfully',
+      statusCode : statusCode.success,
+      message : 'Update Company Details Successfully'
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err)
+  }
+}
+
 
 export const getCompanyPolicies = async (data : any) => {
   try
