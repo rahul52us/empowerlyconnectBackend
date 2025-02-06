@@ -47,9 +47,10 @@ const createUser = async (data: any) => {
       throw generateError(`cannot create the user`, 400);
     }
 
+    const {pic, ...rest} = data
     const profile = new ProfileDetails({
       user: savedUser._id,
-      personalInfo : { ...data }
+      personalInfo : { ...rest }
     });
 
     const savedProfile = await profile.save();
@@ -186,6 +187,8 @@ const updateUserProfileDetails = async (data: any) => {
     const users: any = await User.findByIdAndUpdate(data.userId, {
       $set: { ...rest },
     });
+
+    delete rest.pic
     const pUsers = await ProfileDetails.findOneAndUpdate(
       { user: data.userId },
       { $set: { ...rest } }
