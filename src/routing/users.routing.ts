@@ -34,7 +34,7 @@ router.put("/profile/:id", authenticate, updateUserProfileService);
 router.get('/details/:id',authenticate,getCompanyDetailsByIdService)
 router.get("/:_id", authenticate, getUserByIdService);
 router.get('/companydetails/:id',authenticate,getCompanyDetailsByUserIdService)
-router.post("/", authenticate, getAllUserService);
+router.post("/", getAllUserService);
 router.get("/managers/:id", authenticate, getManagersEmploysService);
 router.post('/salaryStructure',authenticate,getSalaryStructureService)
 router.post("/total/count", authenticate, getTotalUsersService);

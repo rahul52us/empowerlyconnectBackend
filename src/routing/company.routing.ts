@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/create", createCompany);
 router.post('/update',authenticate,updatedCompanyDetails)
-router.get('/:company',authenticate,getCompanyDetails)
+router.get('/:company',getCompanyDetails)
 router.post('/single/create',authenticate,createOrganisationCompany)
 router.put('/policy',authenticate,updateCompanyPolicyService)
 router.put('/:id',authenticate,updateOrganisationCompany)
