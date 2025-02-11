@@ -10,6 +10,10 @@ const companyDetails = new mongoose.Schema<any>({
     type : mongoose.Schema.Types.Mixed,
     default : []
    },
+   homeFaq:{
+    type : mongoose.Schema.Types.Mixed,
+    default : []
+   },
    deletedAt: {
     type: Date,
   },
