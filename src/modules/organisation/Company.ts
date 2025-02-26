@@ -17,7 +17,7 @@ import { statusCode } from "../../config/helper/statusCode";
 import mongoose from "mongoose";
 import companyDetails from "../../schemas/company/companyDetails";
 
-const createCompany = async (req: any, res: Response, next: NextFunction) => {
+const createCompany = async (req: any, res: Response, next: NextFunction) : Promise<any> => {
   try {
     const result = createValidation.validate(req.body);
     if (result.error) {
