@@ -5,7 +5,7 @@ interface TestimonialI extends Document {
   user: mongoose.Schema.Types.ObjectId;
   profession:string;
   company: mongoose.Schema.Types.ObjectId;
-  image: mongoose.Schema.Types.ObjectId;
+  image: any;
   description: string;
 }
 
@@ -37,8 +37,15 @@ const TestimonialSchema = new mongoose.Schema<TestimonialI>(
       trim: true,
     },
     image: {
-      type: String,
-      trim: true,
+      name: {
+        type: String,
+      },
+      url: {
+        type: String,
+      },
+      type: {
+        type: String,
+      },
     },
   },
   { timestamps: true }

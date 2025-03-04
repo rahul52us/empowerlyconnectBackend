@@ -21,7 +21,7 @@ const testimonialCreateValidation = Joi.object({
     "string.min": "profession must be at least {#limit} characters long",
     "string.max": "profession cannot exceed {#limit} characters",
   }),
-  image: Joi.string().trim().allow("").optional(),
+  image: Joi.any(),
   description: Joi.string().required().trim().min(10).max(500).messages({
     "any.required": "Description is required",
     "string.empty": "Description is required",
