@@ -150,15 +150,14 @@ const getAllUserService = async (
   next: NextFunction
 ) => {
   try {
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
-    const search = req.query.search || undefined;
+    const page = req.body.page || 1;
+    const limit = req.body.limit || 10;
+    const search = req.body.search || undefined;
     const { data, status, totalPages } = await getUsers({
-      id: req.userId,
-      search: search,
-      company: await convertIdsToObjects(req.body.company),
       page: Number(page),
       limit: Number(limit),
+      search: search,
+      company: await convertIdsToObjects(req.body.company),
     });
     if (status === "success") {
       res.status(200).send({

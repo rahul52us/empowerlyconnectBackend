@@ -233,89 +233,93 @@ const updateUserProfileDetails = async (data: any) => {
   }
 };
 
-const getUsers = async (data: any) => {
+const getUsers = async (data: {
+  page: number;
+  limit: number;
+  search?: string;
+  company?: string[];
+}) => {
   try {
+    // Validate and set default values for pagination parameters
+    const page = Math.max(1, Number(data.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(data.limit) || 10)); // Enforce reasonable limit range
+    const skip = (page - 1) * limit;
+    // Base match conditions
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-      // company: { $in: data.company },
     };
 
-    // Adding condition for search if it's available
-    if (data.search) {
-      const searchRegex = new RegExp(data.search.trim(), "i");
-      matchConditions = {
-        ...matchConditions,
-        $or: [
-          { "username": { $regex: searchRegex } },
-          { "code": { $regex: searchRegex } },
-        ],
-      };
+    // Add company filter if provided
+    if (data.company?.length) {
+      matchConditions.company = { $in: data.company };
     }
 
-    // Define the pipeline with $lookup to get profileDetails
+    // Add search conditions if provided
+    if (data.search?.trim()) {
+      const searchRegex = new RegExp(data.search.trim(), "i");
+      matchConditions.$or = [
+        { username: { $regex: searchRegex } },
+        { code: { $regex: searchRegex } },
+      ];
+    }
+
+    // Main aggregation pipeline
     const pipeline: any = [
-      {
-        $match: {
-          ...matchConditions,
-        },
-      },
+      { $match: matchConditions },
       {
         $lookup: {
-          from: "profiledetails", // The name of the ProfileDetails collection
-          localField: "profile_details", // field in User model
-          foreignField: "_id", // field in ProfileDetails model
-          as: "profileDetails", // Alias for the populated data
+          from: "profiledetails",
+          localField: "profile_details",
+          foreignField: "_id",
+          as: "profileDetails",
         },
       },
-      {
-        $unwind: "$profileDetails", // If you want to flatten the array of profileDetails
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-      {
-        $skip: (data.page - 1) * data.limit,
-      },
-      {
-        $limit: Number(data.limit),
-      },
+      { $unwind: "$profileDetails" },
+      { $sort: { createdAt: -1 } },
     ];
 
-    // Execute the main aggregation for the data
-    const [resultData, countDocuments]: any = await Promise.all([
-      User.aggregate(pipeline),
+    // Execute parallel aggregations for data and metadata
+    const [usersResult, totalResult]: any = await Promise.all([
+      // Data pipeline
       User.aggregate([
+        ...pipeline,
+        { $skip: skip },
+        { $limit: limit },
+      ]),
+      // Counts pipeline
+      User.aggregate([
+        { $match: matchConditions },
         {
-          $match: {
-            ...matchConditions,
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            count: { $sum: 1 },
+          $facet: {
+            total: [{ $count: "count" }],
           },
         },
       ]),
     ]);
 
-    const totalCounts = countDocuments.length > 0 ? countDocuments[0].count : 0;
+    // Extract total count
+    const totalCount = totalResult[0]?.total[0]?.count || 0;
+
+    console.log(totalCount)
+    const totalPages = Math.ceil(totalCount / limit);
+
 
     return {
       status: "success",
-      data: resultData,
-      totalPages: Math.ceil(totalCounts / data.limit),
-    };
-  } catch (err) {
+      data: usersResult,
+      totalPages
+      }
+  } catch (err : any) {
+    console.error("Error in getUsers:", err);
     return {
       status: "error",
-      data: err,
+      message: err.message,
+      data: null,
     };
   }
 };
+
 
 
 const getCompanyDetailsByUserId = async (data: any) => {
