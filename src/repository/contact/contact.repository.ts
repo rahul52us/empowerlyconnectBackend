@@ -1,0 +1,80 @@
+import Contact from "../../schemas/contact/contact.schema";
+
+export const createContact = async (data: any) => {
+  try {
+    const existingContact = await Contact.findOne({
+      $or: [{ phone: data.phone }, { email: data.email }],
+    });
+
+    if (existingContact) {
+      return {
+        status: 'error',
+        data: 'Phone or Email already exists',
+        message: 'Contact with this phone or email already exists',
+        statusCode: 400,
+      };
+    }
+
+    const contactDetails = new Contact(data);
+    const savedContactDetails = await contactDetails.save();
+
+    return {
+      status: 'success',
+      data: savedContactDetails,
+      message: 'Contact Details have been saved successfully',
+      statusCode: 200,
+    };
+  } catch (err: any) {
+    return {
+      status: 'error',
+      data: err?.message,
+      message: err?.message,
+      statusCode: 500,
+    };
+  }
+};
+
+export const getContacts = async (
+  search: string,
+  page: number,
+  limit: number,
+  company: any
+) => {
+  try {
+    const skip = (page - 1) * limit;
+
+    const query: any = {};
+
+    if (search) {
+      query.$or = [
+        { phone: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { hearFrom: { $regex: search, $options: "i" } },
+        { inquiryType: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const contacts = await Contact.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalContacts = await Contact.countDocuments(query);
+
+    return {
+      status: "success",
+      data: contacts,
+      totalPages: Math.ceil(totalContacts / limit),
+      message: "Contacts fetched successfully",
+      statusCode: 200,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err?.message,
+      message: err?.message,
+      statusCode: 500,
+    };
+  }
+};
+
