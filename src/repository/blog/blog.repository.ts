@@ -225,10 +225,7 @@ const getBlogById = async (data: any) => {
     }
 
     if (data.title) {
-      match["slug"] = {
-        $regex: data.slug,
-        $options: "i"
-      };
+      match["slug"] = data.title;
     }
 
     const blog = await Blog.aggregate([

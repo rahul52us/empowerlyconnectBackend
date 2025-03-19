@@ -137,7 +137,7 @@ const getBlogByIdService = async (
 
     const { status, data } = await getBlogById({
       blogId: req.query.blogId,
-      slug: req.query.title,
+      title: req.query.title,
     });
     if (status === "success") {
       res.status(200).send({
