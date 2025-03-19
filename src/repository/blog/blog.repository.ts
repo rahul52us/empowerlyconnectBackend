@@ -9,6 +9,8 @@ const createBlog = async (data: any) => {
   try {
     const createdBlog = new Blog({
       subTitle: data.subTitle,
+      slug:data.slug,
+      category:data.category,
       title: data.title,
       content: data.content,
       isPrivate:data.isPrivate,
@@ -185,13 +187,13 @@ const getBlogs = async (data: any) => {
     const blogs = await Blog.find({isActive : true}) //// {company : {$in : data.company}}
       .populate({
         path: "createdBy",
-        select: "name username _id pic position createdAt" ,
+        select: "name username _id pic slug category position createdAt" ,
       })
       .populate({
         path: "comments",
         select: "_id",
       })
-      .select("title coverImage subTitle isPrivate createdAt tags createdBy comments reactions")
+      .select("title coverImage subTitle isPrivate createdAt tags createdBy slug category comments reactions")
       .sort({ createdAt: -1 })
       .skip((data.page - 1) * data.limit)
       .limit(data.limit);
@@ -223,8 +225,8 @@ const getBlogById = async (data: any) => {
     }
 
     if (data.title) {
-      match["title"] = {
-        $regex: data.title,
+      match["slug"] = {
+        $regex: data.slug,
         $options: "i"
       };
     }
@@ -257,6 +259,8 @@ const getBlogById = async (data: any) => {
           createdAt: 1,
           subTitle :1,
           isPrivate:1,
+          slug:1,
+          category:1,
           createdBy: {
             name: 1,
             username: 1,

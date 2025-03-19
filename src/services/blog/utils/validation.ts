@@ -13,6 +13,8 @@ const customMessages = {
 
 const createBlogValidation = Joi.object({
   subTitle : Joi.string().trim().messages(customMessages),
+  slug : Joi.string().trim().messages(customMessages),
+  category : Joi.string().trim().messages(customMessages),
   isPrivate : Joi.valid(true,false),
   coverImage: Joi.any().messages(customMessages),
   title: Joi.string().trim().min(3).required().messages(customMessages),

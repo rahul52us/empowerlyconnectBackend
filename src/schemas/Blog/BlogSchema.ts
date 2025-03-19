@@ -9,6 +9,8 @@ interface Blog extends Document {
   title: string;
   coverImage: any;
   subTitle:string;
+  slug:string;
+  category:string;
   content: string;
   isPrivate: boolean;
   isActive:boolean;
@@ -33,6 +35,12 @@ const blogSchema = new Schema<Blog>(
       type : String,
       required : true
     },
+    slug : {
+      type : String
+    },
+    category : {
+      type : String
+    },
     coverImage: {
       name: {
         type: String,
@@ -41,7 +49,7 @@ const blogSchema = new Schema<Blog>(
         type: String,
       },
       type: {
-        type: String,
+        type: String
       },
     },
     content: {
@@ -52,7 +60,7 @@ const blogSchema = new Schema<Blog>(
       type : Boolean,
       default : false
     },
-    tags: [String], // Tags array
+    tags: [String],
     status:{
       type : String,
       enum : ['draft','published'],
@@ -63,7 +71,7 @@ const blogSchema = new Schema<Blog>(
         user: {
           type: mongoose.Types.ObjectId,
           ref: "User",
-          required: true,
+          required: true
         },
         type: {
           type: String,
@@ -74,7 +82,7 @@ const blogSchema = new Schema<Blog>(
     comments: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "BlogComment",
+        ref: "BlogComment"
       },
     ],
     createdBy: {
@@ -85,7 +93,7 @@ const blogSchema = new Schema<Blog>(
     company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
-      required: true,
+      required: true
     },
     isActive : {
       type : Boolean,
