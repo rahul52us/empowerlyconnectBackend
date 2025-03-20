@@ -89,7 +89,7 @@ const changePasswordValidation = Joi.object({
     "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, and one digit."
   )
   .required(),
+  company: Joi.string()
 })
-
 
 export { UserValidation, forgotEmailValidation, resetPasswordValidation,loginValidation,changePasswordValidation };
