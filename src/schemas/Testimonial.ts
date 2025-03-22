@@ -6,6 +6,7 @@ interface TestimonialI extends Document {
   profession:string;
   company: mongoose.Schema.Types.ObjectId;
   image: any;
+  rating:number;
   description: string;
 }
 
@@ -20,6 +21,10 @@ const TestimonialSchema = new mongoose.Schema<TestimonialI>(
       type : mongoose.Schema.Types.ObjectId,
       ref : 'Company',
       required: [true, "Organisation is required"],
+    },
+    rating: {
+      type : Number,
+      default : 3
     },
     name: {
       type: String,

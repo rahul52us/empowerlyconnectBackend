@@ -104,7 +104,33 @@ export const updateTestimonial = async (req : any, res : any) => {
   }
 };
 
-
+export const deleteTestimonial = async (req : any , res : Response) => {
+  try
+  {
+    const test = await Testimonial.findByIdAndDelete(req.params.id)
+    if(test){
+      if(test?.image?.name){
+        await deleteFile(test.image.name);
+      }
+      return res.status(statusCode.success).send({
+        status: "success",
+        data: test,
+        message: "Testimonail Update Successfully",
+      });
+    }
+    else {
+      return res.status(statusCode.info).send({
+        status: "success",
+        data: "Testimonails does not exists",
+        message: "Testimonails does not exists",
+      });
+    }
+  }
+  catch(err : any)
+  {
+    return createCatchError(err);
+  }
+}
 const getTestimonials = async (req: any, res: Response, next: NextFunction) => {
   try {
     let query: any = {};

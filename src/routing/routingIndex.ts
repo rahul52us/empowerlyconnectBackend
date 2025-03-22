@@ -15,7 +15,7 @@ const importRoutings = (app: any) => {
   app.use('/api/file',fileRouting)
   app.use("/api/company", companyOrganisation);
   app.use("/api/User", UserRouting);
-  app.use('/api/token',tokenRouting)
+  app.use('/api/token',tokenRouting);
   app.use("/api/testimonial", testimonialRouting);
   app.use("/api/blog", blogRouting);
   app.use("/api/student", StudentRouting);
