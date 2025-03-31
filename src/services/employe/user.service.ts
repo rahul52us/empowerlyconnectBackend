@@ -4,7 +4,6 @@ import { generateError } from "../../config/Error/functions";
 import {
   updateBankDetails,
   getCountDesignationStatus,
-  getUserById,
   getUsers,
   getTotalUsers,
   updateUserProfileDetails,
@@ -25,6 +24,8 @@ import {
   updateSalaryStructure,
   getSalaryStructure,
   getCompanyDetailsByUserId,
+  getUserByName,
+  deleteUser,
 } from "../../repository/user/user.repository";
 import mongoose from "mongoose";
 import { getRoleUsersService } from "../auth/auth.service";
@@ -67,6 +68,30 @@ const createUserservice = async (
     next(err);
   }
 };
+
+const deleteUserService = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status, data } = await deleteUser(new mongoose.Types.ObjectId(req.params.id));
+
+    if (status === "success") {
+      res.status(200).send({
+        message: "DELETE User SUCCESSFULLY",
+        statusCode: 200,
+        data: data,
+        success: true,
+      });
+    } else {
+      next(data);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 // Update Salary Structure Service
 export const UpdateSalaryStructureService = async (
@@ -201,14 +226,14 @@ const getCompanyDetailsByUserIdService = async (
 
 // get the user details by the particular id
 
-const getUserByIdService = async (
+const getUserByNameService = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { status, data } = await getUserById({
-      UserId: new mongoose.Types.ObjectId(req.params._id),
+    const { status, data } = await getUserByName({
+      name: req.params._id,
     });
     if (status === "success") {
       res.status(200).send({
@@ -656,10 +681,11 @@ const getCompanyDetailsByIdService = async (
 
 export {
   createUserservice,
+  deleteUserService,
   updateUserProfileService,
   getCompanyDetailsByIdService,
   getAllUserService,
-  getUserByIdService,
+  getUserByNameService,
   getCountDesignationStatusService,
   getTotalUsersService,
   updateBankDetialsService,

@@ -13,7 +13,7 @@ export const createTrip = async (data: any) => {
     if (
       data.thumbnail &&
       data?.thumbnail?.buffer &&
-      data.thumbnail?.trim !== ""
+      data.thumbnail?.trim() !== ""
     ) {
       data.thumbnail.filename = generateFileName(data.thumbnail.filename)
       let url = await uploadFile(data.thumbnail);

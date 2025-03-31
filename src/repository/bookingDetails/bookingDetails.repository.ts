@@ -19,9 +19,9 @@ export const createBookingDetails = async (data: any) => {
     const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
 
     const response = await axios.post(verificationUrl);
-    const { success } = response.data;
 
-    if (!success) {
+
+    if (response?.statusText !== "OK") {
       return {
         status: "error",
         data: "reCAPTCHA verification failed",

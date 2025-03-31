@@ -9,7 +9,10 @@ import Documents from "../../schemas/User/Document";
 import { updateUserRoleService } from "../../services/auth/auth.service";
 import mongoose from "mongoose";
 import User from "../../schemas/User/User";
-import { createCatchError } from "../../config/helper/function";
+import {
+  createCatchError,
+  generateFileName,
+} from "../../config/helper/function";
 import { statusCode } from "../../config/helper/statusCode";
 import Qualification from "../../schemas/User/Qualifications";
 import SalaryStructure from "../../schemas/salaryStructure/SalaryStructure.schema";
@@ -47,25 +50,25 @@ const createUser = async (data: any) => {
       throw generateError(`cannot create the user`, 400);
     }
 
-    const {pic, ...rest} = data
+    const { pic, ...rest } = data;
     const profile = new ProfileDetails({
       user: savedUser._id,
-      personalInfo : { ...rest }
+      personalInfo: { ...rest },
     });
 
     const savedProfile = await profile.save();
     savedUser.profile_details = savedProfile._id;
     await savedUser.save();
 
-
     const { password, ...restUser } = savedUser.toObject();
 
-    if (data.pic && data.pic !== "" && Object.entries(data?.pic || {}).length) {
-      let url = await uploadFile(data.pic);
+    if (pic && pic?.buffer !== "" && Object.entries(pic || {}).length) {
+      pic.filename = generateFileName(pic.filename);
+      let url = await uploadFile(pic);
       savedUser.pic = {
-        name: data.pic.filename,
+        name: pic?.filename,
         url: url,
-        type: data.pic.type,
+        type: pic?.type,
       };
       await savedUser.save();
     }
@@ -74,7 +77,7 @@ const createUser = async (data: any) => {
       status: "success",
       data: {
         ...restUser,
-        profile_details: savedProfile.toObject()
+        profile_details: savedProfile.toObject(),
       },
     };
   } catch (err: any) {
@@ -85,12 +88,46 @@ const createUser = async (data: any) => {
   }
 };
 
+const deleteUser = async (userId: any) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw generateError("User not found", 404);
+    }
+
+    if (user.profile_details) {
+      await ProfileDetails.findByIdAndDelete(user.profile_details);
+    }
+
+    if (user.pic?.name) {
+      await deleteFile(user.pic.name);
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    return {
+      status: "success",
+      message: "User deleted successfully",
+      statusCode : 200,
+      data : "USer deleted Successfully"
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      data: err,
+      statusCode:500,
+      message : err?.message
+    };
+  }
+};
+
+
 export const getSalaryStructure = async (data: any) => {
   try {
     const salaryStructures = await SalaryStructure.aggregate([
       { $match: { user: data.user } },
 
-      { $sort: { createdAt : -1 } },
+      { $sort: { createdAt: -1 } },
 
       {
         $group: {
@@ -147,7 +184,7 @@ export const updateSalaryStructure = async (data: any) => {
     if (existingSalaryStructure) {
       updatedSalaryStructure = await SalaryStructure.findOneAndUpdate(
         { user: data.user, _id: id },
-        { $set: {...data, updatedAt : new Date()} },
+        { $set: { ...data, updatedAt: new Date() } },
         { new: true }
       );
 
@@ -161,7 +198,7 @@ export const updateSalaryStructure = async (data: any) => {
       updatedSalaryStructure = await SalaryStructure.create({
         user: data.user,
         ...data,
-        createdAt : new Date()
+        createdAt: new Date(),
       });
 
       return {
@@ -181,57 +218,59 @@ export const updateSalaryStructure = async (data: any) => {
   }
 };
 
-const updateUserProfileDetails = async (data: any) => {
-  try {
-    const { pic, ...rest } = data;
-    const users: any = await User.findByIdAndUpdate(data.userId, {
-      $set: { ...rest },
-    });
+  const updateUserProfileDetails = async (data: any) => {
+    try {
+      const { pic, _id, ...rest } = data;
+      const users: any = await User.findByIdAndUpdate(data.userId, {
+        $set: { ...rest },
+      });
 
-    delete rest.pic
-    const pUsers = await ProfileDetails.findOneAndUpdate(
-      { user: data.userId },
-      { $set: { ...rest } }
-    );
-    if (!pUsers && !users) {
+
+      delete rest.pic;
+      delete rest?.profileDetails
+      const pUsers = await ProfileDetails.findOneAndUpdate(
+        { user: data.userId },
+        { $set: { personalInfo : {...rest} } }
+      );
+      if (!pUsers && !users) {
+        return {
+          status: "error",
+          data: "User does not exists",
+        };
+      }
+
+      if (pic.isDeleted && users.pic?.url && users.pic?.name) {
+        await deleteFile(users.pic.name);
+        users.pic = {
+          name: undefined,
+          url: undefined,
+          type: undefined,
+        };
+        await users.save();
+      }
+
+      if (pic?.filename && pic?.buffer && pic && pic?.isAdd) {
+        pic.filename = generateFileName(pic.filename);
+        const url = await uploadFile(pic);
+        users.pic = {
+          name: data.pic.filename,
+          url,
+          type: data.pic.type,
+        };
+        await users.save();
+      }
+
+      return {
+        status: "success",
+        data: "User has been updated successfully",
+      };
+    } catch (err) {
       return {
         status: "error",
-        data: "User does not exists",
+        data: err,
       };
     }
-
-    if (pic?.isDeleted === 1 && users.pic?.name) {
-      await deleteFile(users.pic.name);
-      users.pic = {
-        name: undefined,
-        url: undefined,
-        type: undefined,
-      };
-      await users.save();
-    }
-
-    if (pic && pic?.isAdd === 1 && pic?.filename && pic?.buffer) {
-      const { filename, type } = pic;
-      const url = await uploadFile(pic);
-      users.pic = {
-        name: filename,
-        url,
-        type,
-      };
-      await users.save();
-    }
-
-    return {
-      status: "success",
-      data: "User has been updated successfully",
-    };
-  } catch (err) {
-    return {
-      status: "error",
-      data: err,
-    };
-  }
-};
+  };
 
 const getUsers = async (data: {
   page: number;
@@ -282,11 +321,7 @@ const getUsers = async (data: {
     // Execute parallel aggregations for data and metadata
     const [usersResult, totalResult]: any = await Promise.all([
       // Data pipeline
-      User.aggregate([
-        ...pipeline,
-        { $skip: skip },
-        { $limit: limit },
-      ]),
+      User.aggregate([...pipeline, { $skip: skip }, { $limit: limit }]),
       // Counts pipeline
       User.aggregate([
         { $match: matchConditions },
@@ -301,16 +336,15 @@ const getUsers = async (data: {
     // Extract total count
     const totalCount = totalResult[0]?.total[0]?.count || 0;
 
-    console.log(totalCount)
+    console.log(totalCount);
     const totalPages = Math.ceil(totalCount / limit);
-
 
     return {
       status: "success",
       data: usersResult,
-      totalPages
-      }
-  } catch (err : any) {
+      totalPages,
+    };
+  } catch (err: any) {
     console.error("Error in getUsers:", err);
     return {
       status: "error",
@@ -319,8 +353,6 @@ const getUsers = async (data: {
     };
   }
 };
-
-
 
 const getCompanyDetailsByUserId = async (data: any) => {
   try {
@@ -399,81 +431,15 @@ const getCompanyDetailsByUserId = async (data: any) => {
   }
 };
 
-
-
-
-const getUserById = async (data: any) => {
+const getUserByName = async (data: any) => {
   try {
-    const pipeline: any = [
-      {
-        $match: {
-          _id: data.UserId,
-          deletedAt: { $exists: false },
-        },
-      },
-      {
-        $lookup: {
-          from: "profiledetails",
-          localField: "_id",
-          foreignField: "user",
-          as: "profileDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "bankdetails",
-          localField: "_id",
-          foreignField: "user",
-          as: "bankDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "documents",
-          localField: "_id",
-          foreignField: "user",
-          as: "documents",
-        },
-      },
-      {
-        $lookup: {
-          from: "familydetails",
-          localField: "_id",
-          foreignField: "user",
-          as: "familyDetails",
-        },
-      },
-      {
-        $lookup: {
-          from: "qualifications",
-          localField: "_id",
-          foreignField: "user",
-          as: "qualifications",
-        },
-      },
-      {
-        $lookup: {
-          from: "workexperiences",
-          localField: "_id",
-          foreignField: "user",
-          as: "workExperience",
-        },
-      },
-      {
-        $lookup: {
-          from: "companydetails",
-          localField: "_id",
-          foreignField: "user",
-          as: "companyDetail",
-        },
-      },
-    ];
-
-    const UserData = await User.aggregate(pipeline);
-    if (UserData.length === 1) {
+    const st = await User.findOne({
+      name: data.name?.split("-")?.join(" "),
+    }).populate("profile_details");
+    if (st) {
       return {
         status: "success",
-        data: UserData[0],
+        data: st,
       };
     } else {
       return {
@@ -1687,7 +1653,7 @@ export {
   updateUserProfileDetails,
   getCompanyDetailsById,
   getUsers,
-  getUserById,
+  getUserByName,
   getCompanyDetailsByUserId,
   getCountDesignationStatus,
   getTotalUsers,
@@ -1700,4 +1666,5 @@ export {
   updatePermissions,
   getManagerUsersCounts,
   getManagersOfUser,
+  deleteUser
 };
