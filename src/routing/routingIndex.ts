@@ -9,12 +9,14 @@ import UserRouting from "./users.routing";
 import contactRouting from "./contact.routing";
 import fileRouting from "./file.routing";
 import bookingRouting from "./bookingDetails/bookingDetails.routing";
+import bookAppointmentRouting from "./bookAppointment/bookAppointment";
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
   app.use('/api/contact',contactRouting)
   app.use('/api/file',fileRouting)
   app.use('/api/booking',bookingRouting)
+  app.use('/api/appointments',bookAppointmentRouting)
   app.use("/api/company", companyOrganisation);
   app.use("/api/User", UserRouting);
   app.use('/api/token',tokenRouting);

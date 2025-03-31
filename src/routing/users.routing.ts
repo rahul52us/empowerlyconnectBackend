@@ -34,7 +34,7 @@ router.post("/create", authenticate, createUserservice);
 router.put("/profile/:id", authenticate, updateUserProfileService);
 router.delete("/profile/:id", authenticate, deleteUserService);
 router.get('/details/:id',authenticate,getCompanyDetailsByIdService)
-router.get("/:_id", authenticate, getUserByNameService);
+router.get("/:_id", getUserByNameService);
 router.get('/companydetails/:id',authenticate,getCompanyDetailsByUserIdService)
 router.post("/", getAllUserService);
 router.get("/managers/:id", authenticate, getManagersEmploysService);
