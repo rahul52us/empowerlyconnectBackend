@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import { createContact, getContacts } from "../../repository/contact/contact.repository";
 import SendMail from "../../config/sendMail/sendMail";
 import mongoose from "mongoose";
@@ -75,3 +75,39 @@ export const getContactsService = async (
     next(err);
   }
 };
+
+export const sendResume = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const {
+      attachmentBase64String
+    } = req.body;
+
+    const applicantName = `${req.body?.firstName || "Applicant"} ${req.body?.lastName || ""}`.trim();
+    const emailSubject = `New Resume Submission from ${applicantName}`;
+
+    await SendMail(
+      process.env.WEBSITE_EMAIL!,
+      emailSubject,
+      "resume/send_resume.html",
+      { ...req.body, reciever_mail: process.env.WEBSITE_EMAIL },
+      attachmentBase64String
+    );
+
+    await SendMail(
+      req.body?.email,
+      "Application Received – Thank You!",
+      "resume/confirmation.html",
+      { ...req.body, reciever_mail: req.body?.email }
+    );
+
+    return res.status(200).send({
+      message: "Resume has been Sent Successfully",
+      status: "success",
+      data: "Resume has been sent successfully",
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+
