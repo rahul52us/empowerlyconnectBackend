@@ -287,7 +287,7 @@ const getUsers = async (data: {
     let matchConditions: any = {
       is_active: true,
       deletedAt: { $exists: false },
-    };
+      role: { $ne: 'admin' },    };
 
     // Add company filter if provided
     if (data.company?.length) {
