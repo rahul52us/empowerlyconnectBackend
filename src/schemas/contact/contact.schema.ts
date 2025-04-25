@@ -20,6 +20,9 @@ const contactSchema = new mongoose.Schema({
   hearFrom: {
     type: String,
   },
+  otherDetails : {
+    type : mongoose.Schema.Types.Mixed
+  },
   description: {
     type: String,
   },

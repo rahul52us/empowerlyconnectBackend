@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 export const createBookingDetails = async (data: any) => {
   try {
-    const { name, phone, captchaToken } = data;
+    const { name, phone, captchaToken, details } = data;
 
     if (!name || !phone || !captchaToken) {
       return {
@@ -41,7 +41,7 @@ export const createBookingDetails = async (data: any) => {
       };
     }
 
-    const contactDetails = new bookingDetailsSchema({ name, phone });
+    const contactDetails = new bookingDetailsSchema({ name, phone,details });
     const savedContactDetails = await contactDetails.save();
 
     return {
