@@ -11,6 +11,7 @@ import fileRouting from "./file.routing";
 import bookingRouting from "./bookingDetails/bookingDetails.routing";
 import bookAppointmentRouting from "./bookAppointment/bookAppointment";
 import dashboardRouting from "./dashboard/dashboard.routing";
+import eventRouting from './event/event.routing'
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
@@ -23,6 +24,7 @@ const importRoutings = (app: any) => {
   app.use("/api/User", UserRouting);
   app.use('/api/token',tokenRouting);
   app.use("/api/testimonial", testimonialRouting);
+  app.use("/api/event", eventRouting);
   app.use("/api/blog", blogRouting);
   app.use("/api/student", StudentRouting);
   app.use("/api/trip", TripRouting);
