@@ -11,6 +11,7 @@ const createBlog = async (data: any) => {
       subTitle: data.subTitle,
       slug:data.slug,
       category:data.category,
+      target:data.target,
       title: data.title,
       content: data.content,
       isPrivate:data.isPrivate,
@@ -180,31 +181,41 @@ const blogStatusCounts = async ({company} : any) => {
 };
 
 
-
-
 const getBlogs = async (data: any) => {
   try {
-    const blogs = await Blog.find({isActive : true}) //// {company : {$in : data.company}}
+    const query: any = { isActive: true };
+    if (data.search) {
+      query.title = { $regex: data.search, $options: "i" };
+    }
+
+    if (data.category) {
+      query.category = data.category;
+    }
+
+    if (data.target) {
+      query.target = data.target;
+    }
+    const blogs = await Blog.find(query)
       .populate({
         path: "createdBy",
-        select: "name username _id pic slug category position createdAt" ,
+        select: "name username _id pic slug category target position createdAt",
       })
       .populate({
         path: "comments",
         select: "_id",
       })
-      .select("title coverImage subTitle isPrivate createdAt tags createdBy slug category comments reactions")
+      .select("title coverImage subTitle isPrivate createdAt tags createdBy target slug category comments reactions")
       .sort({ createdAt: -1 })
       .skip((data.page - 1) * data.limit)
       .limit(data.limit);
 
-    const totalCount = await Blog.countDocuments();
+    const totalCount = await Blog.countDocuments(query);
     const totalPages = Math.ceil(totalCount / data.limit);
 
     return {
       status: "success",
-      message : 'Retrived blogs successfully',
-      statusCode:statusCode.success,
+      message: "Retrieved blogs successfully",
+      statusCode: statusCode.success,
       data: {
         totalPages: totalPages,
         data: blogs,
@@ -212,9 +223,10 @@ const getBlogs = async (data: any) => {
       },
     };
   } catch (err) {
-    return createCatchError(err)
+    return createCatchError(err);
   }
 };
+
 
 const getBlogById = async (data: any) => {
   try {
@@ -258,6 +270,7 @@ const getBlogById = async (data: any) => {
           isPrivate:1,
           slug:1,
           category:1,
+          target:1,
           createdBy: {
             name: 1,
             username: 1,

@@ -107,6 +107,7 @@ const getBlogsService = async (req: any, res: Response, next: NextFunction) => {
     let limit = req.query.limit || 10;
     const company = await convertIdsToObjects(req.body.company);
     const { status, data, message, statusCode } = await getBlogs({
+      ...req.query,
       page,
       limit,
       company,

@@ -11,6 +11,7 @@ interface Blog extends Document {
   subTitle:string;
   slug:string;
   category:string;
+  target?:string;
   content: string;
   isPrivate: boolean;
   isActive:boolean;
@@ -30,6 +31,9 @@ const blogSchema = new Schema<Blog>(
       type: String,
       required: true,
       index:true
+    },
+    target : {
+      type : String
     },
     subTitle : {
       type : String,
