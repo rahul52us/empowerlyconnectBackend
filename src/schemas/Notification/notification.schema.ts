@@ -2,47 +2,24 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const notificationSchema = new Schema({
-  sender: {
-    type: mongoose.Schema.Types.ObjectId,
-    index: true
+  username : {
+    type : String
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Company",
-    required : true
-  },
-  senderModel: {
-    type: String,
-    required: true,
-    index: true,
-  },
-  recipient: {
-    type: mongoose.Schema.Types.ObjectId,
-    index: true,
-  },
-  recipientModel: {
-    type: String,
-    required: true,
-    index: true,
+    ref: "Company"
   },
   message: {
     type: String,
     required: true,
   },
   type: {
-    type: String,
-    enum: ['info', 'warning', 'alert', 'reminder', 'announcement'],
-    default: 'info',
+    type: String
   },
   priority: {
     type: String,
     enum: ['low', 'medium', 'high', 'critical'],
     default: 'medium',
-  },
-  category: {
-    type: String,
-    enum: ['general', 'policy', 'event', 'task'],
-    default: 'general',
   },
   isRead: {
     type: Boolean,
@@ -59,12 +36,10 @@ const notificationSchema = new Schema({
   },
   actions: [{
     type: {
-      type: String,
-      required: true,
+      type: String
     },
     label: {
-      type: String,
-      required: true,
+      type: String
     },
     url: {
       type: String,
@@ -81,6 +56,8 @@ const notificationSchema = new Schema({
   },
 });
 
-notificationSchema.index({ recipientModel: 1, recipientId: 1, isRead: 1, createdAt: -1 });
+notificationSchema.index({ isRead: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Notification', notificationSchema);
+const NotificationModal = mongoose.model('Notification', notificationSchema);
+
+export default NotificationModal;

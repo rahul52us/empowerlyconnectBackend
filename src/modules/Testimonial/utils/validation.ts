@@ -21,19 +21,9 @@ const testimonialCreateValidation = Joi.object({
     "any.required": "Organisation is required",
     "string.empty": "Organisation is required",
   }),
-  profession: Joi.string().required().trim().min(2).max(180).messages({
-    "any.required": "profession is required",
-    "string.empty": "profession is required",
-    "string.min": "profession must be at least {#limit} characters long",
-    "string.max": "profession cannot exceed {#limit} characters",
-  }),
+  profession: Joi.string(),
   image: Joi.any(),
-  description: Joi.string().required().trim().min(10).max(500).messages({
-    "any.required": "Description is required",
-    "string.empty": "Description is required",
-    "string.min": "Description must be at least {#limit} characters long",
-    "string.max": "Description cannot exceed {#limit} characters",
-  }),
+  description: Joi.string(),
 }).options({
   abortEarly: false,
 });

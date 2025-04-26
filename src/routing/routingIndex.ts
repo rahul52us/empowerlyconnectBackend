@@ -12,10 +12,12 @@ import bookingRouting from "./bookingDetails/bookingDetails.routing";
 import bookAppointmentRouting from "./bookAppointment/bookAppointment";
 import dashboardRouting from "./dashboard/dashboard.routing";
 import eventRouting from './event/event.routing'
+import notificationRouting from './notification/notification.routing'
 
 const importRoutings = (app: any) => {
   app.use("/api/auth", userRouting);
   app.use('/api/contact',contactRouting)
+  app.use('/api/notification',notificationRouting)
   app.use('/api/file',fileRouting)
   app.use('/api/dashboard',dashboardRouting)
   app.use('/api/booking',bookingRouting)

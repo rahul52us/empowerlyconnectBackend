@@ -1,6 +1,7 @@
 import bookingDetailsSchema from "../../schemas/bookingDetails/bookingDetails.schema";
 import axios from "axios";
 import dotenv from "dotenv";
+import { createNotification } from "../../services/notification/notification.service";
 
 export const createBookingDetails = async (data: any) => {
   try {
@@ -32,6 +33,10 @@ export const createBookingDetails = async (data: any) => {
 
     const existingContact = await bookingDetailsSchema.findOne({ phone });
 
+    createNotification({
+      type : 'booking',
+      message : ""
+    })
     if (existingContact) {
       return {
         status: "error",
@@ -43,6 +48,11 @@ export const createBookingDetails = async (data: any) => {
 
     const contactDetails = new bookingDetailsSchema({ name, phone,details });
     const savedContactDetails = await contactDetails.save();
+
+    createNotification({
+      type: 'booking',
+      message: `${name} (${phone}) has requested a booking`
+    });
 
     return {
       status: "success",

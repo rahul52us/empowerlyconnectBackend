@@ -1,3 +1,4 @@
+import { createNotification } from "../../services/notification/notification.service";
 import Contact from "../../schemas/contact/contact.schema";
 
 export const createContact = async (data: any) => {
@@ -8,9 +9,9 @@ export const createContact = async (data: any) => {
 
     if (existingContact) {
       return {
-        status: 'error',
-        data: 'Phone or Email already exists',
-        message: 'Contact with this phone or email already exists',
+        status: "error",
+        data: "Phone or Email already exists",
+        message: "Contact with this phone or email already exists",
         statusCode: 400,
       };
     }
@@ -18,15 +19,30 @@ export const createContact = async (data: any) => {
     const contactDetails = new Contact(data);
     const savedContactDetails = await contactDetails.save();
 
+    const parts = [];
+
+    if (data.name) parts.push(`Name: ${data.name}`);
+    if (data.phone) parts.push(`Phone: ${data.phone}`);
+    if (data.email) parts.push(`Email: ${data.email}`);
+
+    const message = `New contact added. ${parts.join(", ")}`;
+
+    const dts = await createNotification({
+      type: "contact",
+      message,
+    });
+
+    console.log(dts)
+
     return {
-      status: 'success',
+      status: "success",
       data: savedContactDetails,
-      message: 'Contact Details have been saved successfully',
+      message: "Contact Details have been saved successfully",
       statusCode: 200,
     };
   } catch (err: any) {
     return {
-      status: 'error',
+      status: "error",
       data: err?.message,
       message: err?.message,
       statusCode: 500,

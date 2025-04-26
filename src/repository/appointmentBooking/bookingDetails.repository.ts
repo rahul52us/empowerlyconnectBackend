@@ -1,3 +1,4 @@
+import { createNotification } from "../../services/notification/notification.service";
 import bookAppointment from "../../schemas/bookAppointment/bookAppointment";
 
 export const createBookAppointment = async (data: any) => {
@@ -15,6 +16,11 @@ export const createBookAppointment = async (data: any) => {
 
     const contactDetails = new bookAppointment(data);
     const savedContactDetails = await contactDetails.save();
+
+    createNotification({
+      type: "appointments",
+      message: `${name} (${phone}) has requested a booking appointment`,
+    });
 
     return {
       status: "success",
@@ -50,7 +56,8 @@ export const getBookAppointent = async (
       ];
     }
 
-    const contacts = await bookAppointment.find(query)
+    const contacts = await bookAppointment
+      .find(query)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
