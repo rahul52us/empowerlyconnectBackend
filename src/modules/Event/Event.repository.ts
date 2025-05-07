@@ -46,9 +46,10 @@ export const updateEvent = async (req : any, res : any) => {
   try {
     const data = req.body
     const {image, ...rest} = data
+
     const testimonial = await Events.findById(data._id);
     if (testimonial) {
-      const updatedData: any = await Events.findByIdAndUpdate(data._id, rest, {
+      const updatedData: any = await Events.findByIdAndUpdate(data._id, {...rest, eventDate : rest?.eventDate}, {
         new: true,
       });
 

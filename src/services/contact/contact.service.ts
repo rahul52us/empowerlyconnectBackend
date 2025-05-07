@@ -9,7 +9,41 @@ export const createContactService = async (
   next: any
 ) => {
   try {
-    const { status, statusCode, data, message } = await createContact({...req.body, name : `${req.body.firstName} ${req.body.lastName}`});
+
+    if(req.body.type === "subscriber")
+    {
+      const websiteEmail = process.env.WEBSITE_EMAIL;
+
+      if (!websiteEmail) {
+        return res.status(500).send({
+          message: "Website email is not configured.",
+          status: "error",
+        });
+      }
+
+      SendMail(
+        websiteEmail,
+"New Subscriber Submission Alert",
+         "contact/adminSubscription.html",
+        { ...req.body, userEmail : req.body?.email, reciever_mail: websiteEmail }
+      );
+
+      SendMail(
+        req.body.email,
+        "Your Information Has Been Successfully Submitted",
+        "contact/userSubscription.html",
+        { ...req.body, userEmail : req.body?.email }
+      );
+
+      return res.status(200).send({
+        message: 'Subscribe Successfully',
+        data: req.body,
+        status: 'success',
+      });
+    }
+    else
+    {
+      const { status, statusCode, data, message } = await createContact({...req.body, name : `${req.body.firstName} ${req.body.lastName}`});
 
     if (status === "success") {
       const websiteEmail = process.env.WEBSITE_EMAIL;
@@ -48,6 +82,8 @@ export const createContactService = async (
         status,
       });
     }
+    }
+
   } catch (err: any) {
     next(err);
   }

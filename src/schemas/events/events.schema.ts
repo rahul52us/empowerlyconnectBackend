@@ -33,7 +33,7 @@ const EventSchema = new mongoose.Schema<TestimonialI>(
       type : String
     },
     eventDate: {
-      type : Date
+      type : String
     },
     title: {
       type: String,

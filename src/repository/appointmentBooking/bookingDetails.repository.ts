@@ -25,7 +25,7 @@ export const createBookAppointment = async (data: any) => {
     return {
       status: "success",
       data: savedContactDetails,
-      message: "Appointment have been booked successfully",
+      message: "",
       statusCode: 200,
     };
   } catch (err: any) {
