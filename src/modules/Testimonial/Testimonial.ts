@@ -14,10 +14,10 @@ const createTestimonail = async (
 ) => {
   try {
     req.body.user = req.userId
-    const result = testimonialCreateValidation.validate(req.body);
-    if (result.error) {
-      throw generateError(result.error.details[0], 422);
-    }
+    // const result = testimonialCreateValidation.validate(req.body);
+    // if (result.error) {
+    //   throw generateError(result.error.details[0], 422);
+    // }
 
     const {image, ...rest} = req.body
     const test = new Testimonial(rest);

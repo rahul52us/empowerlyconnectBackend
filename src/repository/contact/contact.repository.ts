@@ -3,18 +3,6 @@ import Contact from "../../schemas/contact/contact.schema";
 
 export const createContact = async (data: any) => {
   try {
-    const existingContact = await Contact.findOne({
-      $or: [{ phone: data.phone }, { email: data.email }],
-    });
-
-    if (existingContact) {
-      return {
-        status: "error",
-        data: "Phone or Email already exists",
-        message: "Contact with this phone or email already exists",
-        statusCode: 400,
-      };
-    }
 
     const contactDetails = new Contact(data);
     const savedContactDetails = await contactDetails.save();
@@ -31,8 +19,6 @@ export const createContact = async (data: any) => {
       type: "contact",
       message,
     });
-
-    console.log(dts)
 
     return {
       status: "success",
