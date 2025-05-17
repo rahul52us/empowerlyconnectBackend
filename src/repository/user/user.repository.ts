@@ -333,24 +333,14 @@ const getUsers = async (data: {
       ]),
     ]);
 
-    function shuffleArray(array: any[]) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
     // Extract total count
     const totalCount = totalResult[0]?.total[0]?.count || 0;
 
-    console.log(totalCount);
     const totalPages = Math.ceil(totalCount / limit);
-const shuffledUsers = shuffleArray([...usersResult]); // use spread to avoid mutating original
 
     return {
       status: "success",
-      data: shuffledUsers,
+      data: usersResult,
       totalPages,
     };
   } catch (err: any) {
